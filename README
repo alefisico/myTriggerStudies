@@ -1,0 +1,10 @@
+##################################
+###### My Trigger Studies     ####
+##################################
+
+- Most of the things here are based on the new openHLT (https://github.com/jiafulow/HLTrigger-HLTanalyzers-test-openHLT) 
+- Trigger Rates with: test/GetRates.py (you need log files from openHLT Filter)
+- My modify menu: test/hlt_PFNoPUHT_710_V52_MC.py
+- Datasets and multicrab jobs: test/multicrab.cfg
+
+Enjoy it!
