@@ -346,7 +346,7 @@ for product in productsToKeep:
 
 #####################################################################################
 # vvvvvv PAT configurations injected by openHLT.py (if any), as requested by the user
-#$PATCONFIG
+$PATCONFIG
 
 #####################################################################################
 

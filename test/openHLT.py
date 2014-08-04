@@ -40,6 +40,11 @@ parser.add_argument('-t', '--hlt-config', action='store', metavar='FILE', #type=
                     #required=True,
                     help="hlt configuration file (default: "+hlt_file+"). Note that the file must be in the same directory with this script.")
 
+parser.add_argument('-s', '--skim-cfi', action='store', metavar='FILE', #type=str,
+                    default="",
+                    #required=True,
+                    help='skim configuration fragment (default: ""). Note that the file must be in the same directory with this script.')
+
 parser.add_argument('-c', '--other-changes', nargs='+', action='store', metavar='CHANGES', #type= str,
                     default=["# add additional code below"],
                     required=False,
@@ -70,6 +75,9 @@ parser.add_argument('-g', '--openhlt-go-file', action='store', metavar='FILE', #
 parser.add_argument('--go', action='store_true', #type= bool,
                     #default=verbose,
                     help='start cmsRun with the "go" file')
+
+parser.add_argument('--mc', dest='is_data', action='store_false', #type= bool,
+                    help='run on Monte Carlo simulated events (default: false)')
 
 #parser.add_argument('-m', action='store_true', #type= bool,
 #                    #default=verbose,
@@ -102,13 +110,16 @@ oHLTconfig_out=args.openhlt_go_file
 oHLTconfig_template=args.openhlt_template_file
 
 
-cmd='verbose=%r \nisCrabJob=%r  \nrunProducers=%r \nrunOpen=%r \nifiles=%r \nofile="%s" \nmaxNrEvents=%d' % (args.verbose,
-                                                                                                           args.crab_job,
-                                                                                                           args.run_producers,
-                                                                                                           args.run_producers,
-                                                                                                           args.input_root_files,
-                                                                                                           args.output_root_file,
-                                                                                                           maxNrEvents)
+# Configurations from command line
+cmd=('verbose=%r \nisCrabJob=%r  \nrunProducers=%r \nrunOpen=%r \nisData=%r \nifiles=%r \nofile="%s" \nmaxNrEvents=%d'
+    % (args.verbose,
+       args.crab_job,
+       args.run_producers,
+       args.run_producers,
+       args.is_data,
+       args.input_root_files,
+       args.output_root_file,
+       maxNrEvents))
 
 #print args
 hlt_module=args.hlt_config
@@ -123,7 +134,7 @@ if os.stat(hlt_module)[6]==0:
 
 if hlt_module[-3:] == ".py":
     hlt_module=hlt_module[:-3]
-print mprefx, "[i] HLT module:",hlt_module   
+print mprefx, "[i] HLT module:",hlt_module
 
 try: temp=open(oHLTconfig_template).read()
 except IOError:
@@ -133,9 +144,21 @@ except IOError:
 if verbose: print mprefx, "[i] read the template file:", oHLTconfig_template
 temp=temp.replace("$HLTFILE", hlt_module)
 temp=temp.replace("$CONFIG", cmd)
+temp=temp.replace("$PATCONFIG", "")
 
 other_changes=""
 for change in args.other_changes: other_changes=other_changes+change+"\n"
+if args.skim_cfi:
+    if args.skim_cfi.endswith(".py"):  args.skim_cfi = args.skim_cfi[:-3].replace("/",".")
+    skim_module = args.skim_cfi.split(".")[-1]
+    if skim_module.endswith("_cfi"):  skim_module = skim_module[:-4]
+    skim_module_renamed = "dontignore" + skim_module[0].upper() + skim_module[1:]
+
+    skim_module_import = "from %s import %s\n" % (args.skim_cfi, skim_module)
+    skim_module_import += "process.%s = %s.clone()\n" % (skim_module_renamed, skim_module)
+    skim_module_import += "process.HLTBeginSequence.insert(0, process.%s)\n" % (skim_module_renamed)
+    other_changes += skim_module_import
+
 
 temp=temp.replace("$OTHERCHANGES", other_changes.strip())
 temp=cfgpreamble+"\n"+temp
@@ -153,7 +176,7 @@ print mprefx, "[i] wrote:", oHLTconfig_out
 if args.go:
 #     if not goFlag:
 #        print mprefx, "[w] cannot start cmsRun because at least one of the required files are missing"
-#     else:   
+#     else:
         if verbose: print mprefx, "[i] Starting cmsRun"
         cmd="time cmsRun "+oHLTconfig_out
         print cmd
