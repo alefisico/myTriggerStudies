@@ -79,12 +79,13 @@ def plotRates( listRates, listRatesErr, PU ):
 	"""docstring for plotRates"""
 
 	#HT = [ 350., 650., 700., 750., 800., 850. ]
-	HT = [ 650., 700., 750., 800., 850. ]
+	#HT = [ 650., 700., 750., 800., 850. ]
+	HT = [ 450., 550., 650., 750., 850. ]
 	HTErr = [ 0., 0., 0., 0., 0. ]
 	t = array( 'd', HT)
-	x = array( 'd', listRates[1:6])
-	y = array( 'd', listRates[7:12])
-	z = array( 'd', listRates[13:18])
+	x = array( 'd', listRates[0:4])
+	y = array( 'd', listRates[5:9])
+	z = array( 'd', listRates[10:14])
 	tErr = array( 'd', HTErr)
 	xErr = array( 'd', listRatesErr[1:6])
 	yErr = array( 'd', listRatesErr[7:12])
@@ -111,9 +112,11 @@ def plotRates( listRates, listRatesErr, PU ):
 
 	legend=TLegend(0.60,0.70,0.90,0.90)
 	legend.SetFillColor(0)
-	legend.AddEntry(g1, 'HLT_PFNoPUHT', "l")
-	legend.AddEntry(g2, 'HLT_PFNoPUAK8HT', "l")
-	legend.AddEntry(g3, 'HLT_PFNoPUAK8HTTrim', "l")
+	legend.AddEntry(g1, 'HLT_HT', "l")
+	legend.AddEntry(g3, 'HLT_PFHT', "l")
+	legend.AddEntry(g2, 'HLT_PFNoPUHT', "l")
+	#legend.AddEntry(g2, 'HLT_PFNoPUAK8HT', "l")
+	#legend.AddEntry(g3, 'HLT_PFNoPUAK8HTTrim', "l")
 	legend.AddEntry(g4, 'Official HLT_PFNoPUHT', "l")
 	legend.SetTextSize(0.03)
 
@@ -121,8 +124,8 @@ def plotRates( listRates, listRatesErr, PU ):
 	g1.SetTitle("Trigger Rates for "+PU)
 	g1.GetXaxis().SetTitle("HT [GeV]")
 	g1.GetYaxis().SetTitle("Rate [Hz]")
-	maxRate = max( listRates[1:6], listRates[7:12], listRates[13:18] )
-	g1.SetMaximum( maxRate[0]+10 )
+	maxRate = max( listRates[0:4], listRates[5:9], listRates[10:14] )
+	g1.SetMaximum( maxRate[0]+50 )
 	g1.SetLineColor( ROOT.kBlue )
 	g1.SetLineWidth( 2 )
 	g2.SetLineColor( ROOT.kRed )
@@ -143,23 +146,26 @@ def plotRates( listRates, listRatesErr, PU ):
 
 if __name__ == '__main__':
 	
-	numTriggers = 18
-	PU = 'PU40bx50'
-	#PU = 'PU20bx25'
+	numTriggers = 34
+	#PU = 'PU40bx50'
+	PU = 'PU20bx25'
 	#PU = 'PU40bx25'
 
-	name1, run1, passed1, failed1, rates1, ratesErr1 = grabTriggerNumbers( 'dump_QCD_Pt-80to120_'+PU+'_Filt.log', numTriggers, 3000000. * 0.8456, PU )
-	name2, run2, passed2, failed2, rates2, ratesErr2 = grabTriggerNumbers( 'dump_QCD_Pt-120to170_'+PU+'_Filt.log', numTriggers, 493200. * 0.8355, PU )
-	name3, run3, passed3, failed3, rates3, ratesErr3 = grabTriggerNumbers( 'dump_QCD_Pt-170to300_'+PU+'_Filt.log', numTriggers, 12030., PU )
-	name4, run4, passed4, failed4, rates4, ratesErr4 = grabTriggerNumbers( 'dump_QCD_Pt-300to470_'+PU+'_Filt.log', numTriggers, 7475., PU )
-	name5, run5, passed5, failed5, rates5, ratesErr5 = grabTriggerNumbers( 'dump_QCD_Pt-470to600_'+PU+'_Filt.log', numTriggers, 587.1, PU  )
-	name6, run6, passed6, failed6, rates6, ratesErr6 = grabTriggerNumbers( 'dump_QCD_Pt-600to800_'+PU+'_Filt.log', numTriggers, 167., PU )
-	name7, run7, passed7, failed7, rates7, ratesErr7 = grabTriggerNumbers( 'dump_QCD_Pt-800to1000_'+PU+'_Filt.log', numTriggers, 28.25, PU  )
-	name8, run8, passed8, failed8, rates8, ratesErr8 = grabTriggerNumbers( 'dump_QCD_Pt-1000to1400_'+PU+'_Filt.log', numTriggers, 8.975, PU  )
-	name9, run9, passed9, failed9, rates9, ratesErr9 = grabTriggerNumbers( 'dump_QCD_Pt-1400to1800_'+PU+'_Filt.log', numTriggers, 0.8975, PU )
+	name0, run0, passed0, failed0, rates0, ratesErr0 = grabTriggerNumbers( 'dump_QCD_Pt-30to50_'+PU+'_Filt.log', numTriggers,161500000. * 0.9481 , PU )
+	name1, run1, passed1, failed1, rates1, ratesErr1 = grabTriggerNumbers( 'dump_QCD_Pt-50to80_'+PU+'_Filt.log', numTriggers, 22110000. *0.8821, PU )
+	name2, run2, passed2, failed2, rates2, ratesErr2 = grabTriggerNumbers( 'dump_QCD_Pt-80to120_'+PU+'_Filt.log', numTriggers, 3000000. * 0.8456, PU )
+	name3, run3, passed3, failed3, rates3, ratesErr3 = grabTriggerNumbers( 'dump_QCD_Pt-120to170_'+PU+'_Filt.log', numTriggers, 493200. * 0.8355, PU )
+	name4, run4, passed4, failed4, rates4, ratesErr4 = grabTriggerNumbers( 'dump_QCD_Pt-170to300_'+PU+'_Filt.log', numTriggers, 12030., PU )
+	name5, run5, passed5, failed5, rates5, ratesErr5 = grabTriggerNumbers( 'dump_QCD_Pt-300to470_'+PU+'_Filt.log', numTriggers, 7475., PU )
+	name6, run6, passed6, failed6, rates6, ratesErr6 = grabTriggerNumbers( 'dump_QCD_Pt-470to600_'+PU+'_Filt.log', numTriggers, 587.1, PU  )
+	name7, run7, passed7, failed7, rates7, ratesErr7 = grabTriggerNumbers( 'dump_QCD_Pt-600to800_'+PU+'_Filt.log', numTriggers, 167., PU )
+	name8, run8, passed8, failed8, rates8, ratesErr8 = grabTriggerNumbers( 'dump_QCD_Pt-800to1000_'+PU+'_Filt.log', numTriggers, 28.25, PU  )
+	name9, run9, passed9, failed9, rates9, ratesErr9 = grabTriggerNumbers( 'dump_QCD_Pt-1000to1400_'+PU+'_Filt.log', numTriggers, 8.975, PU  )
+	name10, run10, passed10, failed10, rates10, ratesErr10 = grabTriggerNumbers( 'dump_QCD_Pt-1400to1800_'+PU+'_Filt.log', numTriggers, 0.8975, PU )
+	name11, run11, passed11, failed11, rates11, ratesErr11 = grabTriggerNumbers( 'dump_QCD_Pt-1800_'+PU+'_Filt.log', numTriggers, 0.1091 , PU )
 
-	listRates = [ rates1[i] + rates2[i] + rates3[i] + rates4[i] + rates5[i] + rates6[i] + rates7[i] + rates8[i] + rates9[i] for i in xrange( len( rates1 ) )]
-	listRatesErr = [ ratesErr1[i] + ratesErr2[i] + ratesErr3[i] + ratesErr4[i] + ratesErr5[i] + ratesErr6[i] + ratesErr7[i] + ratesErr8[i] + ratesErr9[i] for i in xrange( len( ratesErr1 ) )]
+	listRates = [ rates0[i] + rates1[i] + rates2[i] + rates3[i] + rates4[i] + rates5[i] + rates6[i] + rates7[i] + rates8[i] + rates9[i] + rates10[i] + rates11[i] for i in xrange( len( rates1 ) )]
+	listRatesErr = [ ratesErr0[i] +ratesErr1[i] + ratesErr2[i] + ratesErr3[i] + ratesErr4[i] + ratesErr5[i] + ratesErr6[i] + ratesErr7[i] + ratesErr8[i] + ratesErr9[i] + ratesErr10[i] + ratesErr11[i] for i in xrange( len( ratesErr1 ) )]
 	print listRates
 	print listRatesErr
 	plotRates( listRates, listRatesErr, PU )

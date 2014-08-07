@@ -8636,7 +8636,8 @@ process.CSCINdexerESSource = cms.ESSource("EmptyESSource",
 
 
 process.GlobalTag = cms.ESSource("PoolDBESSource",
-    globaltag = cms.string('START71_V8::All'),
+    #globaltag = cms.string('START71_V8::All'),
+    globaltag = cms.string('PRE_LS171V9A::All'),
     RefreshEachRun = cms.untracked.bool(False),
     ReconnectEachRun = cms.untracked.bool(False),
     toGet = cms.VPSet(cms.PSet(

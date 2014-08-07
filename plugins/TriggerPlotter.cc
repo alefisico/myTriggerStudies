@@ -281,7 +281,7 @@ TriggerPlotter::beginJob()
 	eventJetMass_NOJEC = fs->make<TH1D>("eventJetMass_NOJEC" , "Event Jet Mass", 50 ,0., 500. );	
 	HTvsJet1pt_NOJEC = fs->make<TH2D>("HTvsJet1pt_NOJEC", "HT vs Leading Jet Pt", 200 ,0., 2000., 200 ,0., 2000. );	
 	HTvsJet1mass_NOJEC = fs->make<TH2D>("HTvsJet1mass_NOJEC", "HT vs Leading Mass p_{T}", 200 ,0., 2000., 40 ,0., 200. );	
-	HTvsEventJetMass_NOJEC = fs->make<TH2D>("HTvsEventJetMass_NOJEC", "HT vs Event Jet Mass", 200 ,0., 2000., 50 ,0.,5000.);	
+	HTvsEventJetMass_NOJEC = fs->make<TH2D>("HTvsEventJetMass_NOJEC", "HT vs Event Jet Mass", 200 ,0., 2000., 50 ,0.,500.);	
 
 	tree_NOJEC = fs->make<TTree>("JetVariables_NOJEC", "JetVariables_NOJEC");
 	jetPtVec_NOJEC = new std::vector<float>;
