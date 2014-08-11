@@ -10,9 +10,8 @@ Description: My Draw histograms. Check for options at the end.
 from ROOT import *
 from setTDRStyle import *
 import time, os, math, sys
-import tarfile
-import optparse
-from array import array
+#import tarfile
+#import optparse
 
 
 gROOT.Reset()
@@ -23,79 +22,52 @@ gROOT.SetStyle('tdrStyle')
 
 
 gStyle.SetOptStat(0)
-#---- open the files --------------------
 
-
-def plot( name, plotName, inPlotName, xmax, log ):
+def plot( inFile, trigger, name, inPlotName, xmax, log ):
 	"""docstring for plot"""
 
 	outputFileName = name+'_QCD_TriggerStudies.pdf' 
 	print 'Processing.......', outputFileName
-	histo1 = 'triggerPlotter/'+plotName
-	histo2 = 'triggerPlotter/'+plotName+'_NOJEC'
-	histo3 = 'triggerPlotterTrim/'+plotName
-	histo4 = 'triggerPlotterTrim/'+plotName+'_NOJEC'
-	histo5 = 'triggerPlotterAK8/'+plotName
-	histo6 = 'triggerPlotterAK8/'+plotName+'_NOJEC'
-	histo7 = 'triggerPlotterAK8Trim/'+plotName
-	histo8 = 'triggerPlotterAK8Trim/'+plotName+'_NOJEC'
 
-	h1 = inputFile1.Get( histo1 )
-	#----- Drawing -----------------------
-
-	h1.GetXaxis().SetTitle( inPlotName )
-	binWidth = h1.GetBinWidth(1)
-	h1.GetYaxis().SetTitle( 'Events /'+str(binWidth) )
-
-
-	h1.SetLineColor(1)
-	h1.SetLineWidth(2)
-	h12.SetLineColor(1)
-	h12.SetLineStyle(2)
-	h13.SetLineColor(2)
-	h13.SetLineWidth(2)
-	h14.SetLineColor(2)
-	h14.SetLineStyle(2)
-	h15.SetLineColor(3)
-	h15.SetLineWidth(2)
-	h16.SetLineColor(3)
-	h16.SetLineStyle(2)
-	h17.SetLineColor(4)
-	h17.SetLineWidth(2)
-	h18.SetLineColor(4)
-	h18.SetLineStyle(2)
-	h1.SetMaximum(2*max(h1.GetBinContent(h1.GetMaximumBin()),h12.GetBinContent(h12.GetMaximumBin()),h13.GetBinContent(h13.GetMaximumBin()),h14.GetBinContent(h14.GetMaximumBin()),h15.GetBinContent(h15.GetMaximumBin()),h16.GetBinContent(h16.GetMaximumBin()),h17.GetBinContent(h17.GetMaximumBin()),h18.GetBinContent(h18.GetMaximumBin())))
-	h1.GetXaxis().SetRange( 0, xmax )
-
-	legend=TLegend(0.70,0.60,0.90,0.85)
+	histos = {}
+	legend=TLegend(0.65,0.70,0.90,0.90)
 	legend.SetFillStyle(0)
-	legend.AddEntry(h1, 'PFNoPUHT', "l")
-	legend.AddEntry(h12, 'PFNoPUHT NOJEC', "l")
-	legend.AddEntry(h13, 'PFNoPUHTTrim', "l")
-	legend.AddEntry(h14, 'PFNoPUHTTrim NOJEC', "l")
-	legend.AddEntry(h15, 'PFNoPUHTAK8', "l")
-	legend.AddEntry(h16, 'PFNoPUHTAK8 NOJEC', "l")
-	legend.AddEntry(h17, 'PFNoPUHTAK8Trim', "l")
-	legend.AddEntry(h18, 'PFNoPUHTAK8Trim NOJEC', "l")
 	legend.SetTextSize(0.03)
+
+	if trigger[0][0] is trigger[1][0]:
+		for i in trigger: 
+			histos[ i[1] ] = inFile.Get( 'triggerPlotter'+i[0]+'/'+i[1] )
+			legend.AddEntry( histos[ i[1] ], i[2] , 'l' )
+	else:
+		for i in trigger: 
+			histos[ i[0] ] = inFile.Get( 'triggerPlotter'+i[0]+'/'+i[1] )
+			legend.AddEntry( histos[ i[0] ], i[2] , 'l' )
+
+	histos.values()[0].GetXaxis().SetTitle( inPlotName )
+	binWidth = histos.values()[0].GetBinWidth(1)
+	histos.values()[0].GetYaxis().SetTitle( 'Events / '+str(binWidth) )
+
+	k = 0
+	listMax = []
+
+	for t, histo in histos.items():
+		k += 1
+		histo.SetLineColor(k)
+		histo.SetLineWidth(2)
+		listMax.append( histo.GetBinContent(histo.GetMaximumBin()) )
+	#	legend.AddEntry( histo, t , 'l' )
+
+	histos.values()[0].SetMaximum( 2* max( listMax ) ) 
+	histos.values()[0].GetXaxis().SetRange( 0, xmax )
 
 	can = TCanvas('c1', 'c1',  10, 10, 800, 500 )
 	if log: can.SetLogy()
 	#h1.Sumw2()
-	#h12.Sumw2()
-	#h13.Sumw2()
-	#h14.Sumw2()
-	h1.Draw('hist')
-	h12.Draw('same hist')
-	h13.Draw('same hist')
-	h14.Draw('same hist')
-	h15.Draw('same hist')
-	h16.Draw('same hist')
-	h17.Draw('same hist')
-	h18.Draw('same hist')
+	histos.values()[0].Draw('hist')
+	for q in range( 1, len( histos.keys() ) ): histos.values()[q].Draw('hist same')
 	legend.Draw()
 	setSelectionTrigger( 'QCD 13 TeV PU20bx25' )
-	can.SaveAs( outputFileName )
+	can.SaveAs( 'Plots/'+outputFileName )
 	del can
 
 def plot2D( inFile, trigger, name, outName, plotName, inPlotName, inPlotName2, xmax, xmax2 ):
@@ -171,14 +143,36 @@ if __name__ == '__main__':
 			[ 'AK8PFTrimHT', 'HTvsEventJetMass', 'HTvsEventJetMass', 'HT vs Event Jet Mass', 'HT [GeV]', 'Event Jet Mass [GeV]', '', '' ],
 			]
 
-	for i in range( len( Plots_2D ) ):
-		plot2D( inputFile, Plots_2D[i][0], Plots_2D[i][1], Plots_2D[i][2], Plots_2D[i][3], Plots_2D[i][4], Plots_2D[i][5], Plots_2D[i][6], Plots_2D[i][6] )
+	for i in Plots_2D: plot2D( inputFile, i[0], i[1], i[2], i[3], i[4], i[5], i[6], i[6] )
 
-#	HT = 'triggerPlotterHT'
+	Plots = [
+			[[ ['PFHT', 'hltHT', 'Trigger HT'], ['PFHT', 'ht', 'My HT']], 'offlineHT', 'HT [GeV]', 100, True ],
+			[[ ['HT', 'ht', 'HT'], ['PFHT', 'ht', 'PFHT'], ['PFNoPUHT', 'ht', 'PFNoPUHT'] ], 'oldTriggers_ht', 'HT [GeV]', 100, True ],
+			[[ ['HT', 'numJets', 'HT'], ['PFHT', 'numJets', 'PFHT'], ['PFNoPUHT', 'numJets', 'PFNoPUHT'] ], 'oldTriggers_numJets', 'Jet Multiplicity', 100, False ],
+			[[ ['HT', 'jet1pt', 'HT'], ['PFHT', 'jet1pt', 'PFHT'], ['PFNoPUHT', 'jet1pt', 'PFNoPUHT'] ], 'oldTriggers_jet1pt', 'Leading Jet Pt [GeV]', 100, True ],
+			[[ ['HT', 'jet1mass', 'HT'], ['PFHT', 'jet1mass', 'PFHT'], ['PFNoPUHT', 'jet1mass', 'PFNoPUHT'] ], 'oldTriggers_jet1mass', 'Leading Jet Mass [GeV]', 100, True ],
+			[[ ['HT', 'eventJetMass', 'HT'], ['PFHT', 'eventJetMass', 'PFHT'], ['PFNoPUHT', 'eventJetMass', 'PFNoPUHT'] ], 'oldTriggers_eventJetMass', 'Event Jet Mass [GeV]', 100, True ],
+			[[ ['PFHT', 'ht', 'PFHT'], ['PFAK8Trim', 'ht_NOJEC', 'AK4 to AK8 Trim'], ['AK8PFTrimHT', 'ht', 'AK8 with AK4 JEC - Trim'] ], 'newTriggers_ht', 'HT [GeV]', 100, True ],
+			[[ ['PFHT', 'numJets', 'PFHT'], ['PFAK8Trim', 'numJets_NOJEC', 'AK4 to AK8 Trim'], ['AK8PFTrimHT', 'numJets', 'AK8 with AK4 JEC - Trim'] ], 'newTriggers_numJets', 'Jet Multiplicity', 100, False ],
+			[[ ['PFHT', 'jet1pt', 'PFHT'], ['PFAK8Trim', 'jet1pt_NOJEC', 'AK4 to AK8 Trim'], ['AK8PFTrimHT', 'jet1pt', 'AK8 with AK4 JEC - Trim'] ], 'newTriggers_jet1pt', 'Leading Jet Pt [GeV]', 100, True ],
+			[[ ['PFHT', 'jet1mass', 'PFHT'], ['PFAK8Trim', 'jet1mass_NOJEC', 'AK4 to AK8 Trim'], ['AK8PFTrimHT', 'jet1mass', 'AK8 with AK4 JEC - Trim'] ], 'newTriggers_jet1mass', 'Leading Jet Mass [GeV]', 100, True ],
+			[[ ['PFHT', 'eventJetMass', 'PFHT'], ['PFAK8Trim', 'eventJetMass_NOJEC', 'AK4 to AK8 Trim'], ['AK8PFTrimHT', 'eventJetMass', 'AK8 with AK4 JEC - Trim'] ], 'newTriggers_eventJetMass', 'Event Jet Mass [GeV]', 100, True ],
+			[[ ['PFAK8Trim', 'ht_NOJEC', 'AK4 to AK8 Trim'], ['PFAK8HT', 'ht_NOJEC', 'AK4 to AK8'] ], 'DiffTrimPFAK8_ht', 'HT [GeV]', 100, True ],
+			[[ ['PFAK8Trim', 'numJets_NOJEC', 'AK4 to AK8 Trim'], ['PFAK8HT', 'numJets_NOJEC', 'AK4 to AK8'] ], 'DiffTrimPFAK8_numJets', 'Jet Multiplicity', 100, False ],
+			[[ ['PFAK8Trim', 'jet1pt_NOJEC', 'AK4 to AK8 Trim'], ['PFAK8HT', 'jet1pt_NOJEC', 'AK4 to AK8'] ], 'DiffTrimPFAK8_jet1pt', 'Leading Jet Pt [GeV]', 100, True ],
+			[[ ['PFAK8Trim', 'jet1mass_NOJEC', 'AK4 to AK8 Trim'], ['PFAK8HT', 'jet1mass_NOJEC', 'AK4 to AK8'] ], 'DiffTrimPFAK8_jet1mass', 'Leading Jet Mass [GeV]', 100, True ],
+			[[ ['PFAK8Trim', 'eventJetMass_NOJEC', 'AK4 to AK8 Trim'], ['PFAK8HT', 'eventJetMass_NOJEC', 'AK4 to AK8'] ], 'DiffTrimPFAK8_eventJetMass', 'Event Jet Mass [GeV]', 100, True ],
+			[[ ['AK8PFTrimHT', 'ht', 'AK8 with AK4 JEC Trim'], ['AK8PFHT', 'ht', 'AK8 with AK4 JEC'] ], 'DiffTrimAK8PF_ht', 'HT [GeV]', 100, True ],
+			[[ ['AK8PFTrimHT', 'numJets', 'AK8 with AK4 JEC Trim'], ['AK8PFHT', 'numJets', 'AK8 with AK4 JEC'] ], 'DiffTrimAK8PF_numJets', 'Jet Multiplicity', 100, False ],
+			[[ ['AK8PFTrimHT', 'jet1pt', 'AK8 with AK4 JEC Trim'], ['AK8PFHT', 'jet1pt', 'AK8 with AK4 JEC'] ], 'DiffTrimAK8PF_jet1pt', 'Leading Jet Pt [GeV]', 100, True ],
+			[[ ['AK8PFTrimHT', 'jet1mass', 'AK8 with AK4 JEC Trim'], ['AK8PFHT', 'jet1mass', 'AK8 with AK4 JEC'] ], 'DiffTrimAK8PF_jet1mass', 'Leading Jet Mass [GeV]', 100, True ],
+			[[ ['AK8PFTrimHT', 'eventJetMass', 'AK8 with AK4 JEC Trim'], ['AK8PFHT', 'eventJetMass', 'AK8 with AK4 JEC'] ], 'DiffTrimAK8PF_eventJetMass', 'Event Jet Mass [GeV]', 100, True ],
+			[[ ['PFHT', 'ht', 'AK4 with AK4 JEC'], ['AK8PFHT', 'ht', 'AK8 with AK4 JEC'] ], 'DiffAKRadius_ht', 'HT [GeV]', 100, True ],
+			[[ ['PFHT', 'numJets', 'AK4 with AK4 JEC'], ['AK8PFHT', 'numJets', 'AK8 with AK4 JEC'] ], 'DiffAKRadius_numJets', 'Jet Multiplicity', 100, False ],
+			[[ ['PFHT', 'jet1pt', 'AK4 with AK4 JEC'], ['AK8PFHT', 'jet1pt', 'AK8 with AK4 JEC'] ], 'DiffAKRadius_jet1pt', 'Leading Jet Pt [GeV]', 100, True ],
+			[[ ['PFHT', 'jet1mass', 'AK4 with AK4 JEC'], ['AK8PFHT', 'jet1mass', 'AK8 with AK4 JEC'] ], 'DiffAKRadius_jet1mass', 'Leading Jet Mass [GeV]', 100, True ],
+			[[ ['PFHT', 'eventJetMass', 'AK4 with AK4 JEC'], ['AK8PFHT', 'eventJetMass', 'AK8 with AK4 JEC'] ], 'DiffAKRadius_eventJetMass', 'Event Jet Mass [GeV]', 100, True ],
+			]
+
+	#for i in Plots: plot( inputFile, i[0], i[1], i[2], i[3], i[4]  )
 #
-#	plot( 'HT', 'ht', 'HT [GeV]', 300, True )
-#	plot( 'jet1pt', 'jet1pt', 'Leading Jet Pt [GeV]', 100, True )
-#	plot( 'jet1mass', 'jet1mass', 'Leading Jet Mass [GeV]', 20, True )
-#	plot( 'eventJetMass', 'eventJetMass', 'Event Jet Mass [GeV]', 100, True )
-
-	#treeplot(  )

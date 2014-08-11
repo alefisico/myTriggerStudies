@@ -1,12 +1,19 @@
 #!/usr/bin/env python
 
-import math,ROOT
+import math,ROOT, sys
 from array import array
 import numpy as np
-from ROOT import gROOT, TFile, TChain, TTree, TH1F, TF1, TLegend, TCanvas
+from setTDRStyle import *
+from ROOT import gROOT, TFile, TChain, TTree, TH1F, TF1, TLegend, TCanvas, gStyle
 
 gROOT.Reset()
 gROOT.SetBatch()
+setTDRStyle()
+gROOT.ForceStyle()
+gROOT.SetStyle('tdrStyle')
+
+
+gStyle.SetOptStat(0)
 
 def grabTriggerNumbers( file, numTriggers, xs, PU ):
 
@@ -75,7 +82,7 @@ def GetRates( run, passed, xs, PU ):
 
 	return rateList, rateErrList
 
-def plotRates( listRates, listRatesErr, PU ):
+def plotRates( listRates, outName, PU ):
 	"""docstring for plotRates"""
 
 	#HT = [ 350., 650., 700., 750., 800., 850. ]
@@ -83,18 +90,11 @@ def plotRates( listRates, listRatesErr, PU ):
 	HT = [ 450., 550., 650., 750., 850. ]
 	HTErr = [ 0., 0., 0., 0., 0. ]
 	t = array( 'd', HT)
-	x = array( 'd', listRates[0:4])
-	y = array( 'd', listRates[5:9])
-	z = array( 'd', listRates[10:14])
 	tErr = array( 'd', HTErr)
-	xErr = array( 'd', listRatesErr[1:6])
-	yErr = array( 'd', listRatesErr[7:12])
-	zErr = array( 'd', listRatesErr[13:18])
-	print x, y, z
-	g1 = ROOT.TGraphErrors(len(t), t, x, tErr, xErr)
-	g2 = ROOT.TGraphErrors(len(t), t, y, tErr, yErr)
-	g3 = ROOT.TGraphErrors(len(t), t, z, tErr, zErr)
 
+	legend=TLegend(0.55,0.70,0.85,0.90)
+	legend.SetFillColor(0)
+	legend.SetTextSize(0.03)
 
 	officialHT = [ 650., 700., 750. ]
 	officialHTErr = [ 0., 0., 0. ]
@@ -109,44 +109,42 @@ def plotRates( listRates, listRatesErr, PU ):
 	b = array( 'd', officialRate ) 
 	c = array( 'd', officialRateErr ) 
 	g4 = ROOT.TGraphErrors(len(a), a, b, d, c)
-
-	legend=TLegend(0.60,0.70,0.90,0.90)
-	legend.SetFillColor(0)
-	legend.AddEntry(g1, 'HLT_HT', "l")
-	legend.AddEntry(g3, 'HLT_PFHT', "l")
-	legend.AddEntry(g2, 'HLT_PFNoPUHT', "l")
-	#legend.AddEntry(g2, 'HLT_PFNoPUAK8HT', "l")
-	#legend.AddEntry(g3, 'HLT_PFNoPUAK8HTTrim', "l")
+	g4.SetLineColor(1)
+	g4.SetLineWidth(2)
 	legend.AddEntry(g4, 'Official HLT_PFNoPUHT', "l")
-	legend.SetTextSize(0.03)
+
+	dictGraphs = {}
+	listMax = []
+	for i in listRates: 
+		dictGraphs[ i[0] ] = ROOT.TGraphErrors( len(t), t, i[1], tErr, i[2] )
+		legend.AddEntry( dictGraphs[ i[0] ], i[0], 'l' )
+		print i[0], np.around( i[1], 3)
+		for j in i[1]: listMax.append( j )
+
+	dictGraphs.values()[0].SetTitle("Trigger Rates for "+PU)
+	dictGraphs.values()[0].GetXaxis().SetTitle("HT [GeV]")
+	dictGraphs.values()[0].GetYaxis().SetTitle("Rate [Hz]")
+	dictGraphs.values()[0].SetMaximum( max( listMax )+50 )
+
+	k = 1
+	for t, histo in dictGraphs.items():
+		k += 1
+		histo.SetLineColor(k)
+		histo.SetLineWidth(2)
 
 	c = TCanvas( "c1", "c1", 800, 600 )
-	g1.SetTitle("Trigger Rates for "+PU)
-	g1.GetXaxis().SetTitle("HT [GeV]")
-	g1.GetYaxis().SetTitle("Rate [Hz]")
-	maxRate = max( listRates[0:4], listRates[5:9], listRates[10:14] )
-	g1.SetMaximum( maxRate[0]+50 )
-	g1.SetLineColor( ROOT.kBlue )
-	g1.SetLineWidth( 2 )
-	g2.SetLineColor( ROOT.kRed )
-	g2.SetLineWidth( 2 )
-	g3.SetLineColor( ROOT.kGreen )
-	g3.SetLineWidth( 2 )
-	g4.SetLineColor( ROOT.kBlack )
-	g4.SetLineWidth( 2 )
-	g1.Draw("lpa")
-	g2.Draw("lp")
-	g3.Draw("lp")
+	dictGraphs.values()[0].Draw('lpa')
+	for q in range( 1, len( dictGraphs.keys() ) ): dictGraphs.values()[q].Draw('lp')
 	g4.Draw("lp")
 	legend.Draw()
-	c.SaveAs("TriggerRate"+PU+".pdf")
-	#c.SaveAs("TriggerRate"+PU+"_tmp.pdf")
+	setTriggerRates( 'QCD 13TeV PU20bx25' )
+	c.SaveAs("TriggerRate_"+outName+'_'+PU+".pdf")
 
 
 
 if __name__ == '__main__':
 	
-	numTriggers = 34
+	numTriggers = 35
 	#PU = 'PU40bx50'
 	PU = 'PU20bx25'
 	#PU = 'PU40bx25'
@@ -167,6 +165,17 @@ if __name__ == '__main__':
 	listRates = [ rates0[i] + rates1[i] + rates2[i] + rates3[i] + rates4[i] + rates5[i] + rates6[i] + rates7[i] + rates8[i] + rates9[i] + rates10[i] + rates11[i] for i in xrange( len( rates1 ) )]
 	listRatesErr = [ ratesErr0[i] +ratesErr1[i] + ratesErr2[i] + ratesErr3[i] + ratesErr4[i] + ratesErr5[i] + ratesErr6[i] + ratesErr7[i] + ratesErr8[i] + ratesErr9[i] + ratesErr10[i] + ratesErr11[i] for i in xrange( len( ratesErr1 ) )]
 	print listRates
-	print listRatesErr
-	plotRates( listRates, listRatesErr, PU )
+	#print listRatesErr
+	triggerList = [
+			['HT', array( 'd', listRates[0:5] ), array('d', listRatesErr[0:5] )],
+			['PFNoPUHT', array( 'd', listRates[5:10] ), array('d', listRatesErr[5:10] )],
+			['PFHT', array( 'd', listRates[10:15] ), array('d', listRatesErr[10:15] )],
+			['PFAK8HT', array( 'd', listRates[15:20] ), array('d', listRatesErr[15:20] )],
+			['PFAK8TrimHT', array( 'd', listRates[20:25] ), array('d', listRatesErr[20:25] )],
+			['AK8PFHT', array( 'd', listRates[25:30] ), array('d', listRatesErr[25:30] )],
+			['AK8PFTrimHT', array( 'd', listRates[30:] ), array('d', listRatesErr[30:] )],
+			]
+
+	plotRates( [ triggerList[0], triggerList[1], triggerList[2] ], 'oldTriggers', PU )
+	plotRates( [ triggerList[2], triggerList[4], triggerList[6] ], 'newTriggers', PU )
 

@@ -22,16 +22,11 @@ process.hltAK4PFJetL1FastL2L3CorrectedNoPU = cms.EDProducer("PFJetCorrectionProd
 )
 
 
-process.hltAK8PFHT = cms.EDProducer("HLTHtMhtProducer",
+process.hltAK8PFHT = cms.EDProducer("HLTHtJetMassProducer",
     usePt = cms.bool(True),
     minPtJetHt = cms.double(40.0),
-    maxEtaJetMht = cms.double(999.0),
-    minNJetMht = cms.int32(0),
     jetsLabel = cms.InputTag("hltAK8PFJetL1FastL2L3Corrected"),
     maxEtaJetHt = cms.double(3.0),
-    minPtJetMht = cms.double(0.0),
-    excludePFMuons = cms.bool(False),
-    pfCandidatesLabel = cms.InputTag("hltParticleFlow"),
     minNJetHt = cms.int32(0)
 )
 
@@ -42,16 +37,11 @@ process.hltAK8PFJetL1FastL2L3Corrected = cms.EDProducer("PFJetCorrectionProducer
 )
 
 
-process.hltAK8PFTrimHT = cms.EDProducer("HLTHtMhtProducer",
+process.hltAK8PFTrimHT = cms.EDProducer("HLTHtJetMassProducer",
     usePt = cms.bool(True),
     minPtJetHt = cms.double(40.0),
-    maxEtaJetMht = cms.double(999.0),
-    minNJetMht = cms.int32(0),
     jetsLabel = cms.InputTag("hltAntiKT8PFJetsTrimJEC"),
     maxEtaJetHt = cms.double(3.0),
-    minPtJetMht = cms.double(0.0),
-    excludePFMuons = cms.bool(False),
-    pfCandidatesLabel = cms.InputTag("hltParticleFlow"),
     minNJetHt = cms.int32(0)
 )
 
@@ -4488,30 +4478,20 @@ process.hltOnlinePrimaryVertices = cms.EDProducer("PrimaryVertexProducer",
 )
 
 
-process.hltPFAK8HT = cms.EDProducer("HLTHtMhtProducer",
+process.hltPFAK8HT = cms.EDProducer("HLTHtJetMassProducer",
     usePt = cms.bool(True),
     minPtJetHt = cms.double(40.0),
-    maxEtaJetMht = cms.double(999.0),
-    minNJetMht = cms.int32(0),
     jetsLabel = cms.InputTag("hltAntiKT8PFJetsJEC"),
     maxEtaJetHt = cms.double(3.0),
-    minPtJetMht = cms.double(0.0),
-    excludePFMuons = cms.bool(False),
-    pfCandidatesLabel = cms.InputTag("hltParticleFlow"),
     minNJetHt = cms.int32(0)
 )
 
 
-process.hltPFAK8TrimHT = cms.EDProducer("HLTHtMhtProducer",
+process.hltPFAK8TrimHT = cms.EDProducer("HLTHtJetMassProducer",
     usePt = cms.bool(True),
     minPtJetHt = cms.double(40.0),
-    maxEtaJetMht = cms.double(999.0),
-    minNJetMht = cms.int32(0),
     jetsLabel = cms.InputTag("hltAntiKT8PFJetsJECTrim"),
     maxEtaJetHt = cms.double(3.0),
-    minPtJetMht = cms.double(0.0),
-    excludePFMuons = cms.bool(False),
-    pfCandidatesLabel = cms.InputTag("hltParticleFlow"),
     minNJetHt = cms.int32(0)
 )
 
@@ -8637,7 +8617,7 @@ process.CSCINdexerESSource = cms.ESSource("EmptyESSource",
 
 process.GlobalTag = cms.ESSource("PoolDBESSource",
     #globaltag = cms.string('START71_V8::All'),
-    globaltag = cms.string('PRE_LS171V9A::All'),
+    globaltag = cms.string('PRE_LS171_V5A::All'),
     RefreshEachRun = cms.untracked.bool(False),
     ReconnectEachRun = cms.untracked.bool(False),
     toGet = cms.VPSet(cms.PSet(
@@ -19632,3 +19612,5 @@ process.streams = cms.PSet(
     ALCAPHISYM = cms.vstring('AlCaPhiSym')
 )
 
+from SLHCUpgradeSimulations.Configuration.postLS1Customs import *
+process = customise_HLT( process )

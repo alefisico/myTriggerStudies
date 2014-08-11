@@ -7842,6 +7842,8 @@ import os
 cmsswVersion = os.environ['CMSSW_VERSION']
 
 # customization for 6_2_X
+from SLHCUpgradeSimulations.Configuration.postLS1Customs import *
+process = customise_HLT( process )
 
 # none for now
 
@@ -7891,7 +7893,8 @@ process.options = cms.untracked.PSet(
 # override the GlobalTag, connection string and pfnPrefix
 if 'GlobalTag' in process.__dict__:
     from Configuration.AlCa.GlobalTag import GlobalTag as customiseGlobalTag
-    process.GlobalTag = customiseGlobalTag(process.GlobalTag, globaltag = 'auto:startup_GRun')
+    #process.GlobalTag = customiseGlobalTag(process.GlobalTag, globaltag = 'auto:startup_GRun')
+    process.GlobalTag = customiseGlobalTag(process.GlobalTag, globaltag = 'PRE_LS171_V5A::All')
     process.GlobalTag.connect   = 'frontier://FrontierProd/CMS_COND_31X_GLOBALTAG'
     process.GlobalTag.pfnPrefix = cms.untracked.string('frontier://FrontierProd/')
     for pset in process.GlobalTag.toGet.value():
