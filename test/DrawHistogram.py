@@ -70,10 +70,10 @@ def plot( inFile, trigger, name, inPlotName, xmax, log ):
 	can.SaveAs( 'Plots/'+outputFileName )
 	del can
 
-def plot2D( inFile, trigger, name, outName, plotName, inPlotName, inPlotName2, xmax, xmax2 ):
+def plot2D( inFile, trigger, name, outName, plotName, inPlotName, inPlotName2, xmax, xmax2, PU ):
 	"""docstring for plot"""
 
-	outputFileName = trigger+'_'+outName+'_QCD_TriggerStudies.pdf' 
+	outputFileName = trigger+'_'+outName+'_'+PU+'_QCD_TriggerStudies.pdf' 
 	print 'Processing.......', outputFileName
 	h1 = inFile.Get( 'triggerPlotter'+trigger+'/'+name )
 
@@ -88,7 +88,7 @@ def plot2D( inFile, trigger, name, outName, plotName, inPlotName, inPlotName2, x
 	can = TCanvas('c1', 'c1',  10, 10, 800, 500 )
 	can.SetLogz()
 	h1.Draw('colz')
-	setSelectionTrigger2D( 'QCD 13 TeV PU20bx25', trigger )
+	setSelectionTrigger2D( 'QCD 13 TeV '+PU, trigger )
 	can.SaveAs( 'Plots/'+outputFileName )
 	del can
 
@@ -96,6 +96,8 @@ def plot2D( inFile, trigger, name, outName, plotName, inPlotName, inPlotName2, x
 
 if __name__ == '__main__':
 
+	PU = sys.argv[0]
+	process = sys.argv[1]
 	####### Labels:
 	# HT
 	# - regular: AK4 calojets with AK4 corr
@@ -117,9 +119,10 @@ if __name__ == '__main__':
 	# - NOJEC: with AK4 corr jets, recluster using AK8 and trimming
 
 	
-	inputFile = TFile.Open('HistoFiles/hlt_jetmass_QCD_Pt-ALL_TuneZ2star_13TeV_pythia8_PU20bx25.root')
+	inputFile = TFile.Open('HistoFiles/hlt_jetmass_QCD_Pt-ALL_TuneZ2star_13TeV_pythia8_'+PU+'.root')
 
-	Plots_2D = [ 
+	if process is '2D':
+		Plots_2D = [ 
 			[ 'HT', 'HTvsJet1mass', 'HTvsJet1mass','HT vs Leading Jet Mass', 'HT [GeV]', 'Leading Jet Mass [GeV]', '', '' ],
 			[ 'PFNoPUHT', 'HTvsJet1mass', 'HTvsJet1mass', 'HT vs Leading Jet Mass', 'HT [GeV]', 'Leading Jet Mass [GeV]', '', '' ],
 			[ 'PFHT', 'HTvsJet1mass', 'HTvsJet1mass', 'HT vs Leading Jet Mass', 'HT [GeV]', 'Leading Jet Mass [GeV]', '', '' ],
@@ -143,10 +146,14 @@ if __name__ == '__main__':
 			[ 'AK8PFTrimHT', 'HTvsEventJetMass', 'HTvsEventJetMass', 'HT vs Event Jet Mass', 'HT [GeV]', 'Event Jet Mass [GeV]', '', '' ],
 			]
 
-	for i in Plots_2D: plot2D( inputFile, i[0], i[1], i[2], i[3], i[4], i[5], i[6], i[6] )
+		for i in Plots_2D: plot2D( inputFile, i[0], i[1], i[2], i[3], i[4], i[5], i[6], i[6], PU )
 
-	Plots = [
-			[[ ['PFHT', 'hltHT', 'Trigger HT'], ['PFHT', 'ht', 'My HT']], 'offlineHT', 'HT [GeV]', 100, True ],
+	elif process is '1D'
+		Plots = [
+			[[ ['HT', 'hltHT', 'Trigger HT'], ['HT', 'ht', 'My HT']], 'offlineHT_HT', 'HT [GeV]', 100, True ],
+			[[ ['PFHT', 'hltHT', 'Trigger HT'], ['PFHT', 'ht', 'My HT']], 'offlineHT_PFHT', 'HT [GeV]', 100, True ],
+			[[ ['PFAK8TrimHT', 'hltHT', 'Trigger HT'], ['PFAK8TrimHT', 'ht', 'My HT']], 'offlineHT_PFAK8TrimHT', 'HT [GeV]', 100, True ],
+			[[ ['AK8PFTrimHT', 'hltHT', 'Trigger HT'], ['AK8PFTrimHT', 'ht', 'My HT']], 'offlineHT_AK8PFTrimHT', 'HT [GeV]', 100, True ],
 			[[ ['HT', 'ht', 'HT'], ['PFHT', 'ht', 'PFHT'], ['PFNoPUHT', 'ht', 'PFNoPUHT'] ], 'oldTriggers_ht', 'HT [GeV]', 100, True ],
 			[[ ['HT', 'numJets', 'HT'], ['PFHT', 'numJets', 'PFHT'], ['PFNoPUHT', 'numJets', 'PFNoPUHT'] ], 'oldTriggers_numJets', 'Jet Multiplicity', 100, False ],
 			[[ ['HT', 'jet1pt', 'HT'], ['PFHT', 'jet1pt', 'PFHT'], ['PFNoPUHT', 'jet1pt', 'PFNoPUHT'] ], 'oldTriggers_jet1pt', 'Leading Jet Pt [GeV]', 100, True ],
@@ -174,5 +181,4 @@ if __name__ == '__main__':
 			[[ ['PFHT', 'eventJetMass', 'AK4 with AK4 JEC'], ['AK8PFHT', 'eventJetMass', 'AK8 with AK4 JEC'] ], 'DiffAKRadius_eventJetMass', 'Event Jet Mass [GeV]', 100, True ],
 			]
 
-	#for i in Plots: plot( inputFile, i[0], i[1], i[2], i[3], i[4]  )
-#
+		for i in Plots: plot( inputFile, i[0], i[1], i[2], i[3], i[4], PU )

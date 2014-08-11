@@ -132,7 +132,7 @@ def plotRates( listRates, outName, PU ):
 		histo.SetLineColor(k)
 		histo.SetLineWidth(2)
 
-	c = TCanvas( "c1", "c1", 800, 600 )
+	c = TCanvas( "c1", "c1", 800, 500 )
 	dictGraphs.values()[0].Draw('lpa')
 	for q in range( 1, len( dictGraphs.keys() ) ): dictGraphs.values()[q].Draw('lp')
 	g4.Draw("lp")
@@ -164,7 +164,7 @@ if __name__ == '__main__':
 
 	listRates = [ rates0[i] + rates1[i] + rates2[i] + rates3[i] + rates4[i] + rates5[i] + rates6[i] + rates7[i] + rates8[i] + rates9[i] + rates10[i] + rates11[i] for i in xrange( len( rates1 ) )]
 	listRatesErr = [ ratesErr0[i] +ratesErr1[i] + ratesErr2[i] + ratesErr3[i] + ratesErr4[i] + ratesErr5[i] + ratesErr6[i] + ratesErr7[i] + ratesErr8[i] + ratesErr9[i] + ratesErr10[i] + ratesErr11[i] for i in xrange( len( ratesErr1 ) )]
-	print listRates
+	#print listRates
 	#print listRatesErr
 	triggerList = [
 			['HT', array( 'd', listRates[0:5] ), array('d', listRatesErr[0:5] )],
