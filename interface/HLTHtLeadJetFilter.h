@@ -20,17 +20,17 @@
 #include "DataFormats/METReco/interface/METFwd.h"
 
 
-namespace edm {
+/*namespace edm {
     class ConfigurationDescriptions;
-}
+}*/
 
 // Class declaration
 class HLTHtLeadJetFilter : public HLTFilter {
   public:
-    explicit HLTHtLeadJetFilter(const edm::ParameterSet & iConfig);
+    explicit HLTHtLeadJetFilter(const edm::ParameterSet& );
     ~HLTHtLeadJetFilter();
     static void fillDescriptions(edm::ConfigurationDescriptions & descriptions);
-    virtual bool hltFilter(edm::Event & iEvent, const edm::EventSetup & iSetup, trigger::TriggerFilterObjectWithRefs & filterproduct) const override;
+    virtual bool hltFilter(edm::Event & , const edm::EventSetup & , trigger::TriggerFilterObjectWithRefs & filterproduct) const override;
 
   private:
     /// Minimum HT requirements

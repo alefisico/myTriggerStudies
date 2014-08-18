@@ -1,7 +1,8 @@
 
 input_Dir=/eos/uscms/store/user/algomez/
 PU=$1
-version=6ba8c87d406954f9beb960381b3badb8
+#version=6ba8c87d406954f9beb960381b3badb8 ### v714
+version=441ecbd981019bde2a486ce4b85e8ab3
 ptBins=( '30to50' '50to80' '80to120' '120to170' '170to300' '300to470' '470to600' '600to800' '800to1000' '1000to1400' '1400to1800' '1800' )
 
 

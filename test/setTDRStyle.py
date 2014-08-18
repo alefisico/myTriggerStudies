@@ -8,13 +8,13 @@ def setSelectionTrigger( signal ):
 	textBox.SetNDC()
 	textBox.SetTextSize(0.05) 
 	textBox.SetTextColor(kBlue)
-	textBox.DrawText(0.30,0.95,"CMS Preliminary Simulation")
+	textBox.DrawText(0.13,0.95,"CMS Preliminary Simulation")
 	#textBox.DrawText(0.16,0.95,"CMS Preliminary")
 
 	textBox1=TLatex()
 	textBox1.SetNDC()
 	textBox1.SetTextSize(0.04) 
-	textBox1.DrawText(0.30,0.85, signal)
+	textBox1.DrawText(0.38,0.85, signal)
 	
 	textBox3=TLatex()
 	textBox3.SetNDC()
@@ -59,6 +59,29 @@ def setTriggerRates( signal ):
 	#textBox5.SetNDC()
 	#textBox5.SetTextSize(0.04) 
 	#textBox5.DrawLatex(0.70,0.35,"Number of Jets #geq 0 ")
+
+def setTriggerRatesComp( signal, sample ):
+
+	textBox=TLatex()
+	textBox.SetNDC()
+	textBox.SetTextSize(0.05) 
+	textBox.SetTextColor(kBlue)
+	textBox.DrawText(0.13,0.95,"CMS Preliminary Simulation")
+	#textBox.DrawText(0.16,0.95,"CMS Preliminary")
+
+	textBox1=TLatex()
+	textBox1.SetNDC()
+	textBox1.SetTextSize(0.04) 
+	textBox1.DrawText(0.65,0.95, signal)
+	
+	textBox3=TLatex()
+	textBox3.SetNDC()
+	textBox3.SetTextSize(0.04) 
+	if 'TrimMass' in sample: 
+		textBox3.DrawLatex(0.55,0.90, sample)
+	else:
+		textBox3.DrawLatex(0.65,0.90, sample)
+		
 def setSelectionTitleCuts( signal ):
 
 	textBox=TLatex()

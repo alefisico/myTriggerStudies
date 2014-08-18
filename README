@@ -16,13 +16,16 @@ To reproduce these results:
  cd CMSSW_7_1_4/src
  cmsenv
  git cms-addpkg HLTrigger/Configuration
- git cms-merge-topic perrotta:hltTemplatesForRun2In714
+ git cms-merge-topic perrotta:hltTemplatesForRun2In716
  scramv1 b -j 18
  cd HLTrigger/Configuration/test/
  ./cmsDriver.csh 
  cd ../../../
  mkdir MyTrigger
  git clone https://github.com/alefisico/myTriggerStudies.git MyTrigger/myTriggerStudies
+ cd MyTrigger/myTriggerStudies/
+ git checkout v716
+ cd -
  git clone git@github.com:jiafulow/HLTrigger-HLTanalyzers-test-openHLT.git MyTrigger/myTriggerStudies/test/openHLT
  scramv1 b -j 18
  cmsenv 
