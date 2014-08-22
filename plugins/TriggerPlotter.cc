@@ -94,6 +94,7 @@ class TriggerPlotter : public edm::EDProducer {
       TH1D * eventJetMass;
       TH2D * HTvsJet1pt;
       TH2D * HTvsJet1mass;
+      TH2D * Jet1ptvsmass;
       TH2D * HTvsEventJetMass;
       TH1D * numJets_NOJEC;
       TH1D * jet1pt_NOJEC;
@@ -103,6 +104,9 @@ class TriggerPlotter : public edm::EDProducer {
       TH2D * HTvsJet1pt_NOJEC;
       TH2D * HTvsJet1mass_NOJEC;
       TH2D * HTvsEventJetMass_NOJEC;
+      TH2D * Jet1ptvsmass_NOJEC;
+      TH2D * SelectHTvsJet1mass;
+      TH2D * SelectHTvsEventJetMass;
       
       TTree* tree;
       TTree* tree_NOJEC;
@@ -196,9 +200,9 @@ TriggerPlotter::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		EventJetMass += ijet->mass();
 
 		jetPtVec->push_back( ijet->pt() ); 
-		jetEtaVec->push_back( ijet->eta() ); 
+		/*jetEtaVec->push_back( ijet->eta() ); 
 		jetPhiVec->push_back( ijet->phi() ); 
-		jetEnergyVec->push_back( ijet->energy() ); 
+		jetEnergyVec->push_back( ijet->energy() ); */
 	} 
 
 	if( p4jet.size() > 0 ){
@@ -209,6 +213,7 @@ TriggerPlotter::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		eventJetMass->Fill( EventJetMass );
 		HTvsJet1pt->Fill( HT, p4jet[0].Pt() );
 		HTvsJet1mass->Fill( HT, p4jet[0].M() );
+		Jet1ptvsmass->Fill( p4jet[0].Pt(), p4jet[0].M() );
 		HTvsEventJetMass->Fill( HT, EventJetMass );
 	}
 
@@ -227,10 +232,10 @@ TriggerPlotter::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		HT_NOJEC += ijet_NOJEC->pt();
 		EventJetMass_NOJEC += ijet_NOJEC->mass();
 
-		jetPtVec_NOJEC->push_back( ijet_NOJEC->pt() ); 
+		/*jetPtVec_NOJEC->push_back( ijet_NOJEC->pt() ); 
 		jetEtaVec_NOJEC->push_back( ijet_NOJEC->eta() ); 
 		jetPhiVec_NOJEC->push_back( ijet_NOJEC->phi() ); 
-		jetEnergyVec_NOJEC->push_back( ijet_NOJEC->energy() ); 
+		jetEnergyVec_NOJEC->push_back( ijet_NOJEC->energy() ); */
 	} 
 
 	if( p4jet_NOJEC.size() > 0 ){
@@ -241,7 +246,10 @@ TriggerPlotter::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		eventJetMass_NOJEC->Fill( EventJetMass_NOJEC );
 		HTvsJet1pt_NOJEC->Fill( HT_NOJEC, p4jet_NOJEC[0].Pt() );
 		HTvsJet1mass_NOJEC->Fill( HT_NOJEC, p4jet_NOJEC[0].M() );
+		Jet1ptvsmass_NOJEC->Fill( p4jet_NOJEC[0].Pt(), p4jet_NOJEC[0].M() );
 		HTvsEventJetMass_NOJEC->Fill( HT_NOJEC, EventJetMass_NOJEC );
+		SelectHTvsJet1mass->Fill( HT, p4jet_NOJEC[0].M() );
+		SelectHTvsEventJetMass->Fill( HT, EventJetMass_NOJEC );
 	}
 
 	tree->Fill();
@@ -261,7 +269,8 @@ TriggerPlotter::beginJob()
 	ht = fs->make<TH1D>("ht" , "HT", 200 ,0., 2000. );	
 	eventJetMass = fs->make<TH1D>("eventJetMass" , "Event Jet Mass", 50 ,0., 500. );	
 	HTvsJet1pt = fs->make<TH2D>("HTvsJet1pt", "HT vs Leading Jet Pt", 200 ,0., 2000., 200 ,0., 2000. );	
-	HTvsJet1mass = fs->make<TH2D>("HTvsJet1mass", "HT vs Leading Mass p_{T}", 200 ,0., 2000., 40 ,0., 200. );	
+	HTvsJet1mass = fs->make<TH2D>("HTvsJet1mass", "HT vs Leading Mass", 200 ,0., 2000., 40 ,0., 200. );	
+	Jet1ptvsmass = fs->make<TH2D>("Jet1ptvsmass", "Leading Mass vs p_{T}", 200 ,0., 2000., 40 ,0., 200. );	
 	HTvsEventJetMass = fs->make<TH2D>("HTvsEventJetMass", "HT vs Event Jet Mass", 200 ,0., 2000., 50 ,0., 500.);	
 
 	tree = fs->make<TTree>("JetVariables", "JetVariables");
@@ -282,6 +291,9 @@ TriggerPlotter::beginJob()
 	HTvsJet1pt_NOJEC = fs->make<TH2D>("HTvsJet1pt_NOJEC", "HT vs Leading Jet Pt", 200 ,0., 2000., 200 ,0., 2000. );	
 	HTvsJet1mass_NOJEC = fs->make<TH2D>("HTvsJet1mass_NOJEC", "HT vs Leading Mass p_{T}", 200 ,0., 2000., 40 ,0., 200. );	
 	HTvsEventJetMass_NOJEC = fs->make<TH2D>("HTvsEventJetMass_NOJEC", "HT vs Event Jet Mass", 200 ,0., 2000., 50 ,0.,500.);	
+	Jet1ptvsmass_NOJEC = fs->make<TH2D>("Jet1ptvsmass_NOJEC", "Leading Mass vs p_{T}", 200 ,0., 2000., 40 ,0., 200. );	
+	SelectHTvsJet1mass = fs->make<TH2D>("SelectHTvsJet1mass", "HT vs Leading Mass p_{T}", 200 ,0., 2000., 40 ,0., 200. );	
+	SelectHTvsEventJetMass = fs->make<TH2D>("SelectHTvsEventJetMass", "HT vs Event Jet Mass", 200 ,0., 2000., 50 ,0.,500.);	
 
 	tree_NOJEC = fs->make<TTree>("JetVariables_NOJEC", "JetVariables_NOJEC");
 	jetPtVec_NOJEC = new std::vector<float>;
