@@ -1,0 +1,357 @@
+#import FWCore.ParameterSet.Config as cms
+
+################################################################################
+# Original from PhysicsTools/PatAlgos/python/patTemplate_cfg.py
+# modified for use with OpenHLT
+################################################################################
+
+#process = cms.Process("PAT")
+#isData=True
+
+## MessageLogger
+#process.load("FWCore.MessageLogger.MessageLogger_cfi")
+
+## Options and Output Report
+process.options = cms.untracked.PSet(
+    wantSummary = cms.untracked.bool(True),
+    #SkipEvent = cms.untracked.vstring('ProductNotFound')
+    ## switch to uncheduled mode
+    allowUnscheduled = cms.untracked.bool(True)
+)
+#process.Tracer = cms.Service("Tracer")
+
+## Source
+#process.source = cms.Source("PoolSource",
+#    fileNames = cms.untracked.vstring()
+#)
+## Maximal Number of Events
+#process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
+
+## Geometry and Detector Conditions (needed for a few patTuple production steps)
+process.load("Configuration.Geometry.GeometryIdeal_cff")
+process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
+from Configuration.AlCa.GlobalTag import GlobalTag
+if not isData:
+    #process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:startup_8E33v2')
+    process.GlobalTag = GlobalTag(process.GlobalTag, 'PRE_LS171_V5A::All')
+else:
+    process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:com10_8E33v2')
+process.load("Configuration.StandardSequences.MagneticField_cff")
+
+## Standard PAT Configuration File
+process.load("PhysicsTools.PatAlgos.patSequences_cff")
+
+## Output Module Configuration (expects a path 'p')
+from PhysicsTools.PatAlgos.patEventContent_cff import patEventContentNoCleaning
+process.out = cms.OutputModule("PoolOutputModule",
+                               fileName = cms.untracked.string('patTuple.root'),
+                               # save PAT Layer 1 output; you need a '*' to
+                               # unpack the list of commands 'patEventContent'
+                               outputCommands = cms.untracked.vstring('drop *', 'keep recoPFCandidates_particleFlow_*_*', *patEventContentNoCleaning )
+                               )
+process.outpath = cms.EndPath(process.out)
+
+
+################################################################################
+# User configurations
+################################################################################
+# ------------------------------------------------------------------------------
+# Primary Vertex
+# ------------------------------------------------------------------------------
+# Create good primary vertices to be used for PF association
+#from PhysicsTools.SelectorUtils.pvSelector_cfi import pvSelector
+#
+#process.goodOfflinePrimaryVertices = cms.EDFilter(
+#    "PrimaryVertexObjectFilter",
+#    filterParams = pvSelector.clone( minNdof = cms.double(4.0), maxZ = cms.double(24.0) ),
+#    src = cms.InputTag('offlinePrimaryVertices')
+#    )
+
+
+################################################################################
+# Original from PhysicsTools/PatAlgos/test/patTuple_standard_cfg.py
+# modified for use with OpenHLT
+################################################################################
+
+postfix = ""
+jetAlgo = "AK5"
+inputJetCorrPayload = "AK5PFchs"  # Temporary fix to have AK5 payloads until the AK4 payloads are ready
+if not isData:
+    inputJetCorrLabel = ['L1FastJet', 'L2Relative', 'L3Absolute']
+    residual = ""
+else:
+    inputJetCorrLabel = ['L1FastJet', 'L2Relative', 'L3Absolute', 'L2L3Residual']
+    residual = "Residual"
+
+# bypass PhysicsTools/PatAlgos/python/patSequences_cff.py
+process.load("PhysicsTools.PatAlgos.producersLayer1.patCandidates_cff")
+process.load("PhysicsTools.PatAlgos.selectionLayer1.selectedPatCandidates_cff")
+if isData:
+    from PhysicsTools.PatAlgos.tools.coreTools import runOnData
+    runOnData(process)
+
+makeAK8 = True
+if makeAK8:
+    # addJetCollection(...) has to happen before switchJetCollection(...),
+    # otherwise it gives errors when trying to add btag discriminators
+    from PhysicsTools.PatAlgos.tools.jetTools import addJetCollection, switchJetCollection
+    outputModules = ['out']
+    btagInfos = [
+        'impactParameterTagInfos', 'secondaryVertexTagInfos',
+        'inclusiveSecondaryVertexFinderTagInfos', 'inclusiveSecondaryVertexFinderFilteredTagInfos',
+        ]
+    btagDiscriminators = [
+        'jetBProbabilityBJetTags', 'jetProbabilityBJetTags',
+        'combinedSecondaryVertexBJetTags', 'combinedSecondaryVertexPositiveBJetTags',
+        #'combinedSecondaryVertexV1BJetTags','combinedSecondaryVertexSoftPFLeptonV1BJetTags',
+        'combinedSecondaryVertexMVABJetTags', 'combinedInclusiveSecondaryVertexBJetTags',
+        'combinedInclusiveSecondaryVertexPositiveBJetTags'
+        ]
+
+    addJetCollection(process,
+        labelName = 'AK8PFCHS',
+        postfix = postfix,
+        jetSource = cms.InputTag('ak8PFJetsCHS'),
+        algo = 'AK8',
+        jetCorrections = ('AK8PFchs', inputJetCorrLabel, ''),
+        btagDiscriminators = btagDiscriminators,
+        btagInfos = btagInfos,
+        jetTrackAssociation = True,
+        outputModules = outputModules,
+        )
+
+##to add type-0 corrections to your type-1 corrected MET uncomment the following:
+getattr(process,'pfType1CorrectedMet'+postfix).applyType0Corrections = cms.bool(True)
+getattr(process,'pfType1p2CorrectedMet'+postfix).applyType0Corrections = cms.bool(True)
+
+
+#getattr(process,"selectedPatElectrons"+postfix).cut = cms.string("pt > 3  & abs(eta) < 2.5")
+#getattr(process,"selectedPatMuons"+postfix).cut = cms.string("pt > 3 & abs(eta) < 2.5")
+#getattr(process,"selectedPatTaus"+postfix).cut = cms.string("pt > 10 & abs(eta) < 2.5")
+#getattr(process,"selectedPatPhotons"+postfix).cut = cms.string("pt > 10 & abs(eta) < 2.5")
+getattr(process,"selectedPatJets"+postfix).cut = cms.string("pt > 10")
+#getattr(process,"patTaus"+postfix).isoDeposits = cms.PSet()
+#getattr(process,"patPhotons"+postfix).isoDeposits = cms.PSet()
+
+
+# Add PF2PAT output to the created file
+process.out.outputCommands.extend( [
+    'keep *_offlinePrimaryVertices*_*_*',
+    'keep *_goodOfflinePrimaryVertices*_*_*',
+    'keep double_*_rho_RECO',
+        'drop *_selectedPatPhotons*_*_*', 
+        'drop *_selectedPatElectrons*_*_*', 
+        'drop *_selectedPatMuons*_*_*', 
+        'drop *_selectedPatTaus*_*_*', 
+    'drop *_selectedPatJets*_caloTowers_*',
+    'drop *_selectedPatJets*_caloTowers_*',
+    'drop *_selectedPatJetsForMETtype1p2Corr%s_*_*' % postfix,
+    'drop *_selectedPatJetsForMETtype2Corr%s_*_*' % postfix,
+    "keep GenEventInfoProduct_*_*_*",
+    "keep *recoGenParticles_genParticles__*",
+    "keep *_addPileupInfo__*",
+    "keep *_fixedGridRho*__*",
+    'keep recoBeamHaloSummary_BeamHaloSummary__*',
+    'keep recoGlobalHaloData_GlobalHaloData__*',
+    'keep HcalNoiseSummary_hcalnoise__*',
+    'keep LumiSummary_lumiProducer__*',
+    "keep *_ak4JetID__*",
+    "keep *_ak4CaloJets__*",
+    "keep *_ak4PFJets__*",
+    "keep *_ak5PFJets__*",
+    "keep *_ak4GenJets*__*",
+    "keep *_ak5GenJets*__*",
+    "keep *_genMet*__*",
+    "keep *_pfMet__*",
+    "keep *_pfMET%s__*" % postfix,
+    "keep *_met__*",
+    "keep *_lumiProducer__*",
+    ] )
+
+
+# ------------------------------------------------------------------------------
+# MET filters
+# ------------------------------------------------------------------------------
+#process.load("RecoMET.METFilters.metFilters_cff")
+#process.p_HBHENoiseFilter = cms.Path( process.HBHENoiseFilter )
+#process.p_CSCTightHaloFilter = cms.Path( process.CSCTightHaloFilter )
+#process.p_hcalLaserEventFilter = cms.Path( process.hcalLaserEventFilter )
+#process.p_EcalDeadCellTriggerPrimitiveFilter = cms.Path( process.EcalDeadCellTriggerPrimitiveFilter )
+#process.p_trackingFailureFilter = cms.Path( process.goodVertices * process.trackingFailureFilter )
+#process.p_eeBadScFilter = cms.Path( process.eeBadScFilter )
+#process.p_ecalLaserCorrFilter = cms.Path( process.ecalLaserCorrFilter )
+#if isData:
+#    process.p_trkPOGFilters = cms.Path( process.trkPOGFilters )
+#process.p_metFilters = cms.Path( process.metFilters )  # combined
+#
+## Even more filters
+#process.load("RecoMET.METFilters.metOptionalFilters_cff")
+#process.jetIDFailure.JetSource = cms.InputTag('patJets'+postfix)
+#process.p_goodVerticesFilter = cms.Path( process.goodVerticesFilter )
+#process.p_noscraping = cms.Path( process.noscraping )
+#if isData:
+#    process.p_hcallasereventfilter2012 = cms.Path( process.hcallasereventfilter2012 )
+#process.p_EcalDeadCellBoundaryEnergyFilter = cms.Path( process.EcalDeadCellBoundaryEnergyFilter )
+#process.p_tobtecfakesFilters = cms.Path( process.tobtecfakesFilters )
+#process.p_jetIDFailure = cms.Path( process.jetIDFailure )
+#process.p_badMuonFilters = cms.Path( process.badMuonFilters )
+#process.p_eeNoiseFilter = cms.Path( process.eeNoiseFilter )
+#process.p_metOptionalFilters = cms.Path( process.metOptionalFilters )  # combined
+#
+#
+## ------------------------------------------------------------------------------
+## MET corrections
+## taken from: https://github.com/TaiSakuma/WorkBookMet/blob/master/corrMet_cfg.py
+## ------------------------------------------------------------------------------
+###____________________________________________________________________________||
+#process.load("JetMETCorrections.Type1MET.correctionTermsPfMetType1Type2_cff")
+#
+#process.corrPfMetType1.jetCorrLabel = "ak4PFL1FastL2L3" + residual
+#
+###____________________________________________________________________________||
+#process.load("JetMETCorrections.Type1MET.correctionTermsPfMetType0PFCandidate_cff")
+#
+###____________________________________________________________________________||
+#process.load("JetMETCorrections.Type1MET.correctionTermsPfMetType0RecoTrack_cff")
+#
+###____________________________________________________________________________||
+#process.load("JetMETCorrections.Type1MET.correctionTermsPfMetShiftXY_cff")
+#
+#if not isData:
+#    process.corrPfMetShiftXY.parameter = process.pfMEtSysShiftCorrParameters_2012runABCDvsNvtx_mc
+#else:
+#    process.corrPfMetShiftXY.parameter = process.pfMEtSysShiftCorrParameters_2012runABCDvsNvtx_data
+#
+###____________________________________________________________________________||
+#process.load("JetMETCorrections.Type1MET.correctedMet_cff")
+#
+###____________________________________________________________________________||
+#corrMetSequence = cms.Sequence(
+#    process.correctionTermsPfMetType1Type2 +
+#    process.correctionTermsPfMetType0RecoTrack +
+#    process.correctionTermsPfMetType0PFCandidate +
+#    process.correctionTermsPfMetShiftXY +
+#    #process.correctionTermsCaloMet +
+#    #process.caloMetT1 +
+#    #process.caloMetT1T2 +
+#    process.pfMetT0rt +
+#    process.pfMetT0rtT1 +
+#    process.pfMetT0pc +
+#    process.pfMetT0pcT1 +
+#    process.pfMetT0rtTxy +
+#    process.pfMetT0rtT1Txy +
+#    process.pfMetT0pcTxy +
+#    process.pfMetT0pcT1Txy +
+#    process.pfMetT1 +
+#    process.pfMetT1Txy
+#)
+#corrMetOutputCommands = cms.untracked.vstring(
+#    "keep *_pfMetT*__*",
+#)
+#process.p_corrMet = cms.Path(corrMetSequence)
+#process.out.outputCommands += corrMetOutputCommands
+
+
+# ------------------------------------------------------------------------------
+# PileupJetId
+# ------------------------------------------------------------------------------
+#process.load("JetMETCorrections.Configuration.JetCorrectionServices_cff")
+# Convert algorithm from AK5PFCHS to AK5PFchs
+#process.ak4PFCHSL1Offset.algorithm = cms.string('AK5PFchs')
+#process.ak4PFCHSL1Fastjet.algorithm = cms.string('AK5PFchs')
+#process.ak4PFCHSL2Relative.algorithm = cms.string('AK5PFchs')
+#process.ak4PFCHSL3Absolute.algorithm = cms.string('AK5PFchs')
+#process.ak4PFCHSResidual.algorithm = cms.string('AK5PFchs')
+#process.calibratedAK4PFJets = cms.EDProducer('PFJetCorrectionProducer',
+#    src = cms.InputTag('ak4PFJets'),
+#    correctors = cms.vstring("ak4PFL1FastL2L3"+residual)
+#)
+#process.calibratedAK4PFJetsCHS = cms.EDProducer('PFJetCorrectionProducer',
+#    src = cms.InputTag("ak4PFJetsCHS"),
+#    correctors = cms.vstring("ak4PFCHSL1FastL2L3"+residual)
+#)
+#from RecoJets.JetProducers.PileupJetID_53x_cfi import pileupJetIdProducerChs, pileupJetIdProducer
+#process.pileupJetIdProducerCHS = pileupJetIdProducerChs.clone( jets = cms.InputTag('calibratedAK4PFJetsCHS') )
+#process.pileupJetIdProducer = pileupJetIdProducer.clone( jets = cms.InputTag('calibratedAK4PFJets') )
+#process.out.outputCommands += ['keep *_pileupJetIdProducerCHS_*_*', 'keep *_pileupJetIdProducer_*_*']
+
+
+# ------------------------------------------------------------------------------
+# MVA and No-PU MET
+# ------------------------------------------------------------------------------
+#process.load("metPUSubtraction_cff")
+#
+#process.calibratedAK4PFJetsForPFMEtMVA.correctors = cms.vstring("ak4PFL1FastL2L3" + residual)
+#process.calibratedAK4PFJetsForNoPileUpPFMEt.correctors = cms.vstring("ak4PFL1FastL2L3" + residual)
+#process.pfMEtMVA.srcLeptons = cms.VInputTag("isomuons","isoelectrons","isotaus")
+#process.noPileUpPFMEt.srcLeptons = cms.VInputTag("isomuons","isoelectrons","isotaus")
+#
+#process.p_mvaPFMET = cms.Path(process.pfMEtMVAsequence2)
+#process.out.outputCommands.extend(["keep recoPFMETs_pfMEtMVA_*_*", "keep *_pileupJetIdProducerForPFMEtMVA_*_*"])
+#
+#process.p_noPUPFMET = cms.Path(process.noPileUpPFMEtSequence2)
+#process.out.outputCommands.extend(["keep recoPFMETs_noPileUpPFMEt_*_*", "keep *_pileupJetIdProducerForNoPileUpPFMEt_*_*"])
+
+
+# ------------------------------------------------------------------------------
+# User stuff
+# ------------------------------------------------------------------------------
+#process.pfPileUpFlag = cms.EDProducer("PFPileUpFlag",
+#    pfCollection = cms.InputTag("particleFlow"),
+#    pfPileUpCollection = cms.InputTag("pfPileUp"+postfix)
+#)
+#
+#process.hltPFPileUpFlag = cms.EDProducer("PFPileUpFlag",
+#    pfCollection = cms.InputTag("hltParticleFlow"),
+#    pfPileUpCollection = cms.InputTag("hltPFPileUp")
+#)
+#
+#HLTJetIDParams = cms.PSet(
+#    useRecHits = cms.bool( True ),
+#    hbheRecHitsColl = cms.InputTag( "hltHbhereco" ),
+#    hoRecHitsColl = cms.InputTag( "hltHoreco" ),
+#    hfRecHitsColl = cms.InputTag( "hltHfreco" ),
+#    ebRecHitsColl = cms.InputTag( "hltEcalRecHitAll","EcalRecHitsEB" ),
+#    eeRecHitsColl = cms.InputTag( "hltEcalRecHitAll","EcalRecHitsEE" ),
+#    rpcRecHits = cms.InputTag( "hltRpcRecHits" ),
+#)
+#
+#process.hltAK4JetID = cms.EDProducer("JetIDProducer", HLTJetIDParams,
+#    src = cms.InputTag("hltAntiKT4CaloJets")
+#)
+#
+#process.pfMetSig = cms.EDProducer('METSignificance',
+#      runOnMC              = cms.untracked.bool(True),
+#      #muonTag              = cms.untracked.InputTag('pfSelectedMuons'),
+#      muonTag              = cms.untracked.InputTag('pfIsolatedMuons'+postfix),
+#      #electronTag          = cms.untracked.InputTag('pfSelectedElectrons'),
+#      electronTag          = cms.untracked.InputTag('pfIsolatedElectrons'+postfix),
+#
+#      #pfjetsTag            = cms.untracked.InputTag('pfJets'),
+#      pfjetsTag            = cms.untracked.InputTag('ak4PFJets'),  # WARNING: no cross-cleaning with leptons! I had to comment out the loops over leptons in METSignificance.cc
+#      pfjetCorrectorL1     = cms.untracked.string('ak4PFL1Fastjet'),
+#      pfjetCorrectorL123   = cms.untracked.string('ak4PFL1FastL2L3'),
+#
+#      jetResAlgo           = cms.string('AK5PF'),
+#      jetResEra            = cms.string('Spring10'),
+#
+#      jetThreshold = cms.double(20)
+#)
+#if isData:
+#    process.pfMetSig.runOnMC = False
+#    process.pfMetSig.pfjetCorrectorL123 = 'ak4PFL1FastL2L3Residual'
+#
+#userSequence = cms.Sequence(
+#    process.pfPileUpFlag
+#  + process.hltPFPileUpFlag
+#  + process.hltAK4JetID
+#  + process.pfMetSig
+#)
+#userOutputCommands = cms.untracked.vstring(
+#    "keep *_pfPileUpFlag__*",
+#    "keep *_hltPFPileUpFlag__*",
+#    "keep *_hltAK4JetID_*_*",
+#    "keep *_pfMetSig_*_*",
+#)
+#process.p += userSequence
+#process.out.outputCommands += userOutputCommands
