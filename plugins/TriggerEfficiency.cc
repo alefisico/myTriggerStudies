@@ -182,26 +182,27 @@ void TriggerEfficiency::analyze(const edm::Event& iEvent, const edm::EventSetup&
 void TriggerEfficiency::beginJob() {
 
 	edm::Service< TFileService > fileService;
-	histos2D_[ "jetMassHTDenom" ] = fileService->make< TH2D >( "jetMassHTDenom", "HT vs Leading Jet Mass", 200, 0., 2000, 20, 0., 200. );
+	histos2D_[ "jetMassHTDenom" ] = fileService->make< TH2D >( "jetMassHTDenom", "HT vs Leading Jet Mass", 200, 0., 2000, 40, 0., 400. );
 	histos2D_[ "jetMassHTDenom" ]->SetXTitle( "HT [GeV]" );
 	histos2D_[ "jetMassHTDenom" ]->SetYTitle( "Leading Jet Mass [GeV]" );
 
-	histos2D_[ "jetMassHTPassing" ] = fileService->make< TH2D >( "jetMassHTPassing", "HT vs Leading Jet Mass passing path", 200, 0., 2000, 20, 0., 200. );
+	histos2D_[ "jetMassHTPassing" ] = fileService->make< TH2D >( "jetMassHTPassing", "HT vs Leading Jet Mass passing path", 200, 0., 2000, 40, 0., 400. );
 	histos2D_[ "jetMassHTPassing" ]->SetXTitle( "HT [GeV]" );
 	histos2D_[ "jetMassHTPassing" ]->SetYTitle( "Leading Jet Mass [GeV]" );
 
-	histos2D_[ "jetMassHT2Defficiency" ] = fileService->make< TH2D >( "jetMassHT2Defficiency", "efficiency", 200, 0., 2000, 20, 0., 200. );
+	histos2D_[ "jetMassHT2Defficiency" ] = fileService->make< TH2D >( "jetMassHT2Defficiency", "Comparative efficiency", 200, 0., 2000, 40, 0., 400. );
 	histos2D_[ "jetMassHT2Defficiency" ]->SetXTitle( "HT [GeV]" );
 	histos2D_[ "jetMassHT2Defficiency" ]->SetYTitle( "Leading Jet Mass [GeV]" );
 
-	histos1D_[ "jetMassDenom" ] = fileService->make< TH1D >( "jetMassDenom", "Jet mass", 20, 0., 200);
+	histos1D_[ "jetMassDenom" ] = fileService->make< TH1D >( "jetMassDenom", "Jet mass", 40, 0., 400);
 	histos1D_[ "jetMassDenom" ]->SetXTitle( "Leading Jet Mass [GeV]" );
 
-	histos1D_[ "jetMassPassing" ] = fileService->make< TH1D >( "jetMassPassing", "Jet mass passing", 20, 0., 200);
+	histos1D_[ "jetMassPassing" ] = fileService->make< TH1D >( "jetMassPassing", "Jet mass passing", 40, 0., 400);
 	histos1D_[ "jetMassPassing" ]->SetXTitle( "Leading Jet Mass [GeV]" );
 
-	histos1D_[ "jetMassEfficiency" ] = fileService->make< TH1D >( "jetMassEfficiency", "efficiency", 20, 0., 200);
+	histos1D_[ "jetMassEfficiency" ] = fileService->make< TH1D >( "jetMassEfficiency", "Leading jet mass efficiency", 40, 0., 400);
 	histos1D_[ "jetMassEfficiency" ]->SetXTitle( "Leading Jet Mass [GeV]" );
+	histos1D_[ "jetMassEfficiency" ]->SetYTitle( "Efficiency" );
 
 	histos1D_[ "HTDenom" ] = fileService->make< TH1D >( "HTDenom", "HT", 200, 0., 2000);
 	histos1D_[ "HTDenom" ]->SetXTitle( "HT [GeV]" );
@@ -209,8 +210,9 @@ void TriggerEfficiency::beginJob() {
 	histos1D_[ "HTPassing" ] = fileService->make< TH1D >( "HTPassing", "HT passing", 200, 0., 2000);
 	histos1D_[ "HTPassing" ]->SetXTitle( "HT [GeV]" );
 
-	histos1D_[ "HTEfficiency" ] = fileService->make< TH1D >( "HTEfficiency", "efficiency", 200, 0., 2000);
+	histos1D_[ "HTEfficiency" ] = fileService->make< TH1D >( "HTEfficiency", "HT efficiency", 200, 0., 2000);
 	histos1D_[ "HTEfficiency" ]->SetXTitle( "HT [GeV]" );
+	histos1D_[ "HTEfficiency" ]->SetYTitle( "Efficiency" );
 
 
 }
@@ -219,14 +221,14 @@ void TriggerEfficiency::beginJob() {
 void TriggerEfficiency::endJob() {
 
     histos2D_[ "jetMassHT2Defficiency" ]->Sumw2();
-    histos2D_[ "jetMassHT2Defficiency" ]->Divide(histos2D_[ "jetMassHTPassing" ],histos2D_[ "jetMassHTDenom" ],1,1);
+    histos2D_[ "jetMassHT2Defficiency" ]->Divide(histos2D_[ "jetMassHTPassing" ],histos2D_[ "jetMassHTDenom" ],1,1,"B");
     
     
     histos1D_[ "jetMassEfficiency" ]->Sumw2();
-    histos1D_[ "jetMassEfficiency" ]->Divide(histos1D_[ "jetMassPassing" ], histos1D_[ "jetMassDenom" ], 1,1);
+    histos1D_[ "jetMassEfficiency" ]->Divide(histos1D_[ "jetMassPassing" ], histos1D_[ "jetMassDenom" ], 1,1,"B");
 
     histos1D_[ "HTEfficiency" ]->Sumw2();
-    histos1D_[ "HTEfficiency" ]->Divide(histos1D_[ "HTPassing" ], histos1D_[ "HTDenom" ], 1,1);
+    histos1D_[ "HTEfficiency" ]->Divide(histos1D_[ "HTPassing" ], histos1D_[ "HTDenom" ], 1,1,"B");
 
 }
 

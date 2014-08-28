@@ -5,12 +5,14 @@ NAME = sys.argv[1]
 if 'bx25' in NAME: myGT = 'PRE_LS171_V5A::All'
 else: myGT = 'PRE_LS171_V6A::All'
 
+
 process = cms.Process("HLT3")
 
 process.source = cms.Source("PoolSource",
     eventsToProcess = cms.untracked.VEventRange(),
-    secondaryFileNames = cms.untracked.vstring('/store/mc/Fall13dr/QCD_Pt-300to470_Tune4C_13TeV_pythia8/GEN-SIM-RAW/castor_tsg_PU20bx25_POSTLS162_V2-v1/010000/380A0A12-3E7E-E311-B8B5-0025905A6066.root'),
-    fileNames = cms.untracked.vstring('/store/mc/Fall13dr/QCD_Pt-300to470_Tune4C_13TeV_pythia8/AODSIM/castor_tsg_PU20bx25_POSTLS162_V2-v1/00000/0024384C-537E-E311-9C66-00261894386B.root')
+    secondaryFileNames = cms.untracked.vstring('/store/user/algomez/RPVSt200tojj_13TeV_pythia8_GENSIM/RPVSt200tojj_13TeV_pythia8_RAWSIM_625_PU20bx25/3155ae30ed00983c5e38602a2b43ba8b/RPVSt200tojj_13TeV_PU20bx25_DIGI_LI_DIGI2RAW_HLT_596_1_4bX.root', 
+        '/store/user/algomez/RPVSt200tojj_13TeV_pythia8_GENSIM/RPVSt200tojj_13TeV_pythia8_RAWSIM_625_PU20bx25/3155ae30ed00983c5e38602a2b43ba8b/RPVSt200tojj_13TeV_PU20bx25_DIGI_LI_DIGI2RAW_HLT_597_1_LUx.root'),
+    fileNames = cms.untracked.vstring('/store/user/algomez/RPVSt200tojj_13TeV_pythia8_GENSIM/RPVSt200tojj_13TeV_pythia8_AODSIM_625_PU20bx25/ca86998ca30d3e49107c4139b65d2908/RPVSt200tojj_13TeV_pythia8_AODSIM_PU20bx25_1000_1_uif.root')
 )
 parentProcess8742475786873 = process
 import FWCore.ParameterSet.Config as cms
@@ -3736,9 +3738,20 @@ process.selectedPatCandidateSummary = cms.EDAnalyzer("CandidateSummaryTable",
     candidates = cms.VInputTag(cms.InputTag("selectedPatElectrons"), cms.InputTag("selectedPatMuons"), cms.InputTag("selectedPatTaus"), cms.InputTag("selectedPatPhotons"), cms.InputTag("selectedPatJets"))
 )
 
+process.prunedGenParticles = cms.EDProducer("GenParticlePruner",
+    src = cms.InputTag("genParticles"),
+    select = cms.vstring('drop  *', 
+        'keep status = 3', 
+        'keep status = 21', 
+        'keep status = 22', 
+        'keep status = 23', 
+        'keep (abs(pdgId) >= 11 & abs(pdgId) <= 16) & status = 1', 
+        'keep (abs(pdgId)  = 15) & (status = 3 || status = 21 || status = 22 || status = 23)')
+)
+
 
 process.out = cms.OutputModule("PoolOutputModule",
-    fileName = cms.untracked.string(NAME+'_Prod.root'),
+    fileName = cms.untracked.string(NAME+'_HLT2PAT_Prod.root'),
     outputCommands = cms.untracked.vstring('drop *', 
         'keep recoPFCandidates_particleFlow_*_*', 
         'keep *_selectedPatPhotons*_*_*', 
@@ -3767,6 +3780,7 @@ process.out = cms.OutputModule("PoolOutputModule",
         'keep GenEventInfoProduct_*_*_*', 
         'keep *recoGenParticles_genParticles__*', 
         'keep *_addPileupInfo__*', 
+        'keep *_prunedGenParticles__*', 
         'keep *_fixedGridRho*__*', 
         'keep recoBeamHaloSummary_BeamHaloSummary__*', 
         'keep recoGlobalHaloData_GlobalHaloData__*', 
@@ -7190,7 +7204,8 @@ process.GlobalTag = cms.ESSource("PoolDBESSource",
     BlobStreamerName = cms.untracked.string('TBufferBlobStreamingService'),
     toGet = cms.VPSet(),
     connect = cms.string('frontier://FrontierProd/CMS_COND_31X_GLOBALTAG'),
-    globaltag = cms.string('PRE_LS171_V5A::All')
+    #globaltag = cms.string('PRE_LS171_V5A::All')
+    globaltag = cms.string(myGT)
 )
 
 
@@ -7836,6 +7851,7 @@ process = parentProcess8742475786873
 process.subProcess = cms.SubProcess( process = childProcess, SelectEvents = cms.untracked.PSet(
     SelectEvents = cms.vstring('*')
 ), outputCommands = cms.untracked.vstring('keep *'))
+
 process.hltAK4CaloJets = cms.EDProducer("FastjetJetProducer",
     Active_Area_Repeats = cms.int32(5),
     useMassDropTagger = cms.bool(False),
@@ -13451,47 +13467,6 @@ process.hltTrackIter0RefsForJets4Iter1 = cms.EDProducer("ChargedRefCandidateProd
 )
 
 
-process.triggerPlotterAK8PFHT = cms.EDProducer("TriggerPlotter",
-    hltHT = cms.InputTag("hltAK8PFHT"),
-    hltJets = cms.InputTag("hltAK8PFJetsCorrected"),
-    hltJetsNOJEC = cms.InputTag("hltAK8PFJets")
-)
-
-
-process.triggerPlotterAK8PFNOJECTrimHT = cms.EDProducer("TriggerPlotter",
-    hltHT = cms.InputTag("hltAK8PFTrimHT"),
-    hltJets = cms.InputTag("hltAK8PFJetsTrim"),
-    hltJetsNOJEC = cms.InputTag("hltAK8PFJetsTrim")
-)
-
-
-process.triggerPlotterAK8PFTrimHT = cms.EDProducer("TriggerPlotter",
-    hltHT = cms.InputTag("hltAK8PFHT"),
-    hltJets = cms.InputTag("hltAK8PFJetsCorrected"),
-    hltJetsNOJEC = cms.InputTag("hltAK8PFJetsTrim")
-)
-
-
-process.triggerPlotterHT = cms.EDProducer("TriggerPlotter",
-    hltHT = cms.InputTag("hltHtMht"),
-    hltJets = cms.InputTag("hltAK4CaloJetsCorrectedIDPassed"),
-    hltJetsNOJEC = cms.InputTag("hltAK4CaloJets")
-)
-
-
-process.triggerPlotterPFHT = cms.EDProducer("TriggerPlotter",
-    hltHT = cms.InputTag("hltPFHT"),
-    hltJets = cms.InputTag("hltAK4PFJetsCorrected"),
-    hltJetsNOJEC = cms.InputTag("hltAK4PFJets")
-)
-
-
-process.triggerPlotterPFTrimHT = cms.EDProducer("TriggerPlotter",
-    hltHT = cms.InputTag("hltPFHT"),
-    hltJets = cms.InputTag("hltAK4PFJetsCorrected"),
-    hltJetsNOJEC = cms.InputTag("hltAK4PFJetsTrim")
-)
-
 
 process.hlt1AK4PFJetsMass00 = cms.EDFilter("HLT1PFJetinMass",
     saveTags = cms.bool(True),
@@ -14213,7 +14188,7 @@ process.output = cms.OutputModule("PoolOutputModule",
         'keep *_hltAntiKT5PFJetsNoPU_*_*', 
         'keep *_hltHtMht_*_*', 
         'keep *_hltPFHT_*_*'),
-    fileName = cms.untracked.string(NAME+'_Prod.root'),
+    fileName = cms.untracked.string(NAME+'_HLT2PAT_Prod.root'),
     dataset = cms.untracked.PSet(
         dataTier = cms.untracked.string('HLTDEBUG')
     )
@@ -14627,11 +14602,6 @@ process.MessageLogger = cms.Service("MessageLogger",
         'FastReport'),
     fwkJobReports = cms.untracked.vstring('FrameworkJobReport')
 )
-
-
-#process.TFileService = cms.Service("TFileService",
-#    fileName = cms.string('hlt_jetmass_test.root')
-#)
 
 
 process.AnyDirectionAnalyticalPropagator = cms.ESProducer("AnalyticalPropagatorESProducer",

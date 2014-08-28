@@ -355,8 +355,7 @@ $PATCONFIG
 #cmsswVersion = os.environ['CMSSW_VERSION']
 
 # ---- dump ----
-#dump = open('dump.py' if isData else 'dumpMC.py', 'w')
-dump = open('dump.py' , 'w')
+dump = open('dump.py' if isData else 'dumpMC.py', 'w')
 dump.write( process.dumpPython() )
 dump.close()
 
