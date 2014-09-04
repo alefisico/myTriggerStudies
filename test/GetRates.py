@@ -142,13 +142,13 @@ def plotRates( listRates, outName, PU ):
 	g4.Draw("lp")
 	legend.Draw()
 	setTriggerRates( 'QCD 13TeV '+PU )
-	c.SaveAs("TriggerRate_"+outName+'_'+PU+".pdf")
+	c.SaveAs("TriggerRate_"+outName+'_'+PU+"_40k_120toInf.pdf")
 
 
 def plotRatesComp( listRates, outName, PU, HT, Mass ):
 	"""docstring for plotRates"""
 
-	histo = TH2F("xbox",'box', 7, 350., 1050., 13, 0., 65. )
+	histo = TH2F("xbox",'box', 7, 300., 1000., 14, -7.5, 62.5 )
 	for i in xrange( len( HT ) ): 
 		for k in xrange( len( Mass ) ):
 			histo.Fill( HT[i], Mass[k], listRates[i][1][k] )
@@ -171,12 +171,12 @@ def plotRatesComp( listRates, outName, PU, HT, Mass ):
 def plotRatesCompPtMass( listRates, outName, PU):
 	"""docstring for plotRates"""
 
-	Pt = [ 40., 100., 200. ]
-	Mass = [ 0., 10., 20., 30., 40., 50. ]
+	Pt = [ 40., 100., 150., 200., 250. ]
+	Mass = [ 0., 5., 10., 15., 20., 25., 30., 35., 40., 45., 50., 55. ]
 
-	ptBin = array('f', [ 0., 40., 100., 200., 300., 350. ] )
-	massBin = array( 'f', [ 0., 10., 20., 30., 40., 50., 60., 70. ])
-	histo = TH2F("xbox",'box', 5, ptBin, 7, massBin )
+	ptBin = array('f', [ 0., 25., 75., 125., 175., 225., 275., 300. ] )
+	massBin = array( 'f', [ -5.5, -2.5, 2.5, 7.5, 12.5, 17.5, 22.5, 27.5, 32.5, 37.5, 42.5, 47.5, 52.5, 57.5, 62.5 ])
+	histo = TH2F("xbox",'box', len(ptBin)-1, ptBin, len(massBin)-1, massBin )
 	for i in xrange( len(Pt) ): 
 		for k in xrange( len( Mass ) ):
 			histo.Fill( Pt[i], Mass[k], listRates[i][1][k] )
@@ -191,7 +191,7 @@ def plotRatesCompPtMass( listRates, outName, PU):
 	c = TCanvas( "c1", "c1", 800, 500 )
 	#c.SetLogz()
 	histo.Draw("colz")
-	histo.Draw("box same")
+	#histo.Draw("box same")
 	histo.Draw("texte same")
 	setTriggerRatesComp( 'QCD 13TeV '+PU, outName )
 	c.SaveAs("TriggerRate_"+outName+'_'+PU+".pdf")
@@ -200,27 +200,27 @@ def plotRatesCompPtMass( listRates, outName, PU):
 
 if __name__ == '__main__':
 	
-	numTriggers = 270
+	numTriggers = 271
 	#PU = 'PU40bx50'
 	#PU = 'PU20bx25'
 	#PU = 'PU40bx25'
 	PU = sys.argv[1]
 	process = sys.argv[2]
 
-	name0, run0, passed0, failed0, rates0, ratesErr0 = grabTriggerNumbers( 'dump_QCD_Pt-30to50_'+PU+'_5k_Filt.log', numTriggers, 161500000., PU )
-	name1, run1, passed1, failed1, rates1, ratesErr1 = grabTriggerNumbers( 'dump_QCD_Pt-50to80_'+PU+'_5k_Filt.log', numTriggers, 22110000., PU )
-	name2, run2, passed2, failed2, rates2, ratesErr2 = grabTriggerNumbers( 'dump_QCD_Pt-80to120_'+PU+'_5k_Filt.log', numTriggers, 3000114.3, PU )
-	name3, run3, passed3, failed3, rates3, ratesErr3 = grabTriggerNumbers( 'dump_QCD_Pt-120to170_'+PU+'_5k_Filt.log', numTriggers, 493200., PU )
-	name4, run4, passed4, failed4, rates4, ratesErr4 = grabTriggerNumbers( 'dump_QCD_Pt-170to300_'+PU+'_5k_Filt.log', numTriggers, 120300., PU )
-	name5, run5, passed5, failed5, rates5, ratesErr5 = grabTriggerNumbers( 'dump_QCD_Pt-300to470_'+PU+'_5k_Filt.log', numTriggers, 7475., PU )
-	name6, run6, passed6, failed6, rates6, ratesErr6 = grabTriggerNumbers( 'dump_QCD_Pt-470to600_'+PU+'_5k_Filt.log', numTriggers, 587.1, PU  )
-	name7, run7, passed7, failed7, rates7, ratesErr7 = grabTriggerNumbers( 'dump_QCD_Pt-600to800_'+PU+'_5k_Filt.log', numTriggers, 167., PU )
-	name8, run8, passed8, failed8, rates8, ratesErr8 = grabTriggerNumbers( 'dump_QCD_Pt-800to1000_'+PU+'_5k_Filt.log', numTriggers, 28.25, PU  )
-	name9, run9, passed9, failed9, rates9, ratesErr9 = grabTriggerNumbers( 'dump_QCD_Pt-1000to1400_'+PU+'_5k_Filt.log', numTriggers, 8.195, PU  )
-	name10, run10, passed10, failed10, rates10, ratesErr10 = grabTriggerNumbers( 'dump_QCD_Pt-1400to1800_'+PU+'_5k_Filt.log', numTriggers, 0.7346, PU )
+	name0, run0, passed0, failed0, rates0, ratesErr0 = grabTriggerNumbers( 'dump_QCD_Pt-30to50_'+PU+'_10k_Filt.log', numTriggers, 161500000., PU )
+	name1, run1, passed1, failed1, rates1, ratesErr1 = grabTriggerNumbers( 'dump_QCD_Pt-50to80_'+PU+'_10k_Filt.log', numTriggers, 22110000., PU )
+	name2, run2, passed2, failed2, rates2, ratesErr2 = grabTriggerNumbers( 'dump_QCD_Pt-80to120_'+PU+'_10k_Filt.log', numTriggers, 3000114.3, PU )
+	name3, run3, passed3, failed3, rates3, ratesErr3 = grabTriggerNumbers( 'dump_QCD_Pt-120to170_'+PU+'_10k_Filt.log', numTriggers, 493200., PU )
+	name4, run4, passed4, failed4, rates4, ratesErr4 = grabTriggerNumbers( 'dump_QCD_Pt-170to300_'+PU+'_10k_Filt.log', numTriggers, 120300., PU )
+	name5, run5, passed5, failed5, rates5, ratesErr5 = grabTriggerNumbers( 'dump_QCD_Pt-300to470_'+PU+'_10k_Filt.log', numTriggers, 7475., PU )
+	name6, run6, passed6, failed6, rates6, ratesErr6 = grabTriggerNumbers( 'dump_QCD_Pt-470to600_'+PU+'_10k_Filt.log', numTriggers, 587.1, PU  )
+	name7, run7, passed7, failed7, rates7, ratesErr7 = grabTriggerNumbers( 'dump_QCD_Pt-600to800_'+PU+'_10k_Filt.log', numTriggers, 167., PU )
+	name8, run8, passed8, failed8, rates8, ratesErr8 = grabTriggerNumbers( 'dump_QCD_Pt-800to1000_'+PU+'_10k_Filt.log', numTriggers, 28.25, PU  )
+	name9, run9, passed9, failed9, rates9, ratesErr9 = grabTriggerNumbers( 'dump_QCD_Pt-1000to1400_'+PU+'_10k_Filt.log', numTriggers, 8.195, PU  )
+	name10, run10, passed10, failed10, rates10, ratesErr10 = grabTriggerNumbers( 'dump_QCD_Pt-1400to1800_'+PU+'_10k_Filt.log', numTriggers, 0.7346, PU )
 
 	if 'PU20bx25' in PU:
-		name11, run11, passed11, failed11, rates11, ratesErr11 = grabTriggerNumbers( 'dump_QCD_Pt-1800_'+PU+'_5k_Filt.log', numTriggers, 0.1091 , PU )
+		name11, run11, passed11, failed11, rates11, ratesErr11 = grabTriggerNumbers( 'dump_QCD_Pt-1800_'+PU+'_10k_Filt.log', numTriggers, 0.1091 , PU )
 		listRates = [ #rates0[i] + rates1[i] + rates2[i] + 
 				rates3[i] + rates4[i] + rates5[i] + rates6[i] + rates7[i] + rates8[i] + rates9[i] + rates10[i] + rates11[i]
 				for i in xrange( len( rates1 ) )]
@@ -235,62 +235,54 @@ if __name__ == '__main__':
 
 	if 'simple' in process:
 		triggerList = [
-				['HT', array( 'd', listRates[0:5] ), array('d', listRatesErr[0:5] )],
-				['PFNoPUHT', array( 'd', listRates[5:10] ), array('d', listRatesErr[5:10] )],
-				['PFHT', array( 'd', listRates[10:15] ), array('d', listRatesErr[10:15] )],
-				['PFHTTrim', array( 'd', listRates[15:20] ), array('d', listRatesErr[15:20] )],
-				['PFTrimHT', array( 'd', listRates[20:25] ), array('d', listRatesErr[20:25] )],
-				['AK8PFHT', array( 'd', listRates[25:30] ), array('d', listRatesErr[25:30] )],
-				['AK8PFTrimHT', array( 'd', listRates[30:35] ), array('d', listRatesErr[30:35] )],
-				['AK8PFHTTrim', array( 'd', listRates[35:40] ), array('d', listRatesErr[35:40] )],
-				['AK8PFNOJECHTTrim', array( 'd', listRates[40:45] ), array('d', listRatesErr[40:45] )],
-				['AK8PFNOJECTrimHT', array( 'd', listRates[45:50] ), array('d', listRatesErr[45:50] )],
+				['HT', array( 'd', listRates[1:6] ), array('d', listRatesErr[1:6] )],
+				#['PFNoPUHT', array( 'd', listRates[5:10] ), array('d', listRatesErr[5:10] )],
+				['PFHT', array( 'd', listRates[6:11] ), array('d', listRatesErr[6:11] )],
+				['PFTrimHT', array( 'd', listRates[11:16] ), array('d', listRatesErr[11:16] )],
+				['AK8PFHT', array( 'd', listRates[16:21] ), array('d', listRatesErr[16:21] )],
+				['AK8PFTrimHT', array( 'd', listRates[21:26] ), array('d', listRatesErr[21:26] )],
+				['AK8PFNOJECTrimHT', array( 'd', listRates[26:31] ), array('d', listRatesErr[26:31] )],
 				]
 
-		plotRates( [ triggerList[0], triggerList[1], triggerList[2] ], 'oldTriggers', PU )
-		plotRates( [ triggerList[2], triggerList[3] , triggerList[4], triggerList[5], triggerList[6], triggerList[7], triggerList[8], triggerList[9] 
+		plotRates( [ triggerList[0], triggerList[1]#, triggerList[2] 
+			], 'oldTriggers', PU )
+		plotRates( [ triggerList[1], triggerList[3] , triggerList[5] #, triggerList[4], triggerList[5]
 			], 'newTriggers', PU )
 
 	elif '2d' in process:
 
-		AK8PFTrimHT450_TrimMass = [ listRates[50], listRates[66], listRates[51], listRates[54], listRates[55], listRates[58], listRates[59], listRates[62], listRates[63], listRates[67], listRates[68], listRates[71] ]
-		AK8PFTrimHT450_TrimMass_Err = [ listRatesErr[50], listRatesErr[66], listRatesErr[51], listRatesErr[54], listRatesErr[55], listRatesErr[58], listRatesErr[59], listRatesErr[62], listRatesErr[63], listRatesErr[67], listRatesErr[68], listRatesErr[71] ]
-		AK8PFTrimHT550_TrimMass = [ listRates[72], listRates[88], listRates[73], listRates[76], listRates[77], listRates[80], listRates[81], listRates[84], listRates[85], listRates[89], listRates[90], listRates[93] ]
-		AK8PFTrimHT550_TrimMass_Err = [ listRatesErr[72], listRatesErr[88], listRatesErr[73], listRatesErr[76], listRatesErr[77], listRatesErr[80], listRatesErr[81], listRatesErr[84], listRatesErr[85], listRatesErr[89], listRatesErr[90], listRatesErr[93] ]
-		AK8PFTrimHT650_TrimMass = [ listRates[94], listRates[110], listRates[95], listRates[98], listRates[99], listRates[102], listRates[103], listRates[106], listRates[107], listRates[111], listRates[112], listRates[115] ]
-		AK8PFTrimHT650_TrimMass_Err = [ listRatesErr[94], listRatesErr[110], listRatesErr[95], listRatesErr[98], listRatesErr[99], listRatesErr[102], listRatesErr[103], listRatesErr[106], listRatesErr[107], listRatesErr[111], listRatesErr[112], listRatesErr[115] ]
-		AK8PFTrimHT750_TrimMass = [ listRates[116], listRates[132], listRates[117], listRates[120], listRates[121], listRates[124], listRates[125], listRates[128], listRates[129], listRates[133], listRates[134], listRates[137] ]
-		AK8PFTrimHT750_TrimMass_Err = [ listRatesErr[116], listRatesErr[132], listRatesErr[117], listRatesErr[120], listRatesErr[121], listRatesErr[124], listRatesErr[125], listRatesErr[128], listRatesErr[129], listRatesErr[133], listRatesErr[134], listRatesErr[137] ]
-		AK8PFTrimHT850_TrimMass = [ listRates[138], listRates[154], listRates[139], listRates[142], listRates[143], listRates[146], listRates[147], listRates[150], listRates[151], listRates[155], listRates[156], listRates[159] ]
-		AK8PFTrimHT850_TrimMass_Err = [ listRatesErr[138], listRatesErr[154], listRatesErr[139], listRatesErr[142], listRatesErr[143], listRatesErr[146], listRatesErr[147], listRatesErr[150], listRatesErr[151], listRatesErr[155], listRatesErr[156], listRatesErr[159] ]
-
 
 		AK8PFTrimHTList = [
-			['AK8PFTrimHT450_TrimMass', array( 'd', AK8PFTrimHT450_TrimMass ), array('d', AK8PFTrimHT450_TrimMass_Err )],
-			['AK8PFTrimHT550_TrimMass', array( 'd', AK8PFTrimHT550_TrimMass ), array('d', AK8PFTrimHT550_TrimMass_Err )],
-			['AK8PFTrimHT650_TrimMass', array( 'd', AK8PFTrimHT650_TrimMass ), array('d', AK8PFTrimHT650_TrimMass_Err )],
-			['AK8PFTrimHT750_TrimMass', array( 'd', AK8PFTrimHT750_TrimMass ), array('d', AK8PFTrimHT750_TrimMass_Err )],
-			['AK8PFTrimHT850_TrimMass', array( 'd', AK8PFTrimHT850_TrimMass ), array('d', AK8PFTrimHT850_TrimMass_Err )],
+			['AK8PFTrimHT450_TrimMass', array( 'd', listRates[31:43] ), array('d', listRatesErr[31:43])],
+			['AK8PFTrimHT550_TrimMass', array( 'd', listRates[43:55] ), array('d', listRatesErr[43:55])],
+			['AK8PFTrimHT650_TrimMass', array( 'd', listRates[55:67] ), array('d', listRatesErr[55:67])],
+			['AK8PFTrimHT750_TrimMass', array( 'd', listRates[67:79] ), array('d', listRatesErr[67:79])],
+			['AK8PFTrimHT850_TrimMass', array( 'd', listRates[79:91] ), array('d', listRatesErr[79:91])],
 			]
 
 		
-		AK8PFNOJECTrimHT450_TrimMass = [ listRates[160], listRates[176], listRates[161], listRates[164], listRates[165], listRates[168], listRates[169], listRates[172], listRates[173], listRates[177], listRates[178], listRates[181] ]
-		AK8PFNOJECTrimHT450_TrimMass_Err = [ listRatesErr[160], listRatesErr[176], listRatesErr[161], listRatesErr[164], listRatesErr[165], listRatesErr[168], listRatesErr[169], listRatesErr[172], listRatesErr[173], listRatesErr[177], listRatesErr[178], listRatesErr[181] ]
-		AK8PFNOJECTrimHT550_TrimMass = [ listRates[182], listRates[198], listRates[183], listRates[186], listRates[187], listRates[190], listRates[191], listRates[194], listRates[195], listRates[199], listRates[200], listRates[203] ]
-		AK8PFNOJECTrimHT550_TrimMass_Err = [ listRatesErr[182], listRatesErr[198], listRatesErr[183], listRatesErr[186], listRatesErr[187], listRatesErr[190], listRatesErr[191], listRatesErr[194], listRatesErr[195], listRatesErr[199], listRatesErr[200], listRatesErr[203] ]
-		AK8PFNOJECTrimHT650_TrimMass = [ listRates[204], listRates[220], listRates[205], listRates[208], listRates[209], listRates[212], listRates[213], listRates[216], listRates[217], listRates[221], listRates[222], listRates[225] ]
-		AK8PFNOJECTrimHT650_TrimMass_Err = [ listRatesErr[204], listRatesErr[220], listRatesErr[205], listRatesErr[208], listRatesErr[209], listRatesErr[212], listRatesErr[213], listRatesErr[216], listRatesErr[217], listRatesErr[221], listRatesErr[222], listRatesErr[225] ]
-		AK8PFNOJECTrimHT750_TrimMass = [ listRates[226], listRates[242], listRates[227], listRates[230], listRates[231], listRates[234], listRates[235], listRates[238], listRates[239], listRates[243], listRates[244], listRates[247] ]
-		AK8PFNOJECTrimHT750_TrimMass_Err = [ listRatesErr[226], listRatesErr[242], listRatesErr[227], listRatesErr[230], listRatesErr[231], listRatesErr[234], listRatesErr[235], listRatesErr[238], listRatesErr[239], listRatesErr[243], listRatesErr[244], listRatesErr[247] ]
-		AK8PFNOJECTrimHT850_TrimMass = [ listRates[248], listRates[264], listRates[249], listRates[252], listRates[253], listRates[256], listRates[257], listRates[260], listRates[261], listRates[265], listRates[266], listRates[269] ]
-		AK8PFNOJECTrimHT850_TrimMass_Err = [ listRatesErr[248], listRatesErr[264], listRatesErr[249], listRatesErr[252], listRatesErr[253], listRatesErr[256], listRatesErr[257], listRatesErr[260], listRatesErr[261], listRatesErr[265], listRatesErr[266], listRatesErr[269] ]
-
 		AK8PFTrimNOJECHTList = [
-			['AK8PFNOJECTrimHT450_TrimMass', array( 'd', AK8PFNOJECTrimHT450_TrimMass ), array('d', AK8PFNOJECTrimHT450_TrimMass_Err )],
-			['AK8PFNOJECTrimHT550_TrimMass', array( 'd', AK8PFNOJECTrimHT550_TrimMass ), array('d', AK8PFNOJECTrimHT550_TrimMass_Err )],
-			['AK8PFNOJECTrimHT650_TrimMass', array( 'd', AK8PFNOJECTrimHT650_TrimMass ), array('d', AK8PFNOJECTrimHT650_TrimMass_Err )],
-			['AK8PFNOJECTrimHT750_TrimMass', array( 'd', AK8PFNOJECTrimHT750_TrimMass ), array('d', AK8PFNOJECTrimHT750_TrimMass_Err )],
-			['AK8PFNOJECTrimHT850_TrimMass', array( 'd', AK8PFNOJECTrimHT850_TrimMass ), array('d', AK8PFNOJECTrimHT850_TrimMass_Err )],
+			['AK8PFNOJECTrimHT450_TrimMass', array( 'd', listRates[91:103] ), array('d', listRatesErr[91:103])],
+			['AK8PFNOJECTrimHT550_TrimMass', array( 'd', listRates[103:115] ), array('d', listRatesErr[103:115])],
+			['AK8PFNOJECTrimHT650_TrimMass', array( 'd', listRates[115:127] ), array('d', listRatesErr[115:127])],
+			['AK8PFNOJECTrimHT750_TrimMass', array( 'd', listRates[127:139] ), array('d', listRatesErr[127:139])],
+			['AK8PFNOJECTrimHT850_TrimMass', array( 'd', listRates[139:151] ), array('d', listRatesErr[139:151])],
+			]
+
+		PFTrimHTList = [
+			['PFTrimHT450_TrimMass', array( 'd', listRates[151:163] ), array('d', listRatesErr[151:163])],
+			['PFTrimHT550_TrimMass', array( 'd', listRates[163:175] ), array('d', listRatesErr[163:175])],
+			['PFTrimHT650_TrimMass', array( 'd', listRates[175:187] ), array('d', listRatesErr[175:187])],
+			['PFTrimHT750_TrimMass', array( 'd', listRates[187:199] ), array('d', listRatesErr[187:199])],
+			['PFTrimHT850_TrimMass', array( 'd', listRates[199:211] ), array('d', listRatesErr[199:211])],
+			]
+
+		PFHTList = [
+			['PFHT450_TrimMass', array( 'd', listRates[211:223] ), array('d', listRatesErr[211:223])],
+			['PFHT550_TrimMass', array( 'd', listRates[223:235] ), array('d', listRatesErr[223:235])],
+			['PFHT650_TrimMass', array( 'd', listRates[235:247] ), array('d', listRatesErr[235:247])],
+			['PFHT750_TrimMass', array( 'd', listRates[247:259] ), array('d', listRatesErr[247:259])],
+			['PFHT850_TrimMass', array( 'd', listRates[259:271] ), array('d', listRatesErr[259:271])],
 			]
 
 		HT = [ 450., 550., 650., 750., 850. ]
@@ -298,78 +290,204 @@ if __name__ == '__main__':
 
 		plotRatesComp( AK8PFTrimHTList, 'AK8PFTrimHT', PU, HT, Mass )
 		plotRatesComp( AK8PFTrimNOJECHTList, 'AK8PFNOJECTrimHT', PU, HT, Mass )
+		plotRatesComp( PFTrimHTList, 'PFTrimHT', PU, HT, Mass )
+		plotRatesComp( PFHTList, 'PFHT', PU, HT, Mass )
 
-		AK8PFTrimHT450_TrimPt40 = [ listRates[50], listRates[51], listRates[55], listRates[59], listRates[63], listRates[68] ]
-		AK8PFTrimHT450_TrimPt40_Err = [ listRatesErr[50], listRatesErr[51], listRatesErr[55], listRatesErr[59], listRatesErr[63], listRatesErr[68] ]
-		AK8PFTrimHT450_TrimPt100 = [ 0, listRates[52], listRates[56], listRates[60], listRates[64], listRates[70] ]
-		AK8PFTrimHT450_TrimPt100_Err = [ 0, listRatesErr[52], listRatesErr[56], listRatesErr[60], listRatesErr[64], listRatesErr[70] ]
-		AK8PFTrimHT450_TrimPt200 = [ 0, listRates[53], listRates[57], listRates[61], listRates[65], listRates[69] ]
-		AK8PFTrimHT450_TrimPt200_Err = [ 0, listRatesErr[53], listRatesErr[57], listRatesErr[61], listRatesErr[65], listRatesErr[69] ]
 
-		AK8PFTrimHT450List = [
-			['AK8PFTrimHT450_TrimPt40', array( 'd', AK8PFTrimHT450_TrimPt40), array('d', AK8PFTrimHT450_TrimPt40_Err )],
-			['AK8PFTrimHT450_TrimPt100', array( 'd', AK8PFTrimHT450_TrimPt100), array('d', AK8PFTrimHT450_TrimPt100_Err )],
-			['AK8PFTrimHT450_TrimPt200', array( 'd', AK8PFTrimHT450_TrimPt200), array('d', AK8PFTrimHT450_TrimPt200_Err )],
-			]
-
-		plotRatesCompPtMass( AK8PFTrimHT450List, 'AK8PFTrimHT450_TrimMassPt', PU)
-
-		AK8PFTrimHT550_TrimPt40 = [ listRates[72], listRates[73], listRates[77], listRates[81], listRates[85], listRates[90] ]
-		AK8PFTrimHT550_TrimPt40_Err = [ listRatesErr[72], listRatesErr[73], listRatesErr[77], listRatesErr[81], listRatesErr[85], listRatesErr[90] ]
-		AK8PFTrimHT550_TrimPt100 = [ 0, listRates[74], listRates[78], listRates[82], listRates[86], listRates[92] ]
-		AK8PFTrimHT550_TrimPt100_Err = [ 0, listRatesErr[74], listRatesErr[78], listRatesErr[82], listRatesErr[86], listRatesErr[92] ]
-		AK8PFTrimHT550_TrimPt200 = [ 0, listRates[75], listRates[79], listRates[83], listRates[87], listRates[91] ]
-		AK8PFTrimHT550_TrimPt200_Err = [ 0, listRatesErr[75], listRatesErr[79], listRatesErr[83], listRatesErr[87], listRatesErr[91] ]
-
-		AK8PFTrimHT550List = [
-			['AK8PFTrimHT550_TrimPt40', array( 'd', AK8PFTrimHT550_TrimPt40), array('d', AK8PFTrimHT550_TrimPt40_Err )],
-			['AK8PFTrimHT550_TrimPt100', array( 'd', AK8PFTrimHT550_TrimPt100), array('d', AK8PFTrimHT550_TrimPt100_Err )],
-			['AK8PFTrimHT550_TrimPt200', array( 'd', AK8PFTrimHT550_TrimPt200), array('d', AK8PFTrimHT550_TrimPt200_Err )],
-			]
-
-		plotRatesCompPtMass( AK8PFTrimHT550List, 'AK8PFTrimHT550_TrimMassPt', PU)
-
-		AK8PFTrimHT650_TrimPt40 = [ listRates[94], listRates[95], listRates[99], listRates[103], listRates[107], listRates[112] ]
-		AK8PFTrimHT650_TrimPt40_Err = [ listRatesErr[94], listRatesErr[95], listRatesErr[99], listRatesErr[103], listRatesErr[107], listRatesErr[112] ]
-		AK8PFTrimHT650_TrimPt100 = [ 0, listRates[96], listRates[100], listRates[104], listRates[108], listRates[114] ]
-		AK8PFTrimHT650_TrimPt100_Err = [ 0, listRatesErr[96], listRatesErr[100], listRatesErr[104], listRatesErr[108], listRatesErr[114] ]
-		AK8PFTrimHT650_TrimPt200 = [ 0, listRates[97], listRates[101], listRates[105], listRates[109], listRates[113] ]
-		AK8PFTrimHT650_TrimPt200_Err = [ 0, listRatesErr[97], listRatesErr[101], listRatesErr[105], listRatesErr[109], listRatesErr[113] ]
-
-		AK8PFTrimHT650List = [
-			['AK8PFTrimHT650_TrimPt40', array( 'd', AK8PFTrimHT650_TrimPt40), array('d', AK8PFTrimHT650_TrimPt40_Err )],
-			['AK8PFTrimHT650_TrimPt100', array( 'd', AK8PFTrimHT650_TrimPt100), array('d', AK8PFTrimHT650_TrimPt100_Err )],
-			['AK8PFTrimHT650_TrimPt200', array( 'd', AK8PFTrimHT650_TrimPt200), array('d', AK8PFTrimHT650_TrimPt200_Err )],
-			]
-
-		plotRatesCompPtMass( AK8PFTrimHT650List, 'AK8PFTrimHT650_TrimMassPt', PU)
-
-		AK8PFTrimHT750_TrimPt40 = [ listRates[116], listRates[117], listRates[121], listRates[125], listRates[129], listRates[134] ]
-		AK8PFTrimHT750_TrimPt40_Err = [ listRatesErr[116], listRatesErr[117], listRatesErr[121], listRatesErr[125], listRatesErr[129], listRatesErr[134] ]
-		AK8PFTrimHT750_TrimPt100 = [ 0, listRates[118], listRates[122], listRates[126], listRates[130], listRates[134] ]
-		AK8PFTrimHT750_TrimPt100_Err = [ 0, listRatesErr[118], listRatesErr[122], listRatesErr[126], listRatesErr[130], listRatesErr[134] ]
-		AK8PFTrimHT750_TrimPt200 = [ 0, listRates[119], listRates[123], listRates[127], listRates[131], listRates[133] ]
-		AK8PFTrimHT750_TrimPt200_Err = [ 0, listRatesErr[119], listRatesErr[123], listRatesErr[127], listRatesErr[131], listRatesErr[133] ]
-
-		AK8PFTrimHT750List = [
-			['AK8PFTrimHT750_TrimPt40', array( 'd', AK8PFTrimHT750_TrimPt40), array('d', AK8PFTrimHT750_TrimPt40_Err )],
-			['AK8PFTrimHT750_TrimPt100', array( 'd', AK8PFTrimHT750_TrimPt100), array('d', AK8PFTrimHT750_TrimPt100_Err )],
-			['AK8PFTrimHT750_TrimPt200', array( 'd', AK8PFTrimHT750_TrimPt200), array('d', AK8PFTrimHT750_TrimPt200_Err )],
-			]
-
-		plotRatesCompPtMass( AK8PFTrimHT750List, 'AK8PFTrimHT750_TrimMassPt', PU)
-
-		AK8PFTrimHT850_TrimPt40 = [ listRates[138], listRates[139], listRates[143], listRates[147], listRates[151], listRates[156] ]
-		AK8PFTrimHT850_TrimPt40_Err = [ listRatesErr[138], listRatesErr[139], listRatesErr[143], listRatesErr[147], listRatesErr[151], listRatesErr[156] ]
-		AK8PFTrimHT850_TrimPt100 = [ 0, listRates[140], listRates[144], listRates[148], listRates[152], listRates[158] ]
-		AK8PFTrimHT850_TrimPt100_Err = [ 0, listRatesErr[140], listRatesErr[144], listRatesErr[148], listRatesErr[152], listRatesErr[158] ]
-		AK8PFTrimHT850_TrimPt200 = [ 0, listRates[141], listRates[145], listRates[149], listRates[153], listRates[157] ]
-		AK8PFTrimHT850_TrimPt200_Err = [ 0, listRatesErr[141], listRatesErr[145], listRatesErr[149], listRatesErr[153], listRatesErr[157] ]
-
-		AK8PFTrimHT850List = [
-			['AK8PFTrimHT850_TrimPt40', array( 'd', AK8PFTrimHT850_TrimPt40), array('d', AK8PFTrimHT850_TrimPt40_Err )],
-			['AK8PFTrimHT850_TrimPt100', array( 'd', AK8PFTrimHT850_TrimPt100), array('d', AK8PFTrimHT850_TrimPt100_Err )],
-			['AK8PFTrimHT850_TrimPt200', array( 'd', AK8PFTrimHT850_TrimPt200), array('d', AK8PFTrimHT850_TrimPt200_Err )],
-			]
-
-		plotRatesCompPtMass( AK8PFTrimHT850List, 'AK8PFTrimHT850_TrimMassPt', PU)
+#		AK8PFTrimHT450List = [
+##			['AK8PFTrimHT450_TrimPt40', array( 'd', AK8PFTrimHT450_TrimPt40), array('d', AK8PFTrimHT450_TrimPt40_Err )],
+##			['AK8PFTrimHT450_TrimPt100', array( 'd', AK8PFTrimHT450_TrimPt100), array('d', AK8PFTrimHT450_TrimPt100_Err )],
+##			['AK8PFTrimHT450_TrimPt200', array( 'd', AK8PFTrimHT450_TrimPt200), array('d', AK8PFTrimHT450_TrimPt200_Err )],
+#			['AK8PFTrimHT450_TrimPt40', array( 'd', listRates[47:59]), array('d', listRatesErr[47:59] )],
+#			['AK8PFTrimHT450_TrimPt100', array( 'd', listRates[59:71]), array('d', listRatesErr[59:71] )],
+#			['AK8PFTrimHT450_TrimPt150', array( 'd', listRates[71:83]), array('d', listRatesErr[71:83] )],
+#			['AK8PFTrimHT450_TrimPt200', array( 'd', listRates[83:95]), array('d', listRatesErr[83:95] )],
+#			['AK8PFTrimHT450_TrimPt250', array( 'd', listRates[95:107]), array('d', listRatesErr[95:107] )],
+#			]
+#
+#		plotRatesCompPtMass( AK8PFTrimHT450List, 'AK8PFTrimHT450_TrimMassPt', PU)
+#
+##		AK8PFTrimHT550_TrimPt40 = [ listRates[72], listRates[73], listRates[77], listRates[81], listRates[85], listRates[90] ]
+##		AK8PFTrimHT550_TrimPt40_Err = [ listRatesErr[72], listRatesErr[73], listRatesErr[77], listRatesErr[81], listRatesErr[85], listRatesErr[90] ]
+##		AK8PFTrimHT550_TrimPt100 = [ 0, listRates[74], listRates[78], listRates[82], listRates[86], listRates[92] ]
+##		AK8PFTrimHT550_TrimPt100_Err = [ 0, listRatesErr[74], listRatesErr[78], listRatesErr[82], listRatesErr[86], listRatesErr[92] ]
+##		AK8PFTrimHT550_TrimPt200 = [ 0, listRates[75], listRates[79], listRates[83], listRates[87], listRates[91] ]
+##		AK8PFTrimHT550_TrimPt200_Err = [ 0, listRatesErr[75], listRatesErr[79], listRatesErr[83], listRatesErr[87], listRatesErr[91] ]
+#
+#		AK8PFTrimHT550List = [
+##			['AK8PFTrimHT550_TrimPt40', array( 'd', AK8PFTrimHT550_TrimPt40), array('d', AK8PFTrimHT550_TrimPt40_Err )],
+##			['AK8PFTrimHT550_TrimPt100', array( 'd', AK8PFTrimHT550_TrimPt100), array('d', AK8PFTrimHT550_TrimPt100_Err )],
+##			['AK8PFTrimHT550_TrimPt200', array( 'd', AK8PFTrimHT550_TrimPt200), array('d', AK8PFTrimHT550_TrimPt200_Err )],
+#			['AK8PFTrimHT550_TrimPt40', array( 'd', listRates[119:131]), array('d', listRatesErr[119:131] )],
+#			['AK8PFTrimHT550_TrimPt100', array( 'd', listRates[131:143]), array('d', listRatesErr[131:143] )],
+#			['AK8PFTrimHT550_TrimPt150', array( 'd', listRates[143:155]), array('d', listRatesErr[143:155] )],
+#			['AK8PFTrimHT550_TrimPt200', array( 'd', listRates[155:167]), array('d', listRatesErr[155:167] )],
+#			['AK8PFTrimHT550_TrimPt250', array( 'd', listRates[167:179]), array('d', listRatesErr[167:179] )],
+#			]
+#
+#		plotRatesCompPtMass( AK8PFTrimHT550List, 'AK8PFTrimHT550_TrimMassPt', PU)
+#
+##		AK8PFTrimHT650_TrimPt40 = [ listRates[94], listRates[95], listRates[99], listRates[103], listRates[107], listRates[112] ]
+##		AK8PFTrimHT650_TrimPt40_Err = [ listRatesErr[94], listRatesErr[95], listRatesErr[99], listRatesErr[103], listRatesErr[107], listRatesErr[112] ]
+##		AK8PFTrimHT650_TrimPt100 = [ 0, listRates[96], listRates[100], listRates[104], listRates[108], listRates[114] ]
+##		AK8PFTrimHT650_TrimPt100_Err = [ 0, listRatesErr[96], listRatesErr[100], listRatesErr[104], listRatesErr[108], listRatesErr[114] ]
+##		AK8PFTrimHT650_TrimPt200 = [ 0, listRates[97], listRates[101], listRates[105], listRates[109], listRates[113] ]
+##		AK8PFTrimHT650_TrimPt200_Err = [ 0, listRatesErr[97], listRatesErr[101], listRatesErr[105], listRatesErr[109], listRatesErr[113] ]
+#
+#		AK8PFTrimHT650List = [
+##			['AK8PFTrimHT650_TrimPt40', array( 'd', AK8PFTrimHT650_TrimPt40), array('d', AK8PFTrimHT650_TrimPt40_Err )],
+##			['AK8PFTrimHT650_TrimPt100', array( 'd', AK8PFTrimHT650_TrimPt100), array('d', AK8PFTrimHT650_TrimPt100_Err )],
+##			['AK8PFTrimHT650_TrimPt200', array( 'd', AK8PFTrimHT650_TrimPt200), array('d', AK8PFTrimHT650_TrimPt200_Err )],
+#			['AK8PFTrimHT650_TrimPt40', array( 'd', listRates[191:203]), array('d', listRatesErr[191:203] )],
+#			['AK8PFTrimHT650_TrimPt100', array( 'd', listRates[203:215]), array('d', listRatesErr[203:215] )],
+#			['AK8PFTrimHT650_TrimPt150', array( 'd', listRates[215:227]), array('d', listRatesErr[215:227] )],
+#			['AK8PFTrimHT650_TrimPt200', array( 'd', listRates[227:239]), array('d', listRatesErr[227:239] )],
+#			['AK8PFTrimHT650_TrimPt250', array( 'd', listRates[239:251]), array('d', listRatesErr[239:251] )],
+#			]
+#
+#		plotRatesCompPtMass( AK8PFTrimHT650List, 'AK8PFTrimHT650_TrimMassPt', PU)
+#
+##		AK8PFTrimHT750_TrimPt40 = [ listRates[116], listRates[117], listRates[121], listRates[125], listRates[129], listRates[134] ]
+##		AK8PFTrimHT750_TrimPt40_Err = [ listRatesErr[116], listRatesErr[117], listRatesErr[121], listRatesErr[125], listRatesErr[129], listRatesErr[134] ]
+##		AK8PFTrimHT750_TrimPt100 = [ 0, listRates[118], listRates[122], listRates[126], listRates[130], listRates[134] ]
+##		AK8PFTrimHT750_TrimPt100_Err = [ 0, listRatesErr[118], listRatesErr[122], listRatesErr[126], listRatesErr[130], listRatesErr[134] ]
+##		AK8PFTrimHT750_TrimPt200 = [ 0, listRates[119], listRates[123], listRates[127], listRates[131], listRates[133] ]
+##		AK8PFTrimHT750_TrimPt200_Err = [ 0, listRatesErr[119], listRatesErr[123], listRatesErr[127], listRatesErr[131], listRatesErr[133] ]
+#
+#		AK8PFTrimHT750List = [
+##			['AK8PFTrimHT750_TrimPt40', array( 'd', AK8PFTrimHT750_TrimPt40), array('d', AK8PFTrimHT750_TrimPt40_Err )],
+##			['AK8PFTrimHT750_TrimPt100', array( 'd', AK8PFTrimHT750_TrimPt100), array('d', AK8PFTrimHT750_TrimPt100_Err )],
+##			['AK8PFTrimHT750_TrimPt200', array( 'd', AK8PFTrimHT750_TrimPt200), array('d', AK8PFTrimHT750_TrimPt200_Err )],
+#			['AK8PFTrimHT750_TrimPt40', array( 'd', listRates[263:275]), array('d', listRatesErr[263:275] )],
+#			['AK8PFTrimHT750_TrimPt100', array( 'd', listRates[275:287]), array('d', listRatesErr[275:287] )],
+#			['AK8PFTrimHT750_TrimPt150', array( 'd', listRates[287:299]), array('d', listRatesErr[287:299] )],
+#			['AK8PFTrimHT750_TrimPt200', array( 'd', listRates[299:311]), array('d', listRatesErr[299:311] )],
+#			['AK8PFTrimHT750_TrimPt250', array( 'd', listRates[311:323]), array('d', listRatesErr[311:323] )],
+#			]
+#
+#		plotRatesCompPtMass( AK8PFTrimHT750List, 'AK8PFTrimHT750_TrimMassPt', PU)
+#
+##		AK8PFTrimHT850_TrimPt40 = [ listRates[138], listRates[139], listRates[143], listRates[147], listRates[151], listRates[156] ]
+##		AK8PFTrimHT850_TrimPt40_Err = [ listRatesErr[138], listRatesErr[139], listRatesErr[143], listRatesErr[147], listRatesErr[151], listRatesErr[156] ]
+##		AK8PFTrimHT850_TrimPt100 = [ 0, listRates[140], listRates[144], listRates[148], listRates[152], listRates[158] ]
+##		AK8PFTrimHT850_TrimPt100_Err = [ 0, listRatesErr[140], listRatesErr[144], listRatesErr[148], listRatesErr[152], listRatesErr[158] ]
+##		AK8PFTrimHT850_TrimPt200 = [ 0, listRates[141], listRates[145], listRates[149], listRates[153], listRates[157] ]
+##		AK8PFTrimHT850_TrimPt200_Err = [ 0, listRatesErr[141], listRatesErr[145], listRatesErr[149], listRatesErr[153], listRatesErr[157] ]
+#
+#		AK8PFTrimHT850List = [
+##			['AK8PFTrimHT850_TrimPt40', array( 'd', AK8PFTrimHT850_TrimPt40), array('d', AK8PFTrimHT850_TrimPt40_Err )],
+##			['AK8PFTrimHT850_TrimPt100', array( 'd', AK8PFTrimHT850_TrimPt100), array('d', AK8PFTrimHT850_TrimPt100_Err )],
+##			['AK8PFTrimHT850_TrimPt200', array( 'd', AK8PFTrimHT850_TrimPt200), array('d', AK8PFTrimHT850_TrimPt200_Err )],
+#			['AK8PFTrimHT850_TrimPt40', array( 'd', listRates[335:347]), array('d', listRatesErr[335:347] )],
+#			['AK8PFTrimHT850_TrimPt100', array( 'd', listRates[347:359]), array('d', listRatesErr[347:359] )],
+#			['AK8PFTrimHT850_TrimPt150', array( 'd', listRates[359:371]), array('d', listRatesErr[359:371] )],
+#			['AK8PFTrimHT850_TrimPt200', array( 'd', listRates[371:383]), array('d', listRatesErr[371:383] )],
+#			['AK8PFTrimHT850_TrimPt250', array( 'd', listRates[383:395]), array('d', listRatesErr[383:395] )],
+#			]
+#
+#		plotRatesCompPtMass( AK8PFTrimHT850List, 'AK8PFTrimHT850_TrimMassPt', PU)
+#
+#		AK8PFNOJECTrimHT450List = [
+#			['AK8PFNOJECTrimHT450_TrimPt40', array( 'd', listRates[407:419]), array('d', listRatesErr[407:419] )],
+#			['AK8PFNOJECTrimHT450_TrimPt100', array( 'd', listRates[419:431]), array('d', listRatesErr[419:431] )],
+#			['AK8PFNOJECTrimHT450_TrimPt150', array( 'd', listRates[431:443]), array('d', listRatesErr[431:443] )],
+#			['AK8PFNOJECTrimHT450_TrimPt200', array( 'd', listRates[443:455]), array('d', listRatesErr[443:455] )],
+#			['AK8PFNOJECTrimHT450_TrimPt250', array( 'd', listRates[455:467]), array('d', listRatesErr[455:467] )],
+#			]
+#
+#		plotRatesCompPtMass( AK8PFNOJECTrimHT450List, 'AK8PFNOJECTrimHT450_TrimMassPt', PU)
+#
+#		AK8PFNOJECTrimHT550List = [
+#			['AK8PFNOJECTrimHT550_TrimPt40', array( 'd', listRates[479:491]), array('d', listRatesErr[479:491] )],
+#			['AK8PFNOJECTrimHT550_TrimPt100', array( 'd', listRates[491:503]), array('d', listRatesErr[491:503] )],
+#			['AK8PFNOJECTrimHT550_TrimPt150', array( 'd', listRates[503:515]), array('d', listRatesErr[503:515] )],
+#			['AK8PFNOJECTrimHT550_TrimPt200', array( 'd', listRates[515:527]), array('d', listRatesErr[515:527] )],
+#			['AK8PFNOJECTrimHT550_TrimPt250', array( 'd', listRates[527:539]), array('d', listRatesErr[527:539] )],
+#			]
+#
+#		plotRatesCompPtMass( AK8PFNOJECTrimHT550List, 'AK8PFNOJECTrimHT550_TrimMassPt', PU)
+#
+#
+#		AK8PFNOJECTrimHT650List = [
+#			['AK8PFNOJECTrimHT650_TrimPt40', array( 'd', listRates[551:563]), array('d', listRatesErr[551:563] )],
+#			['AK8PFNOJECTrimHT650_TrimPt100', array( 'd', listRates[563:575]), array('d', listRatesErr[563:575] )],
+#			['AK8PFNOJECTrimHT650_TrimPt150', array( 'd', listRates[575:587]), array('d', listRatesErr[575:587] )],
+#			['AK8PFNOJECTrimHT650_TrimPt200', array( 'd', listRates[587:599]), array('d', listRatesErr[587:599] )],
+#			['AK8PFNOJECTrimHT650_TrimPt250', array( 'd', listRates[599:611]), array('d', listRatesErr[599:611] )],
+#			]
+#
+#		plotRatesCompPtMass( AK8PFNOJECTrimHT650List, 'AK8PFNOJECTrimHT650_TrimMassPt', PU)
+#
+#
+#		AK8PFNOJECTrimHT750List = [
+#			['AK8PFNOJECTrimHT750_TrimPt40', array( 'd', listRates[623:635]), array('d', listRatesErr[623:635] )],
+#			['AK8PFNOJECTrimHT750_TrimPt100', array( 'd', listRates[635:647]), array('d', listRatesErr[635:647] )],
+#			['AK8PFNOJECTrimHT750_TrimPt150', array( 'd', listRates[647:659]), array('d', listRatesErr[647:659] )],
+#			['AK8PFNOJECTrimHT750_TrimPt200', array( 'd', listRates[659:671]), array('d', listRatesErr[659:671] )],
+#			['AK8PFNOJECTrimHT750_TrimPt250', array( 'd', listRates[671:683]), array('d', listRatesErr[671:683] )],
+#			]
+#
+#		plotRatesCompPtMass( AK8PFNOJECTrimHT750List, 'AK8PFNOJECTrimHT750_TrimMassPt', PU)
+#
+#		AK8PFNOJECTrimHT850List = [
+#			['AK8PFNOJECTrimHT850_TrimPt40', array( 'd', listRates[695:707]), array('d', listRatesErr[695:707] )],
+#			['AK8PFNOJECTrimHT850_TrimPt100', array( 'd', listRates[707:719]), array('d', listRatesErr[707:719] )],
+#			['AK8PFNOJECTrimHT850_TrimPt150', array( 'd', listRates[719:731]), array('d', listRatesErr[719:731] )],
+#			['AK8PFNOJECTrimHT850_TrimPt200', array( 'd', listRates[731:743]), array('d', listRatesErr[731:743] )],
+#			['AK8PFNOJECTrimHT850_TrimPt250', array( 'd', listRates[743:755]), array('d', listRatesErr[743:755] )],
+#			]
+#
+#		plotRatesCompPtMass( AK8PFNOJECTrimHT850List, 'AK8PFNOJECTrimHT850_TrimMassPt', PU)
+#
+#
+#		PFTrimHT450List = [
+#			['PFTrimHT450_TrimPt40', array( 'd', listRates[767:779]), array('d', listRatesErr[767:779] )],
+#			['PFTrimHT450_TrimPt100', array( 'd', listRates[779:791]), array('d', listRatesErr[779:791] )],
+#			['PFTrimHT450_TrimPt150', array( 'd', listRates[791:803]), array('d', listRatesErr[791:803] )],
+#			['PFTrimHT450_TrimPt200', array( 'd', listRates[803:815]), array('d', listRatesErr[803:815] )],
+#			['PFTrimHT450_TrimPt250', array( 'd', listRates[815:827]), array('d', listRatesErr[815:827] )],
+#			]
+#
+#		plotRatesCompPtMass( PFTrimHT450List, 'PFTrimHT450_TrimMassPt', PU)
+#
+#		PFTrimHT550List = [
+#			['PFTrimHT550_TrimPt40', array( 'd', listRates[839:851]), array('d', listRatesErr[839:851] )],
+#			['PFTrimHT550_TrimPt100', array( 'd', listRates[851:863]), array('d', listRatesErr[851:863] )],
+#			['PFTrimHT550_TrimPt150', array( 'd', listRates[863:875]), array('d', listRatesErr[863:875] )],
+#			['PFTrimHT550_TrimPt200', array( 'd', listRates[875:887]), array('d', listRatesErr[875:887] )],
+#			['PFTrimHT550_TrimPt250', array( 'd', listRates[887:899]), array('d', listRatesErr[887:899] )],
+#			]
+#
+#		plotRatesCompPtMass( PFTrimHT550List, 'PFTrimHT550_TrimMassPt', PU)
+#
+#
+#		PFTrimHT650List = [
+#			['PFTrimHT650_TrimPt40', array( 'd', listRates[911:923]), array('d', listRatesErr[911:923] )],
+#			['PFTrimHT650_TrimPt100', array( 'd', listRates[923:935]), array('d', listRatesErr[923:935] )],
+#			['PFTrimHT650_TrimPt150', array( 'd', listRates[935:947]), array('d', listRatesErr[935:947] )],
+#			['PFTrimHT650_TrimPt200', array( 'd', listRates[947:959]), array('d', listRatesErr[947:959] )],
+#			['PFTrimHT650_TrimPt250', array( 'd', listRates[959:971]), array('d', listRatesErr[959:971] )],
+#			]
+#
+#		plotRatesCompPtMass( PFTrimHT650List, 'PFTrimHT650_TrimMassPt', PU)
+#
+#
+#		PFTrimHT750List = [
+#			['PFTrimHT750_TrimPt40', array( 'd', listRates[983:995]), array('d', listRatesErr[983:995] )],
+#			['PFTrimHT750_TrimPt100', array( 'd', listRates[995:1007]), array('d', listRatesErr[995:1007] )],
+#			['PFTrimHT750_TrimPt150', array( 'd', listRates[1007:1019]), array('d', listRatesErr[1007:1019] )],
+#			['PFTrimHT750_TrimPt200', array( 'd', listRates[1019:1031]), array('d', listRatesErr[1019:1031] )],
+#			['PFTrimHT750_TrimPt250', array( 'd', listRates[1031:1043]), array('d', listRatesErr[1031:1043] )],
+#			]
+#
+#		plotRatesCompPtMass( PFTrimHT750List, 'PFTrimHT750_TrimMassPt', PU)
+#
+#		PFTrimHT850List = [
+#			['PFTrimHT850_TrimPt40', array( 'd', listRates[1055:1067]), array('d', listRatesErr[1055:1067] )],
+#			['PFTrimHT850_TrimPt100', array( 'd', listRates[1067:1079]), array('d', listRatesErr[1067:1079] )],
+#			['PFTrimHT850_TrimPt150', array( 'd', listRates[1079:1091]), array('d', listRatesErr[1079:1091] )],
+#			['PFTrimHT850_TrimPt200', array( 'd', listRates[1091:1103]), array('d', listRatesErr[1091:1103] )],
+#			['PFTrimHT850_TrimPt250', array( 'd', listRates[1103:1115]), array('d', listRatesErr[1103:1115] )],
+#			]
+#
+#		plotRatesCompPtMass( PFTrimHT850List, 'PFTrimHT850_TrimMassPt', PU)

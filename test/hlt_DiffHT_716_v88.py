@@ -7033,6 +7033,15 @@ process.hltHt750 = cms.EDFilter( "HLTHtMhtFilter",
     htLabels = cms.VInputTag( 'hltHtMht' ),
     minHt = cms.vdouble( 750.0 )
 )
+process.hltHt700 = cms.EDFilter( "HLTHtMhtFilter",
+    saveTags = cms.bool( False ),
+    mhtLabels = cms.VInputTag( 'hltHtMht' ),
+    meffSlope = cms.vdouble( 1.0 ),
+    minMeff = cms.vdouble( 0.0 ),
+    minMht = cms.vdouble( 0.0 ),
+    htLabels = cms.VInputTag( 'hltHtMht' ),
+    minHt = cms.vdouble( 700.0 )
+)
 process.hltHt850 = cms.EDFilter( "HLTHtMhtFilter",
     saveTags = cms.bool( False ),
     mhtLabels = cms.VInputTag( 'hltHtMht' ),
@@ -7832,19 +7841,21 @@ process.HLT_PFJet320_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1S
 
 ##### HT Triggers
 #process.HLT_HT450_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175OrHTT200 + process.hltPreHT450 + process.HLTAK4CaloJetsSequence + process.hltHtMht + process.hltHt450 + process.triggerPlotterHT + process.HLTEndSequence )
-process.HLT_HT450_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175OrHTT200 + process.hltPreHT450 + process.HLTAK4CaloJetsSequence + process.hltHtMht + process.hltHt450 + process.HLTEndSequence )
-process.HLT_HT550_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175OrHTT200 + process.hltPreHT550 + process.HLTAK4CaloJetsSequence + process.hltHtMht + process.hltHt550 + process.HLTEndSequence )
-process.HLT_HT650_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175OrHTT200 + process.hltPreHT650 + process.HLTAK4CaloJetsSequence + process.hltHtMht + process.hltHt650 + process.HLTEndSequence )
-process.HLT_HT750_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175OrHTT200 + process.hltPreHT750 + process.HLTAK4CaloJetsSequence + process.hltHtMht + process.hltHt750 + process.HLTEndSequence )
-process.HLT_HT850_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175OrHTT200 + process.hltPreHT850 + process.HLTAK4CaloJetsSequence + process.hltHtMht + process.hltHt850 + process.HLTEndSequence )
+#process.HLT_HT450_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175OrHTT200 + process.hltPreHT450 + process.HLTAK4CaloJetsSequence + process.hltHtMht + process.hltHt450 + process.HLTEndSequence )
+#process.HLT_HT550_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175OrHTT200 + process.hltPreHT550 + process.HLTAK4CaloJetsSequence + process.hltHtMht + process.hltHt550 + process.HLTEndSequence )
+#process.HLT_HT650_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175OrHTT200 + process.hltPreHT650 + process.HLTAK4CaloJetsSequence + process.hltHtMht + process.hltHt650 + process.HLTEndSequence )
+#process.HLT_HT750_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175OrHTT200 + process.hltPreHT750 + process.HLTAK4CaloJetsSequence + process.hltHtMht + process.hltHt750 + process.HLTEndSequence )
+#process.HLT_HT850_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175OrHTT200 + process.hltPreHT850 + process.HLTAK4CaloJetsSequence + process.hltHtMht + process.hltHt850 + process.HLTEndSequence )
 
 ###### PFHT Triggers 
 #process.HLT_PFHT450_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175 + process.hltPrePFHT450 + process.HLTAK4CaloJetsSequence + process.hltHtMht + process.hltHt350 + process.HLTAK4PFJetsSequence + process.hltPFHT + process.hltPFHT450 + process.hlt1AK4PFJetsMass00 + process.triggerPlotterPFHT + process.HLTEndSequence )
-process.HLT_PFHT450_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175 + process.hltPrePFHT450 + process.HLTAK4CaloJetsSequence + process.hltHtMht + process.hltHt350 + process.HLTAK4PFJetsSequence + process.hltPFHT + process.hltPFHT450 + process.hlt1AK4PFJetsMass00 + process.HLTEndSequence )
-process.HLT_PFHT550_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175 + process.hltPrePFHT550 + process.HLTAK4CaloJetsSequence + process.hltHtMht + process.hltHt450 + process.HLTAK4PFJetsSequence + process.hltPFHT + process.hltPFHT550 + process.hlt1AK4PFJetsMass00 + process.HLTEndSequence )
-process.HLT_PFHT650_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175 + process.hltPrePFHT650 + process.HLTAK4CaloJetsSequence + process.hltHtMht + process.hltHt550 + process.HLTAK4PFJetsSequence + process.hltPFHT + process.hltPFHT650 + process.hlt1AK4PFJetsMass00 + process.HLTEndSequence )
-process.HLT_PFHT750_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175 + process.hltPrePFHT750 + process.HLTAK4CaloJetsSequence + process.hltHtMht + process.hltHt650 + process.HLTAK4PFJetsSequence + process.hltPFHT + process.hltPFHT750 + process.hlt1AK4PFJetsMass00 + process.HLTEndSequence )
-process.HLT_PFHT850_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175 + process.hltPrePFHT850 + process.HLTAK4CaloJetsSequence + process.hltHtMht + process.hltHt750 + process.HLTAK4PFJetsSequence + process.hltPFHT + process.hltPFHT850 + process.hlt1AK4PFJetsMass00 + process.HLTEndSequence )
+#process.HLT_PFHT450_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175 + process.hltPrePFHT450 + process.HLTAK4CaloJetsSequence + process.hltHtMht + process.hltHt350 + process.HLTAK4PFJetsSequence + process.hltPFHT + process.hltPFHT450 + process.hlt1AK4PFJetsMass00 + process.HLTEndSequence )
+process.HLT_PFHT550_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175 + process.hltPrePFHT550 + process.HLTAK4CaloJetsSequence + process.hltHtMht + process.hltHt350 + process.HLTAK4PFJetsSequence + process.hltPFHT + process.hltPFHT550 + process.hlt1AK4PFJetsMass00 + process.HLTEndSequence )
+process.HLT_PFHT650_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175 + process.hltPrePFHT650 + process.HLTAK4CaloJetsSequence + process.hltHtMht + process.hltHt450 + process.HLTAK4PFJetsSequence + process.hltPFHT + process.hltPFHT650 + process.hlt1AK4PFJetsMass00 + process.HLTEndSequence )
+process.HLT_PFHT750_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175 + process.hltPrePFHT750 + process.HLTAK4CaloJetsSequence + process.hltHtMht + process.hltHt550 + process.HLTAK4PFJetsSequence + process.hltPFHT + process.hltPFHT750 + process.hlt1AK4PFJetsMass00 + process.HLTEndSequence )
+process.HLT_PFHT850_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175 + process.hltPrePFHT850 + process.HLTAK4CaloJetsSequence + process.hltHtMht + process.hltHt650 + process.HLTAK4PFJetsSequence + process.hltPFHT + process.hltPFHT850 + process.hlt1AK4PFJetsMass00 + process.HLTEndSequence )
+process.HLT_PFHT900_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175 + process.hltPrePFHT900 + process.HLTAK4CaloJetsSequence + process.hltHtMht + process.hltHt700 + process.HLTAK4PFJetsSequence + process.hltPFHT + process.hltPFHT900 + process.hlt1AK4PFJetsMass00 + process.HLTEndSequence )
+process.HLT_PFHT950_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175 + process.hltPrePFHT950 + process.HLTAK4CaloJetsSequence + process.hltHtMht + process.hltHt750 + process.HLTAK4PFJetsSequence + process.hltPFHT + process.hltPFHT950 + process.hlt1AK4PFJetsMass00 + process.HLTEndSequence )
 
 ###### PFHTTrim Triggers 
 #process.HLT_PFTrimHT450_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175 + process.hltPrePFTrimHT450 + process.HLTAK4CaloJetsSequence + process.hltHtMht + process.hltHt350 + process.HLTAK4PFJetsSequence + process.hltAK4PFJetsTrim + process.hltPFHT + process.hlt1AK4PFJetsTrimMass00 + process.hltPFHT450 + process.triggerPlotterPFTrimHT + process.HLTEndSequence )
@@ -7892,7 +7903,6 @@ process.HLT_AK8PFNOJECTrimHT750_v1 = cms.Path( process.HLTBeginSequence + proces
 process.HLT_AK8PFNOJECTrimHT850_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175 + process.hltPreAK8PFNOJECTrimHT850 + process.HLTAK4CaloJetsSequence + process.hltHtMht + process.hltHt750 + process.HLTAK8PFJetsSequenceNOJEC + process.hltAK8PFTrimHT  + process.hlt1AK8PFJetsTrimMass00 + process.hltAK8PFTrimHT850 + process.HLTEndSequence )
 
 
-process.HLT_AK8PFTrimHT450TEST_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175 + process.hltPreAK8PFTrimHT450TEST + process.HLTAK4CaloJetsSequence + process.hltHtMht + process.hltHt350 + process.HLTAK8PFJetsSequence + process.hltAK8PFJetsTrim + process.hltAK8PFHT + process.hlt1AK8PFJetsTrimMass00TEST + process.hltAK8PFHT450 + process.HLTEndSequence )
 
 process.source = cms.Source( "PoolSource",
     fileNames = cms.untracked.vstring(
