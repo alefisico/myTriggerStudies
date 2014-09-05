@@ -4,7 +4,7 @@
 
 - Most of the things here are based on the new openHLT (https://github.com/jiafulow/HLTrigger-HLTanalyzers-test-openHLT) 
 - Trigger Rates with: test/GetRates.py (you need log files from openHLT Filter)
-- My modify menu: test/hlt_PFNoPUHT_710_V52_MC.py
+- My modify menu: test/hlt_DiffHT_717_v90_MC.py
 - Datasets and multicrab jobs: test/multicrab.cfg
 
 Enjoy it!
@@ -12,11 +12,11 @@ Enjoy it!
 
 To reproduce these results:
  export SCRAM_ARCH=slc6_amd64_gcc481
- cmsrel CMSSW_7_1_4
- cd CMSSW_7_1_4/src
+ cmsrel CMSSW_7_1_7
+ cd CMSSW_7_1_7/src
  cmsenv
  git cms-addpkg HLTrigger/Configuration
- git cms-merge-topic perrotta:hltTemplatesForRun2In716
+ git cms-merge-topic perrotta:hltTemplatesForRun2In717
  scramv1 b -j 18
  cd HLTrigger/Configuration/test/
  ./cmsDriver.csh 
@@ -24,32 +24,14 @@ To reproduce these results:
  mkdir MyTrigger
  git clone https://github.com/alefisico/myTriggerStudies.git MyTrigger/myTriggerStudies
  cd MyTrigger/myTriggerStudies/
- git checkout v716
+ git checkout v717
  cd -
  git clone git@github.com:jiafulow/HLTrigger-HLTanalyzers-test-openHLT.git MyTrigger/myTriggerStudies/test/openHLT
  scramv1 b -j 18
  cmsenv 
 
-Follow instructions from here openHLT/addpkg_7_1_0.txt (openHLT JETMET package):
- git cms-addpkg HLTrigger/HLTanalyzers
- git cms-addpkg PhysicsTools/PatAlgos
- git cms-addpkg RecoMET/METFilters
- wget --no-check-certificate https://raw.githubusercontent.com/jiafulow/VHbbAnalysis/CMSSW_7_0_0_dev/additionalFiles/sandbox/TobTecFakesFilter.cc -O RecoMET/METFilters/plugins/TobTecFakesFilter.cc
- wget --no-check-certificate https://raw.githubusercontent.com/jiafulow/VHbbAnalysis/CMSSW_7_0_0_dev/additionalFiles/sandbox/metOptionalFilters_cff.py -O RecoMET/METFilters/python/metOptionalFilters_cff.py
- git cms-addpkg RecoJets/JetProducers
- wget --no-check-certificate https://raw.githubusercontent.com/violatingcp/Jets_Short/832d3b/RecoJets/JetProducers/python/PileupJetIDCutParams_cfi.py -O RecoJets/JetProducers/python/PileupJetIDCutParams_cfi.py
- wget --no-check-certificate https://raw.githubusercontent.com/violatingcp/Jets_Short/832d3b/RecoJets/JetProducers/python/PileupJetIDParams_cfi.py -O RecoJets/JetProducers/python/PileupJetIDParams_cfi.py
- wget --no-check-certificate https://raw.githubusercontent.com/violatingcp/Jets_Short/832d3b/RecoJets/JetProducers/data/TMVAClassificationCategory_JetID_53X_Dec2012.weights.xml -O RecoJets/JetProducers/data/TMVAClassificationCategory_JetID_53X_Dec2012.weights.xml
- wget --no-check-certificate https://raw.githubusercontent.com/violatingcp/Jets_Short/832d3b/RecoJets/JetProducers/data/TMVAClassificationCategory_JetID_53X_chs_Dec2012.weights.xml -O RecoJets/JetProducers/data/TMVAClassificationCategory_JetID_53X_chs_Dec2012.weights.xml
- wget --no-check-certificate https://raw.githubusercontent.com/violatingcp/Jets_Short/832d3b/RecoJets/JetProducers/data/TMVAClassificationCategory_JetID_MET_53X_Dec2012.weights.xml -O RecoJets/JetProducers/data/TMVAClassificationCategory_JetID_MET_53X_Dec2012.weights.xml
- wget --no-check-certificate https://raw.githubusercontent.com/jiafulow/VHbbAnalysis/CMSSW_7_0_0_dev/additionalFiles/sandbox/PileupJetID_53x_cfi.py -O RecoJets/JetProducers/python/PileupJetID_53x_cfi.py
- touch RecoJets/JetProducers/data/dummy.txt
- cp RecoJets/JetProducers/data/TMVAClassificationCategory_JetID_53X_chs_Dec2012.weights.xml RecoJets/JetProducers/data/TMVAClassificationCategory_JetID_53X_chs_Dec2012.orig.weights.xml
- sed -i 's/jetPt \&gt; 20\.0/jetPt \&gt; 0.0/' RecoJets/JetProducers/data/TMVAClassificationCategory_JetID_53X_chs_Dec2012.weights.xml
- scramv1 b -j 18
- cmsenv 
 
 
 HLT Menu used:
- hltGetConfiguration /dev/CMSSW_7_1_1/HLT/V134 --full --offline --mc --unprescale --process TEST --globaltag auto:startup_GRun --no-output > hlt.py
+ hltGetConfiguration /dev/CMSSW_7_1_1/HLT/V90 --full --offline --mc --unprescale --process TEST --globaltag auto:startup_GRun --no-output > hlt.py
 

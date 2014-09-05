@@ -31,19 +31,19 @@ process.options = cms.untracked.PSet(
 process.load("Configuration.Geometry.GeometryIdeal_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:com10_8E33v2')
+process.GlobalTag = GlobalTag(process.GlobalTag, 'PLS170_V7AN1::All')
 process.load("Configuration.StandardSequences.MagneticField_cff")
 
 ## Standard PAT Configuration File
-process.load("PhysicsTools.PatAlgos.patSequences_cff")
+#process.load("PhysicsTools.PatAlgos.patSequences_cff")
 
 ## Output Module Configuration (expects a path 'p')
-from PhysicsTools.PatAlgos.patEventContent_cff import patEventContentNoCleaning
+#from PhysicsTools.PatAlgos.patEventContent_cff import patEventContentNoCleaning
 process.out = cms.OutputModule("PoolOutputModule",
                                fileName = cms.untracked.string('patTuple.root'),
                                # save PAT Layer 1 output; you need a '*' to
                                # unpack the list of commands 'patEventContent'
-                               outputCommands = cms.untracked.vstring('drop *', 'keep recoPFCandidates_particleFlow_*_*', *patEventContentNoCleaning )
+                               outputCommands = cms.untracked.vstring('drop *') #, 'keep recoPFCandidates_particleFlow_*_*', *patEventContentNoCleaning )
                                )
 process.outpath = cms.EndPath(process.out)
 
@@ -51,22 +51,24 @@ process.outpath = cms.EndPath(process.out)
 ################################################################################
 # User configurations
 ################################################################################
-from PhysicsTools.SelectorUtils.pvSelector_cfi import pvSelector
-process.goodOfflinePrimaryVertices = cms.EDFilter("PrimaryVertexObjectFilter",
-    src          = cms.InputTag('offlinePrimaryVertices'),
-    filterParams = pvSelector.clone( minNdof = cms.double(4.0), maxZ = cms.double(24.0) )
-)
+#from PhysicsTools.SelectorUtils.pvSelector_cfi import pvSelector
+#process.goodOfflinePrimaryVertices = cms.EDFilter("PrimaryVertexObjectFilter",
+#    src          = cms.InputTag('offlinePrimaryVertices'),
+#    filterParams = pvSelector.clone( minNdof = cms.double(4.0), maxZ = cms.double(24.0) )
+#)
 
-from CommonTools.ParticleFlow.pfNoPileUp_cff import * 
-from CommonTools.ParticleFlow.pfParticleSelection_cff import *
+#from CommonTools.ParticleFlow.pfNoPileUp_cff import * 
+#from CommonTools.ParticleFlow.pfParticleSelection_cff import *
+process.load('CommonTools.ParticleFlow.pfNoPileUp_cff')
+process.load('CommonTools.ParticleFlow.pfParticleSelection_cff')
 
 process.pfPileUp.checkClosestZVertex = False
 process.pfPileUp.Vertices = 'goodOfflinePrimaryVertices'
-process.pfPileUp.PFCandidates = 'particleFlow'
-process.pfNoPileUp.bottomCollection = 'particleFlow'
+process.pfPileUp.PFCandidates = 'particleFlowPtrs'
+process.pfNoPileUp.bottomCollection = 'particleFlowPtrs'
 
 from CommonTools.ParticleFlow.goodOfflinePrimaryVertices_cfi import goodOfflinePrimaryVertices
-process.pfNoPileUpSequence.insert(0, goodOfflinePrimaryVertices)
+process.pfNoPileUpSequence.insert(0, process.goodOfflinePrimaryVertices)
 
 process.pileUpSubtractionSequence = cms.Sequence(
     process.pfNoPileUpSequence +
@@ -91,7 +93,7 @@ process.patJetCorrFactorsAK4CHS.levels = ['L1FastJet', 'L2Relative', 'L3Absolute
 process.patJetCorrFactorsAK4CHS.payload = 'AK4PFchs'
 process.patJetCorrFactorsAK4CHS.useRho = True
 #
-#from PhysicsTools.PatAlgos.producersLayer1.jetProducer_cfi import *
+from PhysicsTools.PatAlgos.producersLayer1.jetProducer_cfi import *
 process.patJetsAK4CHS = patJets.clone()
 process.patJetsAK4CHS.jetSource = jetSource
 process.patJetsAK4CHS.addJetCharge = False
