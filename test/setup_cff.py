@@ -1,10 +1,10 @@
-# /dev/CMSSW_7_1_1/GRun/V76 (CMSSW_7_1_4_patch1)
+# /dev/CMSSW_7_1_1/GRun/V90 (CMSSW_7_1_6_HLT1)
 
 import FWCore.ParameterSet.Config as cms
 
 
 HLTConfigVersion = cms.PSet(
-  tableName = cms.string('/dev/CMSSW_7_1_1/GRun/V76')
+  tableName = cms.string('/dev/CMSSW_7_1_1/GRun/V90')
 )
 
 HLTIter4PSetTrajectoryFilterIT = cms.PSet( 
@@ -453,10 +453,18 @@ HLTPSetPvClusterComparerForIT = cms.PSet(
 streams = cms.PSet(  A = cms.vstring( 'InitialPD' ) )
 datasets = cms.PSet(  InitialPD = cms.vstring( 'HLT_BTagCSV07_v1',
   'HLT_CaloJet260_v1',
+  'HLT_Dimuon13_PsiPrime_v1',
+  'HLT_Dimuon13_Upsilon_v1',
+  'HLT_Dimuon20_Jpsi_v1',
   'HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v1',
   'HLT_DoubleMediumIsoPFTau40_Trk1_eta2p1_Reg_v1',
   'HLT_DoubleMediumIsoPFTau40_Trk1_eta2p1_v1',
+  'HLT_DoubleMu4_3_Bs_v1',
+  'HLT_DoubleMu4_3_Jpsi_Displaced_v1',
+  'HLT_DoubleMu4_JpsiTrk_Displaced_v1',
   'HLT_DoubleMu4_Jpsi_Displaced_v1',
+  'HLT_DoubleMu4_LowMassNonResonantTrk_Displaced_v1',
+  'HLT_DoubleMu4_PsiPrimeTrk_Displaced_v1',
   'HLT_Ele17_Ele12_Ele10_CaloId_TrackId_v1',
   'HLT_Ele17_Ele8_Gsf_v1',
   'HLT_Ele22_eta2p1_WP90Rho_Gsf_LooseIsoPFTau20_v1',
@@ -481,6 +489,7 @@ datasets = cms.PSet(  InitialPD = cms.vstring( 'HLT_BTagCSV07_v1',
   'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v1',
   'HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v1',
   'HLT_Mu23_TrkIsoVVL_Ele12_Gsf_CaloId_TrackId_Iso_MediumWP_v1',
+  'HLT_Mu25_TkMu0_dEta18_Onia_v1',
   'HLT_Mu30_TkMu11_v1',
   'HLT_Mu40_v1',
   'HLT_Mu8_TrkIsoVVL_Ele23_Gsf_CaloId_TrackId_Iso_MediumWP_v1',
@@ -488,11 +497,31 @@ datasets = cms.PSet(  InitialPD = cms.vstring( 'HLT_BTagCSV07_v1',
   'HLT_PFJet260_v1',
   'HLT_PFJet40_v1',
   'HLT_PFMET180_NoiseCleaned_v1',
-  'HLT_PFNoPUHT650_v1',
-  'HLT_PFNoPUJet260_v1',
   'HLT_PFchMET90_NoiseCleaned_v1',
+  'HLT_Photon135_PFMET40_v1',
+  'HLT_Photon135_VBF_v1',
+  'HLT_Photon150_PFMET40_v1',
+  'HLT_Photon150_VBF_v1',
+  'HLT_Photon160_PFMET40_v1',
+  'HLT_Photon160_VBF_v1',
   'HLT_Photon20_CaloIdVL_IsoL_v1',
+  'HLT_Photon22_R9Id90_HE10_Iso40_EBOnly_PFMET40_v1',
+  'HLT_Photon22_R9Id90_HE10_Iso40_EBOnly_VBF_v1',
+  'HLT_Photon250_NoHE_PFMET40_v1',
+  'HLT_Photon250_NoHE_VBF_v1',
   'HLT_Photon26_R9Id85_OR_CaloId10_Iso50_Photon18_R9Id85_OR_CaloId10_Iso50_Mass70_v1',
+  'HLT_Photon300_NoHE_PFMET40_v1',
+  'HLT_Photon300_NoHE_VBF_v1',
+  'HLT_Photon36_R9Id85_OR_CaloId24b40e_Iso50T80L_Photon18_AND_HE10_R9Id65_Mass95_v1',
+  'HLT_Photon36_R9Id90_HE10_Iso40_EBOnly_PFMET40_v1',
+  'HLT_Photon36_R9Id90_HE10_Iso40_EBOnly_VBF_v1',
+  'HLT_Photon42_R9Id85_OR_CaloId24b40e_Iso50T80L_Photon22_AND_HE10_R9Id65_v1',
+  'HLT_Photon50_R9Id90_HE10_Iso40_EBOnly_PFMET40_v1',
+  'HLT_Photon50_R9Id90_HE10_Iso40_EBOnly_VBF_v1',
+  'HLT_Photon75_R9Id90_HE10_Iso40_EBOnly_PFMET40_v1',
+  'HLT_Photon75_R9Id90_HE10_Iso40_EBOnly_VBF_v1',
+  'HLT_Photon90_R9Id90_HE10_Iso40_EBOnly_PFMET40_v1',
+  'HLT_Photon90_R9Id90_HE10_Iso40_EBOnly_VBF_v1',
   'HLT_Physics_v1',
   'HLT_ReducedIterativeTracking_v1' ) )
 
@@ -532,10 +561,20 @@ HepPDTESSource = cms.ESSource( "HepPDTESSource",
   pdtFileName = cms.FileInPath( "SimGeneral/HepPDTESSource/data/pythiaparticle.tbl" )
 )
 GlobalTag = cms.ESSource( "PoolDBESSource",
-  globaltag = cms.string( "GR_H_V33" ),
+  globaltag = cms.string( "GR_H_V39" ),
   RefreshEachRun = cms.untracked.bool( True ),
   RefreshOpenIOVs = cms.untracked.bool( False ),
   toGet = cms.VPSet( 
+    cms.PSet(  record = cms.string( "JetCorrectionsRecord" ),
+      tag = cms.string( "JetCorrectorParametersCollection_HLT_V1_AK4Calo" ),
+      connect = cms.untracked.string( "frontier://FrontierPrep/CMS_COND_PHYSICSTOOLS" ),
+      label = cms.untracked.string( "AK4CaloHLT" )
+    ),
+    cms.PSet(  record = cms.string( "JetCorrectionsRecord" ),
+      tag = cms.string( "JetCorrectorParametersCollection_HLT_trk0_V1_AK4PF" ),
+      connect = cms.untracked.string( "frontier://FrontierPrep/CMS_COND_PHYSICSTOOLS" ),
+      label = cms.untracked.string( "AK4PFHLT" )
+    )
   ),
   DBParameters = cms.PSet( 
     authenticationPath = cms.untracked.string( "." ),
@@ -564,6 +603,50 @@ CSCChannelMapperESSource = cms.ESSource( "EmptyESSource",
   firstValid = cms.vuint32( 1 )
 )
 
+hltESPAK4CaloCorrection = cms.ESProducer( "JetCorrectionESChain",
+  correctors = cms.vstring( 'hltESPAK4CaloFastJetCorrectionESProducer',
+    'hltESPAK4CaloRelativeCorrectionESProducer',
+    'hltESPAK4CaloAbsoluteCorrectionESProducer' ),
+  appendToDataLabel = cms.string( "" )
+)
+hltESPAK4PFCorrection = cms.ESProducer( "JetCorrectionESChain",
+  correctors = cms.vstring( 'hltESPAK4PFFastJetCorrectionESProducer',
+    'hltESPAK4PFRelativeCorrectionESProducer',
+    'hltESPAK4PFAbsoluteCorrectionESProducer' ),
+  appendToDataLabel = cms.string( "" )
+)
+hltESPAK4CaloFastJetCorrectionESProducer = cms.ESProducer( "L1FastjetCorrectionESProducer",
+  appendToDataLabel = cms.string( "" ),
+  srcRho = cms.InputTag( "hltFixedGridRhoFastjetAllCalo" ),
+  algorithm = cms.string( "AK4CaloHLT" ),
+  level = cms.string( "L1FastJet" )
+)
+hltESPAK4PFFastJetCorrectionESProducer = cms.ESProducer( "L1FastjetCorrectionESProducer",
+  appendToDataLabel = cms.string( "" ),
+  srcRho = cms.InputTag( "hltFixedGridRhoFastjetAll" ),
+  algorithm = cms.string( "AK4PFHLT" ),
+  level = cms.string( "L1FastJet" )
+)
+hltESPAK4PFRelativeCorrectionESProducer = cms.ESProducer( "LXXXCorrectionESProducer",
+  appendToDataLabel = cms.string( "" ),
+  algorithm = cms.string( "AK4PFHLT" ),
+  level = cms.string( "L2Relative" )
+)
+hltESPAK4CaloRelativeCorrectionESProducer = cms.ESProducer( "LXXXCorrectionESProducer",
+  appendToDataLabel = cms.string( "" ),
+  algorithm = cms.string( "AK4CaloHLT" ),
+  level = cms.string( "L2Relative" )
+)
+hltESPAK4CaloAbsoluteCorrectionESProducer = cms.ESProducer( "LXXXCorrectionESProducer",
+  appendToDataLabel = cms.string( "" ),
+  algorithm = cms.string( "AK4CaloHLT" ),
+  level = cms.string( "L3Absolute" )
+)
+hltESPAK4PFAbsoluteCorrectionESProducer = cms.ESProducer( "LXXXCorrectionESProducer",
+  appendToDataLabel = cms.string( "" ),
+  algorithm = cms.string( "AK4PFHLT" ),
+  level = cms.string( "L3Absolute" )
+)
 MaterialPropagatorParabolicMF = cms.ESProducer( "PropagatorWithMaterialESProducer",
   SimpleMagneticField = cms.string( "ParabolicMf" ),
   PropagationDirection = cms.string( "alongMomentum" ),
@@ -595,7 +678,6 @@ hltESPChi2MeasurementEstimator30 = cms.ESProducer( "Chi2MeasurementEstimatorESPr
 AnyDirectionAnalyticalPropagator = cms.ESProducer( "AnalyticalPropagatorESProducer",
   MaxDPhi = cms.double( 1.6 ),
   ComponentName = cms.string( "AnyDirectionAnalyticalPropagator" ),
-  SimpleMagneticField = cms.string( "" ),
   PropagationDirection = cms.string( "anyDirection" )
 )
 AutoMagneticFieldESProducer = cms.ESProducer( "AutoMagneticFieldESProducer",
@@ -1142,87 +1224,14 @@ hltCombinedSecondaryVertex = cms.ESProducer( "CombinedSecondaryVertexESProducer"
   trackSort = cms.string( "sip2dSig" ),
   trackFlip = cms.bool( False )
 )
-hltESPAK4CaloL1L2L3 = cms.ESProducer( "JetCorrectionESChain",
-  correctors = cms.vstring( 'hltESPAK5L1FastJetCorrectionESProducer',
-    'hltESPAK5L2RelativeCorrectionESProducer',
-    'hltESPAK5L3AbsoluteCorrectionESProducer' ),
-  appendToDataLabel = cms.string( "" )
-)
-hltESPAK4CaloL2L3 = cms.ESProducer( "JetCorrectionESChain",
-  correctors = cms.vstring( 'hltESPAK5L2RelativeCorrectionESProducer',
-    'hltESPAK5L3AbsoluteCorrectionESProducer' ),
-  appendToDataLabel = cms.string( "" )
-)
-hltESPAK4PFL1L2L3 = cms.ESProducer( "JetCorrectionESChain",
-  correctors = cms.vstring( 'hltESPAK5L1PFFastJetCorrectionESProducer',
-    'hltESPAK5L2PFRelativeCorrectionESProducer',
-    'hltESPAK5L3PFAbsoluteCorrectionESProducer' ),
-  appendToDataLabel = cms.string( "" )
-)
-hltESPAK4PFNoPUL1L2L3 = cms.ESProducer( "JetCorrectionESChain",
-  correctors = cms.vstring( 'hltESPAK5L1PFNoPUFastJetCorrectionESProducer',
-    'hltESPAK5L2PFNoPURelativeCorrectionESProducer',
-    'hltESPAK5L3PFNoPUAbsoluteCorrectionESProducer' ),
-  appendToDataLabel = cms.string( "" )
-)
-hltESPAK5L1FastJetCorrectionESProducer = cms.ESProducer( "L1FastjetCorrectionESProducer",
-  appendToDataLabel = cms.string( "" ),
-  srcRho = cms.InputTag( "hltFixedGridRhoFastjetAllCalo" ),
-  algorithm = cms.string( "AK5CaloHLT" ),
-  level = cms.string( "L1FastJet" )
-)
-hltESPAK5L1PFFastJetCorrectionESProducer = cms.ESProducer( "L1FastjetCorrectionESProducer",
-  appendToDataLabel = cms.string( "" ),
-  srcRho = cms.InputTag( "hltFixedGridRhoFastjetAll" ),
-  algorithm = cms.string( "AK5PFHLT" ),
-  level = cms.string( "L1FastJet" )
-)
-hltESPAK5L1PFNoPUFastJetCorrectionESProducer = cms.ESProducer( "L1FastjetCorrectionESProducer",
-  appendToDataLabel = cms.string( "" ),
-  srcRho = cms.InputTag( "hltFixedGridRhoFastjetAll" ),
-  algorithm = cms.string( "AK5PFchsHLT" ),
-  level = cms.string( "L1FastJet" )
-)
-hltESPAK5L2PFNoPURelativeCorrectionESProducer = cms.ESProducer( "LXXXCorrectionESProducer",
-  appendToDataLabel = cms.string( "" ),
-  algorithm = cms.string( "AK5PFchsHLT" ),
-  level = cms.string( "L2Relative" )
-)
-hltESPAK5L2PFRelativeCorrectionESProducer = cms.ESProducer( "LXXXCorrectionESProducer",
-  appendToDataLabel = cms.string( "" ),
-  algorithm = cms.string( "AK5PFHLT" ),
-  level = cms.string( "L2Relative" )
-)
-hltESPAK5L2RelativeCorrectionESProducer = cms.ESProducer( "LXXXCorrectionESProducer",
-  appendToDataLabel = cms.string( "" ),
-  algorithm = cms.string( "AK5CaloHLT" ),
-  level = cms.string( "L2Relative" )
-)
-hltESPAK5L3AbsoluteCorrectionESProducer = cms.ESProducer( "LXXXCorrectionESProducer",
-  appendToDataLabel = cms.string( "" ),
-  algorithm = cms.string( "AK5CaloHLT" ),
-  level = cms.string( "L3Absolute" )
-)
-hltESPAK5L3PFAbsoluteCorrectionESProducer = cms.ESProducer( "LXXXCorrectionESProducer",
-  appendToDataLabel = cms.string( "" ),
-  algorithm = cms.string( "AK5PFHLT" ),
-  level = cms.string( "L3Absolute" )
-)
-hltESPAK5L3PFNoPUAbsoluteCorrectionESProducer = cms.ESProducer( "LXXXCorrectionESProducer",
-  appendToDataLabel = cms.string( "" ),
-  algorithm = cms.string( "AK5PFchsHLT" ),
-  level = cms.string( "L3Absolute" )
-)
 hltESPAnalyticalPropagator = cms.ESProducer( "AnalyticalPropagatorESProducer",
   MaxDPhi = cms.double( 1.6 ),
   ComponentName = cms.string( "hltESPAnalyticalPropagator" ),
-  SimpleMagneticField = cms.string( "" ),
   PropagationDirection = cms.string( "alongMomentum" )
 )
 hltESPBwdAnalyticalPropagator = cms.ESProducer( "AnalyticalPropagatorESProducer",
   MaxDPhi = cms.double( 1.6 ),
   ComponentName = cms.string( "hltESPBwdAnalyticalPropagator" ),
-  SimpleMagneticField = cms.string( "" ),
   PropagationDirection = cms.string( "oppositeToMomentum" )
 )
 hltESPBwdElectronPropagator = cms.ESProducer( "PropagatorWithMaterialESProducer",
@@ -1969,34 +1978,29 @@ DQMStore = cms.Service( "DQMStore",
 FastTimerService = cms.Service( "FastTimerService",
   dqmPath = cms.untracked.string( "HLT/TimerService" ),
   dqmModuleTimeRange = cms.untracked.double( 40.0 ),
-  luminosityProduct = cms.untracked.InputTag( "hltScalersRawToDigi" ),
-  enableTimingExclusive = cms.untracked.bool( False ),
+  useRealTimeClock = cms.untracked.bool( True ),
   enableTimingModules = cms.untracked.bool( True ),
-  enableDQMbyPathOverhead = cms.untracked.bool( False ),
-  dqmTimeResolution = cms.untracked.double( 5.0 ),
+  enableDQM = cms.untracked.bool( True ),
   enableDQMbyModule = cms.untracked.bool( False ),
-  dqmLuminosityResolution = cms.untracked.double( 1.0E31 ),
+  enableTimingExclusive = cms.untracked.bool( True ),
   skipFirstPath = cms.untracked.bool( False ),
-  enableTimingPaths = cms.untracked.bool( True ),
   enableDQMbyLumiSection = cms.untracked.bool( True ),
   dqmPathTimeResolution = cms.untracked.double( 0.5 ),
   dqmPathTimeRange = cms.untracked.double( 100.0 ),
   dqmTimeRange = cms.untracked.double( 1000.0 ),
   dqmLumiSectionsRange = cms.untracked.uint32( 2500 ),
-  enableDQMSummary = cms.untracked.bool( True ),
-  enableTimingSummary = cms.untracked.bool( False ),
-  enableDQMbyPathTotal = cms.untracked.bool( False ),
-  useRealTimeClock = cms.untracked.bool( True ),
-  enableDQMbyPathExclusive = cms.untracked.bool( False ),
-  enableDQMbyLuminosity = cms.untracked.bool( True ),
-  enableDQM = cms.untracked.bool( True ),
-  supportedProcesses = cms.untracked.vuint32( 8, 12, 16, 24, 32 ),
-  dqmModuleTimeResolution = cms.untracked.double( 0.2 ),
-  dqmLuminosityRange = cms.untracked.double( 1.0E34 ),
-  enableDQMbyPathActive = cms.untracked.bool( False ),
-  enableDQMbyPathDetails = cms.untracked.bool( False ),
   enableDQMbyProcesses = cms.untracked.bool( True ),
-  enableDQMbyPathCounters = cms.untracked.bool( False ),
+  enableDQMSummary = cms.untracked.bool( True ),
+  enableTimingSummary = cms.untracked.bool( True ),
+  enableDQMbyPathTotal = cms.untracked.bool( True ),
+  enableTimingPaths = cms.untracked.bool( True ),
+  enableDQMbyPathExclusive = cms.untracked.bool( True ),
+  dqmTimeResolution = cms.untracked.double( 5.0 ),
+  dqmModuleTimeResolution = cms.untracked.double( 0.2 ),
+  enableDQMbyPathActive = cms.untracked.bool( True ),
+  enableDQMbyPathDetails = cms.untracked.bool( True ),
+  enableDQMbyPathOverhead = cms.untracked.bool( False ),
+  enableDQMbyPathCounters = cms.untracked.bool( True ),
   enableDQMbyModuleType = cms.untracked.bool( False )
 )
 MessageLogger = cms.Service( "MessageLogger",
