@@ -4110,6 +4110,10 @@ process.hltPrePFTrimHT450 = cms.EDFilter( "HLTPrescaler",
     L1GtReadoutRecordTag = cms.InputTag( "hltGtDigis" ),
     offset = cms.uint32( 0 )
 )
+process.hltPrePFTrimHT550 = cms.EDFilter( "HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag( "hltGtDigis" ),
+    offset = cms.uint32( 0 )
+)
 process.hltHt350 = cms.EDFilter( "HLTHtMhtFilter",
     saveTags = cms.bool( False ),
     mhtLabels = cms.VInputTag( 'hltHtMht' ),
@@ -4856,7 +4860,7 @@ process.HLT_PFHT900_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HT
 process.HLT_PFHT950_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175 + process.hltPrePFHT950 + process.HLTAK4CaloJetsSequence + process.hltHtMht + process.hltHt750 + process.HLTAK4PFJetsSequence + process.hltPFHT + process.hltPFHT950 + process.HLTEndSequence )
 
 process.HLT_PFTrimHT450_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175 + process.hltPrePFTrimHT450 + process.HLTAK4CaloJetsSequence + process.hltHtMht + process.hltHt350 + process.HLTAK4PFJetsSequence + process.hltPFHT + process.hltAK4PFJetsTrim + process.hlt1AK4PFJetsTrimMass00 + process.hltPFHT450 + process.HLTEndSequence )
-process.HLT_PFTrimHT550_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175 + process.hltPrePFTrimHT450 + process.HLTAK4CaloJetsSequence + process.hltHtMht + process.hltHt450 + process.HLTAK4PFJetsSequence + process.hltPFHT + process.hltAK4PFJetsTrim + process.hlt1AK4PFJetsTrimMass00 + process.hltPFHT550 + process.HLTEndSequence )
+process.HLT_PFTrimHT550_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175 + process.hltPrePFTrimHT550 + process.HLTAK4CaloJetsSequence + process.hltHtMht + process.hltHt450 + process.HLTAK4PFJetsSequence + process.hltPFHT + process.hltAK4PFJetsTrim + process.hlt1AK4PFJetsTrimMass00 + process.hltPFHT550 + process.HLTEndSequence )
 process.HLT_PFTrimHT650_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175 + process.hltPrePFTrimHT650 + process.HLTAK4CaloJetsSequence + process.hltHtMht + process.hltHt550 + process.HLTAK4PFJetsSequence + process.hltPFHT + process.hltAK4PFJetsTrim + process.hlt1AK4PFJetsTrimMass00 + process.hltPFHT650 + process.HLTEndSequence )
 process.HLT_PFTrimHT750_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175 + process.hltPrePFTrimHT750 + process.HLTAK4CaloJetsSequence + process.hltHtMht + process.hltHt650 + process.HLTAK4PFJetsSequence + process.hltPFHT + process.hltAK4PFJetsTrim + process.hlt1AK4PFJetsTrimMass00 + process.hltPFHT750 + process.HLTEndSequence )
 process.HLT_PFTrimHT850_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175 + process.hltPrePFTrimHT850 + process.HLTAK4CaloJetsSequence + process.hltHtMht + process.hltHt750 + process.HLTAK4PFJetsSequence + process.hltPFHT + process.hltAK4PFJetsTrim + process.hlt1AK4PFJetsTrimMass00 + process.hltPFHT850 + process.HLTEndSequence )

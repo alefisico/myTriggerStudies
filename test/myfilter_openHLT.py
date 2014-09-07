@@ -2,7 +2,7 @@ import FWCore.ParameterSet.Config as cms
 import sys
 
 ptRange = sys.argv[2]
-PU = sys.argv[2]
+PU = sys.argv[3]
 
 if 'bx25' in PU: myGT = 'PRE_LS171_V5A::All'
 else: myGT = 'PRE_LS171_V6A::All'
@@ -12,6 +12,8 @@ NAME = 'QCD_Pt-'+ptRange+'_Tune4C_13TeV_pythia8_'+PU
 process = cms.Process("HLT3PB")
 
 process.load('QCD_Pt-'+ptRange+'_Tune4C_13TeV_pythia8_'+PU+'_AK8JEC_10k_ProdFiles_cfi')
+
+
 #process.source = cms.Source("PoolSource",
 #    eventsToProcess = cms.untracked.VEventRange(),
 #    secondaryFileNames = cms.untracked.vstring(),
@@ -7313,6 +7315,84 @@ process.hltPrePFTrimHT450TrimMass55 = cms.EDFilter("HLTPrescaler",
 )
 
 
+process.hltPrePFTrimHT550 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPrePFTrimHT550TrimMass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPrePFTrimHT550TrimMass05 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPrePFTrimHT550TrimMass10 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPrePFTrimHT550TrimMass15 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPrePFTrimHT550TrimMass20 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPrePFTrimHT550TrimMass25 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPrePFTrimHT550TrimMass30 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPrePFTrimHT550TrimMass35 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPrePFTrimHT550TrimMass40 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPrePFTrimHT550TrimMass45 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPrePFTrimHT550TrimMass50 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPrePFTrimHT550TrimMass55 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
 process.hltPrePFTrimHT650 = cms.EDFilter("HLTPrescaler",
     L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
     offset = cms.uint32(0)
@@ -7590,7 +7670,6 @@ process.output = cms.OutputModule("PoolOutputModule",
         'keep *_hltParticleFlow_*_*', 
         'keep *_hltLightPFTracks_*_*', 
         'keep *_hltAK4PFJets_*_*', 
-        'keep *_patJets*_*_*', 
         'keep *_hltHtMht_*_*'),
     fileName = cms.untracked.string('file:/eos/uscms/store/user/algomez/FiltFiles/'+NAME+'_Filt.root'),
     dataset = cms.untracked.PSet(
@@ -8203,6 +8282,42 @@ process.HLT_PFTrimHT450_TrimMass50_v1 = cms.Path(process.hltTriggerType+process.
 
 
 process.HLT_PFTrimHT450_TrimMass55_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT150OrHTT175+process.hltHt350+process.hltAK4CaloJetsPFEt5+process.hlt1AK4PFJetsTrimMass003285dee02ccc2f0fba010b5822aa24ce+process.hltPFHT450+process.HLTEndSequence)
+
+
+process.HLT_PFTrimHT550_TrimMass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT150OrHTT175+process.hltHt450+process.hltAK4CaloJetsPFEt5+process.hlt1AK4PFJetsTrimMass00690db50c99b2d30f93f17bdad09b137f+process.hltPFHT550+process.HLTEndSequence)
+
+
+process.HLT_PFTrimHT550_TrimMass05_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT150OrHTT175+process.hltHt450+process.hltAK4CaloJetsPFEt5+process.hlt1AK4PFJetsTrimMass00E1f79057a3334fe8136ec0862f8c6645+process.hltPFHT550+process.HLTEndSequence)
+
+
+process.HLT_PFTrimHT550_TrimMass10_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT150OrHTT175+process.hltHt450+process.hltAK4CaloJetsPFEt5+process.hlt1AK4PFJetsTrimMass00Fa2fa750f091c30c0e34f9c276982cc2+process.hltPFHT550+process.HLTEndSequence)
+
+
+process.HLT_PFTrimHT550_TrimMass15_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT150OrHTT175+process.hltHt450+process.hltAK4CaloJetsPFEt5+process.hlt1AK4PFJetsTrimMass00D76494201fbea4ed57016cdeb6d16c1c+process.hltPFHT550+process.HLTEndSequence)
+
+
+process.HLT_PFTrimHT550_TrimMass20_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT150OrHTT175+process.hltHt450+process.hltAK4CaloJetsPFEt5+process.hlt1AK4PFJetsTrimMass000863f4f4b91802c0aa8abddaebb6dba6+process.hltPFHT550+process.HLTEndSequence)
+
+
+process.HLT_PFTrimHT550_TrimMass25_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT150OrHTT175+process.hltHt450+process.hltAK4CaloJetsPFEt5+process.hlt1AK4PFJetsTrimMass00E0199c0c2f8f6fc7eee4c42e4708898c+process.hltPFHT550+process.HLTEndSequence)
+
+
+process.HLT_PFTrimHT550_TrimMass30_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT150OrHTT175+process.hltHt450+process.hltAK4CaloJetsPFEt5+process.hlt1AK4PFJetsTrimMass007f7e6d272b13267a7022a4c9bd294891+process.hltPFHT550+process.HLTEndSequence)
+
+
+process.HLT_PFTrimHT550_TrimMass35_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT150OrHTT175+process.hltHt450+process.hltAK4CaloJetsPFEt5+process.hlt1AK4PFJetsTrimMass001872fd050bb05eba241b47cfcb3e4393+process.hltPFHT550+process.HLTEndSequence)
+
+
+process.HLT_PFTrimHT550_TrimMass40_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT150OrHTT175+process.hltHt450+process.hltAK4CaloJetsPFEt5+process.hlt1AK4PFJetsTrimMass00Ebc65b02f78e215a6c80377563e1082f+process.hltPFHT550+process.HLTEndSequence)
+
+
+process.HLT_PFTrimHT550_TrimMass45_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT150OrHTT175+process.hltHt450+process.hltAK4CaloJetsPFEt5+process.hlt1AK4PFJetsTrimMass00F02887f505e29957c00acc6a7b31a076+process.hltPFHT550+process.HLTEndSequence)
+
+
+process.HLT_PFTrimHT550_TrimMass50_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT150OrHTT175+process.hltHt450+process.hltAK4CaloJetsPFEt5+process.hlt1AK4PFJetsTrimMass00C2d5638d4ab8c47c106439f61fe5da10+process.hltPFHT550+process.HLTEndSequence)
+
+
+process.HLT_PFTrimHT550_TrimMass55_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT150OrHTT175+process.hltHt450+process.hltAK4CaloJetsPFEt5+process.hlt1AK4PFJetsTrimMass003285dee02ccc2f0fba010b5822aa24ce+process.hltPFHT550+process.HLTEndSequence)
 
 
 process.HLT_PFTrimHT650_TrimMass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT150OrHTT175+process.hltHt550+process.hltAK4CaloJetsPFEt5+process.hlt1AK4PFJetsTrimMass00690db50c99b2d30f93f17bdad09b137f+process.hltPFHT650+process.HLTEndSequence)
@@ -21393,7 +21508,7 @@ process.ecalLocalRecoRECO = cms.PSet(
 )
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(100)
+    input = cms.untracked.int32(-1)
 )
 
 process.options = cms.untracked.PSet(

@@ -70,7 +70,7 @@ def GetRates( run, passed, xs, PU ):
 	elif 'bx25' in PU:
 		nfillb = 2662.
 		xtime = 25e-9
-		ilumi = 1.1e34
+		ilumi = 1.4e34
 	collrate = (nfillb/mfillb)/xtime
 
 	rateList = []
@@ -90,9 +90,15 @@ def plotRates( listRates, outName, PU ):
 	#HT = [ 350., 650., 700., 750., 800., 850. ]
 	#HT = [ 650., 700., 750., 800., 850. ]
 	HT = [ 450., 550., 650., 750., 850. ]
+	addHT = [ 450., 550., 650., 750., 850., 900., 950. ]
 	HTErr = [ 0., 0., 0., 0., 0. ]
-	t = array( 'd', HT)
-	tErr = array( 'd', HTErr)
+	addHTErr = [ 0., 0., 0., 0., 0., 0., 0. ]
+	if 'PFHT' in outName:
+		t = array( 'd', addHT)
+		tErr = array( 'd', addHTErr)
+	else:
+		t = array( 'd', HT)
+		tErr = array( 'd', HTErr)
 
 	legend=TLegend(0.55,0.70,0.85,0.90)
 	legend.SetFillColor(0)
@@ -123,7 +129,7 @@ def plotRates( listRates, outName, PU ):
 		for j in i[1]: listMax.append( j )
 		for k in xrange( len(i)+2 ):
 			print i[0], np.around( i[1][k], 3), '\pm', np.around( i[2][k], 3 )
-		#print i[0], np.around( i[1], 3)
+		print i[0], np.around( i[1], 3)
 
 	dictGraphs.values()[0].SetTitle("Trigger Rates for "+PU)
 	dictGraphs.values()[0].GetXaxis().SetTitle("HT [GeV]")
@@ -200,14 +206,14 @@ def plotRatesCompPtMass( listRates, outName, PU):
 
 if __name__ == '__main__':
 	
-	numTriggers = 271
+	numTriggers = 266
 	#PU = 'PU40bx50'
 	#PU = 'PU20bx25'
 	#PU = 'PU40bx25'
 	PU = sys.argv[1]
 	process = sys.argv[2]
 
-	name0, run0, passed0, failed0, rates0, ratesErr0 = grabTriggerNumbers( 'dump_QCD_Pt-30to50_'+PU+'_10k_Filt.log', numTriggers, 161500000., PU )
+	#name0, run0, passed0, failed0, rates0, ratesErr0 = grabTriggerNumbers( 'dump_QCD_Pt-30to50_'+PU+'_10k_Filt.log', numTriggers, 161500000., PU )
 	name1, run1, passed1, failed1, rates1, ratesErr1 = grabTriggerNumbers( 'dump_QCD_Pt-50to80_'+PU+'_10k_Filt.log', numTriggers, 22110000., PU )
 	name2, run2, passed2, failed2, rates2, ratesErr2 = grabTriggerNumbers( 'dump_QCD_Pt-80to120_'+PU+'_10k_Filt.log', numTriggers, 3000114.3, PU )
 	name3, run3, passed3, failed3, rates3, ratesErr3 = grabTriggerNumbers( 'dump_QCD_Pt-120to170_'+PU+'_10k_Filt.log', numTriggers, 493200., PU )
@@ -221,68 +227,74 @@ if __name__ == '__main__':
 
 	if 'PU20bx25' in PU:
 		name11, run11, passed11, failed11, rates11, ratesErr11 = grabTriggerNumbers( 'dump_QCD_Pt-1800_'+PU+'_10k_Filt.log', numTriggers, 0.1091 , PU )
-		listRates = [ #rates0[i] + rates1[i] + rates2[i] + 
-				rates3[i] + rates4[i] + rates5[i] + rates6[i] + rates7[i] + rates8[i] + rates9[i] + rates10[i] + rates11[i]
+		listRates = [ #rates0[i] + 
+				rates1[i] + rates2[i] + rates3[i] + rates4[i] + rates5[i] + rates6[i] + rates7[i] + rates8[i] + rates9[i]# + rates10[i] + rates11[i]
 				for i in xrange( len( rates1 ) )]
-		listRatesErr = [ #ratesErr0[i] + ratesErr1[i] + ratesErr2[i] + 
-				ratesErr3[i] + ratesErr4[i] + ratesErr5[i] + ratesErr6[i] + ratesErr7[i] + ratesErr8[i] + ratesErr9[i] + ratesErr10[i] + ratesErr11[i] 
+		listRatesErr = [ #ratesErr0[i] + 
+				ratesErr1[i] + ratesErr2[i] + ratesErr3[i] + ratesErr4[i] + ratesErr5[i] + ratesErr6[i] + ratesErr7[i] + ratesErr8[i]# + ratesErr9[i] + ratesErr10[i] + ratesErr11[i] 
 				for i in xrange( len( ratesErr1 ) )]
 	else:
-		listRates = [ rates0[i] + rates1[i] + rates2[i] + rates3[i] + rates4[i] + rates5[i] + rates6[i] + rates7[i] + rates8[i] + rates9[i] + rates10[i] for i in xrange( len( rates1 ) )]
-		listRatesErr = [ ratesErr0[i] +ratesErr1[i] + ratesErr2[i] + ratesErr3[i] + ratesErr4[i] + ratesErr5[i] + ratesErr6[i] + ratesErr7[i] + ratesErr8[i] + ratesErr9[i] + ratesErr10[i] for i in xrange( len( ratesErr1 ) )]
+		listRates = [ #rates0[i] + rates1[i] + 
+				rates2[i] + rates3[i] + rates4[i] + rates5[i] + rates6[i] + rates7[i] + rates8[i] #+ rates9[i] + rates10[i] 
+				for i in xrange( len( rates1 ) )]
+		listRatesErr = [ #ratesErr0[i] +
+				#ratesErr1[i] + 
+				ratesErr2[i] + ratesErr3[i] + ratesErr4[i] + ratesErr5[i] + ratesErr6[i] + ratesErr7[i] + ratesErr8[i] #+ ratesErr9[i] + ratesErr10[i] 
+				for i in xrange( len( ratesErr1 ) )]
 	#print listRates
 	#print listRatesErr
 
 	if 'simple' in process:
 		triggerList = [
-				['HT', array( 'd', listRates[1:6] ), array('d', listRatesErr[1:6] )],
+				#['HT', array( 'd', listRates[1:6] ), array('d', listRatesErr[1:6] )],
 				#['PFNoPUHT', array( 'd', listRates[5:10] ), array('d', listRatesErr[5:10] )],
-				['PFHT', array( 'd', listRates[6:11] ), array('d', listRatesErr[6:11] )],
-				['PFTrimHT', array( 'd', listRates[11:16] ), array('d', listRatesErr[11:16] )],
-				['AK8PFHT', array( 'd', listRates[16:21] ), array('d', listRatesErr[16:21] )],
-				['AK8PFTrimHT', array( 'd', listRates[21:26] ), array('d', listRatesErr[21:26] )],
-				['AK8PFNOJECTrimHT', array( 'd', listRates[26:31] ), array('d', listRatesErr[26:31] )],
+				['PFHT', array( 'd', listRates[0:5] ), array('d', listRatesErr[0:5] )],
+				['PFTrimHT', array( 'd', listRates[7:12] ), array('d', listRatesErr[7:12] )],
+				['AK8PFHT', array( 'd', listRates[12:17] ), array('d', listRatesErr[12:17] )],
+				['AK8PFTrimHT', array( 'd', listRates[17:22] ), array('d', listRatesErr[17:22] )],
+				['AK8PFNOJECTrimHT', array( 'd', listRates[22:27] ), array('d', listRatesErr[22:27] )],
 				]
+		PFHTtrigger = [ ['PFHT', array( 'd', listRates[0:7] ), array('d', listRatesErr[0:7] ) ] ]
+		print 'AK8PFJet360Trim_Mass30', listRates[27], listRatesErr[27]
 
-		plotRates( [ triggerList[0], triggerList[1]#, triggerList[2] 
-			], 'oldTriggers', PU )
-		plotRates( [ triggerList[1], triggerList[3] , triggerList[5] #, triggerList[4], triggerList[5]
+		plotRates( [ PFHTtrigger[0] ] , 'PFHTtriggers', PU )
+		plotRates( [ triggerList[0], triggerList[2] , triggerList[4] #, triggerList[4], triggerList[5]
 			], 'newTriggers', PU )
 
 	elif '2d' in process:
 
 
 		AK8PFTrimHTList = [
-			['AK8PFTrimHT450_TrimMass', array( 'd', listRates[31:43] ), array('d', listRatesErr[31:43])],
-			['AK8PFTrimHT550_TrimMass', array( 'd', listRates[43:55] ), array('d', listRatesErr[43:55])],
-			['AK8PFTrimHT650_TrimMass', array( 'd', listRates[55:67] ), array('d', listRatesErr[55:67])],
-			['AK8PFTrimHT750_TrimMass', array( 'd', listRates[67:79] ), array('d', listRatesErr[67:79])],
-			['AK8PFTrimHT850_TrimMass', array( 'd', listRates[79:91] ), array('d', listRatesErr[79:91])],
+			['AK8PFTrimHT450_TrimMass', array( 'd', listRates[28:40] ), array('d', listRatesErr[28:40])],
+			['AK8PFTrimHT550_TrimMass', array( 'd', listRates[40:52] ), array('d', listRatesErr[40:52])],
+			['AK8PFTrimHT650_TrimMass', array( 'd', listRates[52:64] ), array('d', listRatesErr[52:64])],
+			['AK8PFTrimHT750_TrimMass', array( 'd', listRates[64:76] ), array('d', listRatesErr[64:76])],
+			['AK8PFTrimHT850_TrimMass', array( 'd', listRates[76:88] ), array('d', listRatesErr[76:88])],
 			]
 
 		
 		AK8PFTrimNOJECHTList = [
-			['AK8PFNOJECTrimHT450_TrimMass', array( 'd', listRates[91:103] ), array('d', listRatesErr[91:103])],
-			['AK8PFNOJECTrimHT550_TrimMass', array( 'd', listRates[103:115] ), array('d', listRatesErr[103:115])],
-			['AK8PFNOJECTrimHT650_TrimMass', array( 'd', listRates[115:127] ), array('d', listRatesErr[115:127])],
-			['AK8PFNOJECTrimHT750_TrimMass', array( 'd', listRates[127:139] ), array('d', listRatesErr[127:139])],
-			['AK8PFNOJECTrimHT850_TrimMass', array( 'd', listRates[139:151] ), array('d', listRatesErr[139:151])],
+			['AK8PFNOJECTrimHT450_TrimMass', array( 'd', listRates[88:100] ), array('d', listRatesErr[88:100])],
+			['AK8PFNOJECTrimHT550_TrimMass', array( 'd', listRates[100:112] ), array('d', listRatesErr[100:112])],
+			['AK8PFNOJECTrimHT650_TrimMass', array( 'd', listRates[112:124] ), array('d', listRatesErr[112:124])],
+			['AK8PFNOJECTrimHT750_TrimMass', array( 'd', listRates[124:136] ), array('d', listRatesErr[124:136])],
+			['AK8PFNOJECTrimHT850_TrimMass', array( 'd', listRates[136:148] ), array('d', listRatesErr[136:148])],
 			]
 
 		PFTrimHTList = [
-			['PFTrimHT450_TrimMass', array( 'd', listRates[151:163] ), array('d', listRatesErr[151:163])],
-			['PFTrimHT550_TrimMass', array( 'd', listRates[163:175] ), array('d', listRatesErr[163:175])],
-			['PFTrimHT650_TrimMass', array( 'd', listRates[175:187] ), array('d', listRatesErr[175:187])],
-			['PFTrimHT750_TrimMass', array( 'd', listRates[187:199] ), array('d', listRatesErr[187:199])],
-			['PFTrimHT850_TrimMass', array( 'd', listRates[199:211] ), array('d', listRatesErr[199:211])],
+			['PFTrimHT450_TrimMass', array( 'd', listRates[148:160] ), array('d', listRatesErr[148:160])],
+			['PFTrimHT550_TrimMass', array( 'd', listRates[160:172] ), array('d', listRatesErr[160:172])],
+			['PFTrimHT650_TrimMass', array( 'd', listRates[172:184] ), array('d', listRatesErr[172:184])],
+			['PFTrimHT750_TrimMass', array( 'd', listRates[184:196] ), array('d', listRatesErr[184:196])],
+			['PFTrimHT850_TrimMass', array( 'd', listRates[196:208] ), array('d', listRatesErr[196:208])],
 			]
 
 		PFHTList = [
-			['PFHT450_TrimMass', array( 'd', listRates[211:223] ), array('d', listRatesErr[211:223])],
-			['PFHT550_TrimMass', array( 'd', listRates[223:235] ), array('d', listRatesErr[223:235])],
-			['PFHT650_TrimMass', array( 'd', listRates[235:247] ), array('d', listRatesErr[235:247])],
-			['PFHT750_TrimMass', array( 'd', listRates[247:259] ), array('d', listRatesErr[247:259])],
-			['PFHT850_TrimMass', array( 'd', listRates[259:271] ), array('d', listRatesErr[259:271])],
+			['PFHT450_TrimMass', array( 'd', listRates[208:210] ), array('d', listRatesErr[208:220])],
+			['PFHT550_TrimMass', array( 'd', listRates[210:232] ), array('d', listRatesErr[220:232])],
+			['PFHT650_TrimMass', array( 'd', listRates[222:244] ), array('d', listRatesErr[232:244])],
+			['PFHT750_TrimMass', array( 'd', listRates[234:256] ), array('d', listRatesErr[244:256])],
+			['PFHT850_TrimMass', array( 'd', listRates[246:258] ), array('d', listRatesErr[256:268])],
 			]
 
 		HT = [ 450., 550., 650., 750., 850. ]
