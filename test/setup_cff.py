@@ -571,7 +571,7 @@ GlobalTag = cms.ESSource( "PoolDBESSource",
       label = cms.untracked.string( "AK4CaloHLT" )
     ),
     cms.PSet(  record = cms.string( "JetCorrectionsRecord" ),
-      tag = cms.string( "JetCorrectorParametersCollection_HLT_trk0_V1_AK4PF" ),
+      tag = cms.string( "JetCorrectorParametersCollection_HLT_trk1B_V1_AK4PF" ),
       connect = cms.untracked.string( "frontier://FrontierPrep/CMS_COND_PHYSICSTOOLS" ),
       label = cms.untracked.string( "AK4PFHLT" )
     )
