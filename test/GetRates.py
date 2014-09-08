@@ -70,7 +70,7 @@ def GetRates( run, passed, xs, PU ):
 	elif 'bx25' in PU:
 		nfillb = 2662.
 		xtime = 25e-9
-		ilumi = 1.4e34
+		ilumi = 1.1e34
 	collrate = (nfillb/mfillb)/xtime
 
 	rateList = []
@@ -150,6 +150,50 @@ def plotRates( listRates, outName, PU ):
 	setTriggerRates( 'QCD 13TeV '+PU )
 	c.SaveAs("TriggerRate_"+outName+'_'+PU+"_40k_120toInf.pdf")
 
+def plotCaloJetRates( listRates, outName, PU ):
+	"""docstring for plotRates"""
+
+	CaloHT = [ 250., 300., 350., 400., 450. ]
+	addCaloHT = [ 550., 600., 650., 700., 750. ]
+	CaloHTErr = [ 0., 0., 0., 0., 0. ]
+	if 'HT850' in outName:
+		t = array( 'd', addCaloHT)
+		tErr = array( 'd', CaloHTErr)
+	else:
+		t = array( 'd', CaloHT)
+		tErr = array( 'd', CaloHTErr)
+
+	legend=TLegend(0.55,0.70,0.85,0.90)
+	legend.SetFillColor(0)
+	legend.SetTextSize(0.03)
+
+	dictGraphs = {}
+	listMax = []
+	for i in listRates: 
+		dictGraphs[ i[0] ] = ROOT.TGraphErrors( len(t), t, i[1], tErr, i[2] )
+		legend.AddEntry( dictGraphs[ i[0] ], i[0], 'l' )
+		for j in i[1]: listMax.append( j )
+		for k in xrange( len(i)+2 ):
+			print i[0], np.around( i[1][k], 3), '\pm', np.around( i[2][k], 3 )
+		print i[0], np.around( i[1], 3)
+
+	dictGraphs.values()[0].SetTitle("Trigger Rates for "+PU)
+	dictGraphs.values()[0].GetXaxis().SetTitle("Calo HT [GeV]")
+	dictGraphs.values()[0].GetYaxis().SetTitle("Rate [Hz]")
+	dictGraphs.values()[0].SetMaximum( max( listMax )+50 )
+
+	k = 1
+	for t, histo in dictGraphs.items():
+		k += 1
+		histo.SetLineColor(k)
+		histo.SetLineWidth(2)
+
+	c = TCanvas( "c1", "c1", 800, 500 )
+	dictGraphs.values()[0].Draw('lpa')
+	for q in range( 1, len( dictGraphs.keys() ) ): dictGraphs.values()[q].Draw('lp')
+	legend.Draw()
+	setTriggerRates( 'QCD 13TeV '+PU )
+	c.SaveAs("TriggerRate_"+outName+'_'+PU+"_CaloJet_test.pdf")
 
 def plotRatesComp( listRates, outName, PU, HT, Mass ):
 	"""docstring for plotRates"""
@@ -206,7 +250,7 @@ def plotRatesCompPtMass( listRates, outName, PU):
 
 if __name__ == '__main__':
 	
-	numTriggers = 266
+	numTriggers = 278
 	#PU = 'PU40bx50'
 	#PU = 'PU20bx25'
 	#PU = 'PU40bx25'
@@ -228,18 +272,17 @@ if __name__ == '__main__':
 	if 'PU20bx25' in PU:
 		name11, run11, passed11, failed11, rates11, ratesErr11 = grabTriggerNumbers( 'dump_QCD_Pt-1800_'+PU+'_10k_Filt.log', numTriggers, 0.1091 , PU )
 		listRates = [ #rates0[i] + 
-				rates1[i] + rates2[i] + rates3[i] + rates4[i] + rates5[i] + rates6[i] + rates7[i] + rates8[i] + rates9[i]# + rates10[i] + rates11[i]
+				rates1[i] + rates2[i] + rates3[i] + rates4[i] + rates5[i] + rates6[i] + rates7[i] + rates8[i] + rates9[i] + rates10[i] + rates11[i]
 				for i in xrange( len( rates1 ) )]
 		listRatesErr = [ #ratesErr0[i] + 
-				ratesErr1[i] + ratesErr2[i] + ratesErr3[i] + ratesErr4[i] + ratesErr5[i] + ratesErr6[i] + ratesErr7[i] + ratesErr8[i]# + ratesErr9[i] + ratesErr10[i] + ratesErr11[i] 
+				ratesErr1[i] + ratesErr2[i] + ratesErr3[i] + ratesErr4[i] + ratesErr5[i] + ratesErr6[i] + ratesErr7[i] + ratesErr8[i] + ratesErr9[i] + ratesErr10[i] + ratesErr11[i] 
 				for i in xrange( len( ratesErr1 ) )]
 	else:
-		listRates = [ #rates0[i] + rates1[i] + 
-				rates2[i] + rates3[i] + rates4[i] + rates5[i] + rates6[i] + rates7[i] + rates8[i] #+ rates9[i] + rates10[i] 
+		listRates = [ #rates0[i] + 
+				rates1[i] + rates2[i] + rates3[i] + rates4[i] + rates5[i] + rates6[i] + rates7[i] + rates8[i] + rates9[i] + rates10[i] 
 				for i in xrange( len( rates1 ) )]
-		listRatesErr = [ #ratesErr0[i] +
-				#ratesErr1[i] + 
-				ratesErr2[i] + ratesErr3[i] + ratesErr4[i] + ratesErr5[i] + ratesErr6[i] + ratesErr7[i] + ratesErr8[i] #+ ratesErr9[i] + ratesErr10[i] 
+		listRatesErr = [ #ratesErr0[i] + 
+				ratesErr1[i] + ratesErr2[i] + ratesErr3[i] + ratesErr4[i] + ratesErr5[i] + ratesErr6[i] + ratesErr7[i] + ratesErr8[i] + ratesErr9[i] + ratesErr10[i] 
 				for i in xrange( len( ratesErr1 ) )]
 	#print listRates
 	#print listRatesErr
@@ -260,6 +303,13 @@ if __name__ == '__main__':
 		plotRates( [ PFHTtrigger[0] ] , 'PFHTtriggers', PU )
 		plotRates( [ triggerList[0], triggerList[2] , triggerList[4] #, triggerList[4], triggerList[5]
 			], 'newTriggers', PU )
+
+		CaloHTtrigger = [ 
+				['AK8PFTrimHT450', array( 'd', listRates[268:273] ), array('d', listRatesErr[268:273] ) ],
+				['AK8PFTrimHT850', array( 'd', listRates[273:278] ), array('d', listRatesErr[273:278] ) ]
+				]
+		plotCaloJetRates( [ CaloHTtrigger[0] ] , 'AK8PFTrimHT450', PU )
+		plotCaloJetRates( [ CaloHTtrigger[1] ] , 'AK8PFTrimHT850', PU )
 
 	elif '2d' in process:
 
@@ -290,11 +340,11 @@ if __name__ == '__main__':
 			]
 
 		PFHTList = [
-			['PFHT450_TrimMass', array( 'd', listRates[208:210] ), array('d', listRatesErr[208:220])],
-			['PFHT550_TrimMass', array( 'd', listRates[210:232] ), array('d', listRatesErr[220:232])],
-			['PFHT650_TrimMass', array( 'd', listRates[222:244] ), array('d', listRatesErr[232:244])],
-			['PFHT750_TrimMass', array( 'd', listRates[234:256] ), array('d', listRatesErr[244:256])],
-			['PFHT850_TrimMass', array( 'd', listRates[246:258] ), array('d', listRatesErr[256:268])],
+			['PFHT450_TrimMass', array( 'd', listRates[208:220] ), array('d', listRatesErr[208:220])],
+			['PFHT550_TrimMass', array( 'd', listRates[220:232] ), array('d', listRatesErr[220:232])],
+			['PFHT650_TrimMass', array( 'd', listRates[232:244] ), array('d', listRatesErr[232:244])],
+			['PFHT750_TrimMass', array( 'd', listRates[244:256] ), array('d', listRatesErr[244:256])],
+			['PFHT850_TrimMass', array( 'd', listRates[256:268] ), array('d', listRatesErr[256:268])],
 			]
 
 		HT = [ 450., 550., 650., 750., 850. ]
