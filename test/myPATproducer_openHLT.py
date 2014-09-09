@@ -899,7 +899,18 @@ process.GlobalTag = cms.ESSource("PoolDBESSource",
         connectionRetrialPeriod = cms.untracked.int32(10)
     ),
     BlobStreamerName = cms.untracked.string('TBufferBlobStreamingService'),
-    toGet = cms.VPSet(),
+    toGet = cms.VPSet(cms.PSet(
+        record = cms.string('JetCorrectionsRecord'),
+        tag = cms.string('JetCorrectorParametersCollection_CSA14_V1_MC_AK4PFchs'),
+	connect = cms.untracked.string('frontier://FrontierProd/CMS_COND_31X_PHYSICSTOOLS'),
+        label = cms.untracked.string('AK4PFchs')
+    ), 
+        cms.PSet(
+            record = cms.string('JetCorrectionsRecord'),
+            tag = cms.string('JetCorrectorParametersCollection_CSA14_V1_MC_AK8PFchs'),
+	    connect = cms.untracked.string('frontier://FrontierProd/CMS_COND_31X_PHYSICSTOOLS'),
+            label = cms.untracked.string('AK8PFchs')
+        )),
     connect = cms.string('frontier://FrontierProd/CMS_COND_31X_GLOBALTAG'),
     globaltag = cms.string(myPATGT),
 )

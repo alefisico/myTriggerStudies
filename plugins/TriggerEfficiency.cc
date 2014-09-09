@@ -186,27 +186,27 @@ void TriggerEfficiency::analyze(const edm::Event& iEvent, const edm::EventSetup&
 void TriggerEfficiency::beginJob() {
 
 	edm::Service< TFileService > fileService;
-	histos2D_[ "jetMassHTDenom" ] = fileService->make< TH2D >( "jetMassHTDenom", "HT vs Leading Jet Mass", 100, 0., 2000, 80, 0., 400. );
+	histos2D_[ "jetMassHTDenom" ] = fileService->make< TH2D >( "jetMassHTDenom", "HT vs Leading Jet Mass", 20, 0., 2000, 20, 0., 400. );
 	histos2D_[ "jetMassHTDenom" ]->SetXTitle( "HT [GeV]" );
 	histos2D_[ "jetMassHTDenom" ]->SetYTitle( "Leading Jet Mass [GeV]" );
 
-	histos2D_[ "jetMassHTPassing" ] = fileService->make< TH2D >( "jetMassHTPassing", "HT vs Leading Jet Mass passing path", 100, 0., 2000, 80, 0., 400. );
+	histos2D_[ "jetMassHTPassing" ] = fileService->make< TH2D >( "jetMassHTPassing", "HT vs Leading Jet Mass passing path", 20, 0., 2000, 20, 0., 400. );
 	histos2D_[ "jetMassHTPassing" ]->SetXTitle( "HT [GeV]" );
 	histos2D_[ "jetMassHTPassing" ]->SetYTitle( "Leading Jet Mass [GeV]" );
 
-	histos2D_[ "jetMassHT2Defficiency" ] = fileService->make< TH2D >( "jetMassHT2Defficiency", "Comparative efficiency", 100, 0., 2000, 80, 0., 400. );
+	histos2D_[ "jetMassHT2Defficiency" ] = fileService->make< TH2D >( "jetMassHT2Defficiency", "Comparative efficiency", 20, 0., 2000, 20, 0., 400. );
 	histos2D_[ "jetMassHT2Defficiency" ]->SetXTitle( "HT [GeV]" );
 	histos2D_[ "jetMassHT2Defficiency" ]->SetYTitle( "Leading Jet Mass [GeV]" );
 
-	histos2D_[ "jetMassPtDenom" ] = fileService->make< TH2D >( "jetMassPtDenom", "Leading Jet Mass vs Pt", 100, 0., 1000, 80, 0., 400. );
+	histos2D_[ "jetMassPtDenom" ] = fileService->make< TH2D >( "jetMassPtDenom", "Leading Jet Mass vs Pt", 10, 0., 1000, 40, 0., 400. );
 	histos2D_[ "jetMassPtDenom" ]->SetXTitle( "Leading Jet Pt [GeV]" );
 	histos2D_[ "jetMassPtDenom" ]->SetYTitle( "Leading Jet Mass [GeV]" );
 
-	histos2D_[ "jetMassPtPassing" ] = fileService->make< TH2D >( "jetMassPtPassing", "Leading Jet Mass vs Pt", 100, 0., 1000, 80, 0., 400. );
+	histos2D_[ "jetMassPtPassing" ] = fileService->make< TH2D >( "jetMassPtPassing", "Leading Jet Mass vs Pt", 10, 0., 1000, 40, 0., 400. );
 	histos2D_[ "jetMassPtPassing" ]->SetXTitle( "Leading Jet Pt [GeV]" );
 	histos2D_[ "jetMassPtPassing" ]->SetYTitle( "Leading Jet Mass [GeV]" );
 
-	histos2D_[ "jetMassPt2Defficiency" ] = fileService->make< TH2D >( "jetMassPt2Defficiency", "Leading Jet Mass vs Pt", 100, 0., 1000, 80, 0., 400. );
+	histos2D_[ "jetMassPt2Defficiency" ] = fileService->make< TH2D >( "jetMassPt2Defficiency", "Leading Jet Mass vs Pt", 10, 0., 1000, 40, 0., 400. );
 	histos2D_[ "jetMassPt2Defficiency" ]->SetXTitle( "Leading Jet Pt [GeV]" );
 	histos2D_[ "jetMassPt2Defficiency" ]->SetYTitle( "Leading Jet Mass [GeV]" );
 

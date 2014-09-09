@@ -2,7 +2,7 @@
 from ROOT import *
 import ROOT as rt
 
-def setSelectionTrigger( signal ):
+def setEfficiencyTrigger( signal, trigger ):
 
 	textBox=TLatex()
 	textBox.SetNDC()
@@ -14,22 +14,61 @@ def setSelectionTrigger( signal ):
 	textBox1=TLatex()
 	textBox1.SetNDC()
 	textBox1.SetTextSize(0.04) 
-	textBox1.DrawText(0.38,0.85, signal)
+	textBox1.DrawText(0.15,0.88, signal)
 	
+	textBox2=TLatex()
+	textBox2.SetNDC()
+	textBox2.SetTextSize(0.04) 
+	textBox2.DrawLatex(0.70,0.22, trigger )
+
 	textBox3=TLatex()
 	textBox3.SetNDC()
 	textBox3.SetTextSize(0.04) 
-	textBox3.DrawLatex(0.70,0.65,"jet pt > 40 GeV")
+	textBox3.DrawLatex(0.70,0.27,"jet pt > 40 GeV")
 		
 	textBox4=TLatex()
 	textBox4.SetNDC()
 	textBox4.SetTextSize(0.04) 
-	textBox4.DrawLatex(0.70,0.60,"|jet #eta| < 3.0")
+	textBox4.DrawLatex(0.70,0.32,"|jet #eta| < 3.0")
 	
 	#textBox5=TLatex()
 	#textBox5.SetNDC()
 	#textBox5.SetTextSize(0.04) 
 	#textBox5.DrawLatex(0.70,0.35,"Number of Jets #geq 0 ")
+	
+def setSelectionTrigger( signal, trigger, plot ):
+
+	textBox=TLatex()
+	textBox.SetNDC()
+	textBox.SetTextSize(0.05) 
+	textBox.SetTextColor(kBlue)
+	textBox.DrawText(0.13,0.95,"CMS Preliminary Simulation")
+	#textBox.DrawText(0.16,0.95,"CMS Preliminary")
+
+	textBox1=TLatex()
+	textBox1.SetNDC()
+	textBox1.SetTextSize(0.04) 
+	textBox1.DrawText(0.15,0.88, signal)
+	
+	textBox2=TLatex()
+	textBox2.SetNDC()
+	textBox2.SetTextSize(0.04) 
+	textBox2.DrawLatex(0.15,0.15, trigger )
+
+	textBox3=TLatex()
+	textBox3.SetNDC()
+	textBox3.SetTextSize(0.04) 
+	textBox3.DrawLatex(0.70,0.88,"jet pt > 40 GeV")
+		
+	textBox4=TLatex()
+	textBox4.SetNDC()
+	textBox4.SetTextSize(0.04) 
+	textBox4.DrawLatex(0.70,0.83,"|jet #eta| < 3.0")
+	
+	textBox5=TLatex()
+	textBox5.SetNDC()
+	textBox5.SetTextSize(0.04) 
+	textBox5.DrawLatex(0.70,0.78, plot)
 	
 def setTriggerRates( signal ):
 
