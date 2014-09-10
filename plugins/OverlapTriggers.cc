@@ -170,10 +170,10 @@ void OverlapTriggers::beginJob() {
 void OverlapTriggers::endJob() {
 
 	std::cout<< onlyTrigger1 << " " << onlyTrigger2 << " " << bothTriggers << " " << noneTriggers << std::endl;
-    histos1D_[ "overlap" ]->SetBinContent( 0, onlyTrigger1*100/totalNumberEvents );
-    histos1D_[ "overlap" ]->SetBinContent( 1, onlyTrigger2*100/totalNumberEvents );
-    histos1D_[ "overlap" ]->SetBinContent( 2, bothTriggers*100/totalNumberEvents );
-    histos1D_[ "overlap" ]->SetBinContent( 3, noneTriggers*100/totalNumberEvents );
+    histos1D_[ "overlap" ]->SetBinContent( 1, onlyTrigger1*100/totalNumberEvents );
+    histos1D_[ "overlap" ]->SetBinContent( 2, onlyTrigger2*100/totalNumberEvents );
+    histos1D_[ "overlap" ]->SetBinContent( 3, bothTriggers*100/totalNumberEvents );
+    histos1D_[ "overlap" ]->SetBinContent( 4, noneTriggers*100/totalNumberEvents );
 
 }
 
