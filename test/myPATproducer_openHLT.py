@@ -2,16 +2,1296 @@ import FWCore.ParameterSet.Config as cms
 import sys
 
 NAME = sys.argv[1]
-if 'bx25' in NAME: myGT = 'PRE_LS171_V5A::All'
-else: myGT = 'PRE_LS171_V6A::All'
+if 'bx25' in NAME: 
+	myGT = 'PRE_LS171_V5A::All'
+	myPATGT = 'PLS170_V7AN1'
+else: 
+	myGT = 'PRE_LS171_V6A::All'
+	myPATGT = 'PLS170_V6AN1'
+
 
 process = cms.Process("HLT3")
 
 process.source = cms.Source("PoolSource",
     eventsToProcess = cms.untracked.VEventRange(),
-    secondaryFileNames = cms.untracked.vstring(),
-    fileNames = cms.untracked.vstring('/store/mc/Fall13dr/QCD_Pt-600to800_Tune4C_13TeV_pythia8/GEN-SIM-RAW/castor_tsg_PU20bx25_POSTLS162_V2-v1/00000/022573C3-AE6D-E311-9144-002618943930.root')
+    secondaryFileNames = cms.untracked.vstring('/store/mc/Fall13dr/QCD_Pt-470to600_Tune4C_13TeV_pythia8/GEN-SIM-RAW/castor_tsg_PU40bx25_POSTLS162_V2-v1/00000/6C034152-D99D-E311-B131-0025905A612A.root', 
+        '/store/mc/Fall13dr/QCD_Pt-470to600_Tune4C_13TeV_pythia8/GEN-SIM-RAW/castor_tsg_PU40bx25_POSTLS162_V2-v1/00000/CC6A9429-149E-E311-8DB1-0026189438F8.root', 
+        '/store/mc/Fall13dr/QCD_Pt-470to600_Tune4C_13TeV_pythia8/GEN-SIM-RAW/castor_tsg_PU40bx25_POSTLS162_V2-v1/00000/F23D7538-359E-E311-B32A-002618943945.root'),
+    fileNames = cms.untracked.vstring('/store/mc/Fall13dr/QCD_Pt-470to600_Tune4C_13TeV_pythia8/AODSIM/castor_tsg_PU40bx25_POSTLS162_V2-v1/00000/0023EEAF-14AE-E311-B5D7-002618943886.root')
 )
+parentProcess8743382342089 = process
+import FWCore.ParameterSet.Config as cms
+
+process = cms.Process("PAT")
+
+process.ak4PFJetsCHS = cms.EDProducer("FastjetJetProducer",
+    Active_Area_Repeats = cms.int32(1),
+    doAreaFastjet = cms.bool(True),
+    voronoiRfact = cms.double(-0.9),
+    maxBadHcalCells = cms.uint32(9999999),
+    doAreaDiskApprox = cms.bool(False),
+    maxRecoveredEcalCells = cms.uint32(9999999),
+    jetType = cms.string('PFJet'),
+    minSeed = cms.uint32(14327),
+    Ghost_EtaMax = cms.double(5.0),
+    doRhoFastjet = cms.bool(False),
+    jetAlgorithm = cms.string('AntiKt'),
+    nSigmaPU = cms.double(1.0),
+    GhostArea = cms.double(0.01),
+    Rho_EtaMax = cms.double(4.4),
+    maxBadEcalCells = cms.uint32(9999999),
+    useDeterministicSeed = cms.bool(True),
+    doPVCorrection = cms.bool(False),
+    maxRecoveredHcalCells = cms.uint32(9999999),
+    rParam = cms.double(0.4),
+    maxProblematicHcalCells = cms.uint32(9999999),
+    doOutputJets = cms.bool(True),
+    src = cms.InputTag("pfNoPileUp"),
+    inputEtMin = cms.double(0.0),
+    srcPVs = cms.InputTag(""),
+    jetPtMin = cms.double(20.0),
+    radiusPU = cms.double(0.5),
+    maxProblematicEcalCells = cms.uint32(9999999),
+    doPUOffsetCorr = cms.bool(False),
+    inputEMin = cms.double(0.0)
+)
+
+
+process.ak8PFJetsCHS = cms.EDProducer("FastjetJetProducer",
+    Active_Area_Repeats = cms.int32(1),
+    doAreaFastjet = cms.bool(True),
+    voronoiRfact = cms.double(-0.9),
+    maxBadHcalCells = cms.uint32(9999999),
+    doAreaDiskApprox = cms.bool(False),
+    maxRecoveredEcalCells = cms.uint32(9999999),
+    jetType = cms.string('PFJet'),
+    minSeed = cms.uint32(14327),
+    Ghost_EtaMax = cms.double(5.0),
+    doRhoFastjet = cms.bool(False),
+    jetAlgorithm = cms.string('AntiKt'),
+    nSigmaPU = cms.double(1.0),
+    GhostArea = cms.double(0.01),
+    Rho_EtaMax = cms.double(4.4),
+    maxBadEcalCells = cms.uint32(9999999),
+    useDeterministicSeed = cms.bool(True),
+    doPVCorrection = cms.bool(False),
+    maxRecoveredHcalCells = cms.uint32(9999999),
+    rParam = cms.double(0.8),
+    maxProblematicHcalCells = cms.uint32(9999999),
+    doOutputJets = cms.bool(True),
+    src = cms.InputTag("pfNoPileUp"),
+    inputEtMin = cms.double(0.0),
+    srcPVs = cms.InputTag(""),
+    jetPtMin = cms.double(20.0),
+    radiusPU = cms.double(0.5),
+    maxProblematicEcalCells = cms.uint32(9999999),
+    doPUOffsetCorr = cms.bool(False),
+    inputEMin = cms.double(0.0)
+)
+
+
+process.patJetCorrFactorsAK4CHS = cms.EDProducer("JetCorrFactorsProducer",
+    src = cms.InputTag("ak5PFJetsCHS"),
+    emf = cms.bool(False),
+    extraJPTOffset = cms.string('L1FastJet'),
+    primaryVertices = cms.InputTag("offlinePrimaryVertices"),
+    levels = cms.vstring('L1FastJet', 
+        'L2Relative', 
+        'L3Absolute'),
+    useNPV = cms.bool(True),
+    rho = cms.InputTag("fixedGridRhoFastjetAll"),
+    useRho = cms.bool(True),
+    payload = cms.string('AK4PFchs'),
+    flavorType = cms.string('J')
+)
+
+
+process.patJetCorrFactorsAK8CHS = cms.EDProducer("JetCorrFactorsProducer",
+    src = cms.InputTag("ak8PFJetsCHS"),
+    emf = cms.bool(False),
+    extraJPTOffset = cms.string('L1FastJet'),
+    primaryVertices = cms.InputTag("offlinePrimaryVertices"),
+    levels = cms.vstring('L1FastJet', 
+        'L2Relative', 
+        'L3Absolute'),
+    useNPV = cms.bool(True),
+    rho = cms.InputTag("fixedGridRhoFastjetAll"),
+    useRho = cms.bool(True),
+    payload = cms.string('AK8PFchs'),
+    flavorType = cms.string('J')
+)
+
+
+process.patJetsAK4CHS = cms.EDProducer("PATJetProducer",
+    addJetCharge = cms.bool(False),
+    addGenJetMatch = cms.bool(False),
+    embedGenJetMatch = cms.bool(True),
+    addAssociatedTracks = cms.bool(False),
+    addBTagInfo = cms.bool(False),
+    partonJetSource = cms.InputTag("NOT_IMPLEMENTED"),
+    addGenPartonMatch = cms.bool(False),
+    JetPartonMapSource = cms.InputTag("patJetFlavourAssociationLegacy"),
+    resolutions = cms.PSet(
+
+    ),
+    genPartonMatch = cms.InputTag("patJetPartonMatch"),
+    addTagInfos = cms.bool(False),
+    addPartonJetMatch = cms.bool(False),
+    embedGenPartonMatch = cms.bool(False),
+    efficiencies = cms.PSet(
+
+    ),
+    genJetMatch = cms.InputTag("patJetGenJetMatch"),
+    useLegacyJetMCFlavour = cms.bool(False),
+    userData = cms.PSet(
+        userCands = cms.PSet(
+            src = cms.VInputTag("")
+        ),
+        userInts = cms.PSet(
+            src = cms.VInputTag("")
+        ),
+        userFloats = cms.PSet(
+            src = cms.VInputTag("")
+        ),
+        userClasses = cms.PSet(
+            src = cms.VInputTag("")
+        ),
+        userFunctionLabels = cms.vstring(),
+        userFunctions = cms.vstring()
+    ),
+    jetSource = cms.InputTag("ak5PFJetsCHS"),
+    addEfficiencies = cms.bool(False),
+    discriminatorSources = cms.VInputTag(cms.InputTag("jetBProbabilityBJetTags"), cms.InputTag("jetProbabilityBJetTags"), cms.InputTag("trackCountingHighPurBJetTags"), cms.InputTag("trackCountingHighEffBJetTags"), cms.InputTag("simpleSecondaryVertexHighEffBJetTags"), 
+        cms.InputTag("simpleSecondaryVertexHighPurBJetTags"), cms.InputTag("combinedSecondaryVertexBJetTags")),
+    trackAssociationSource = cms.InputTag("ak4JetTracksAssociatorAtVertexPF"),
+    tagInfoSources = cms.VInputTag(),
+    jetCorrFactorsSource = cms.VInputTag(cms.InputTag("patJetCorrFactorsAK4CHS")),
+    embedPFCandidates = cms.bool(False),
+    addJetFlavourInfo = cms.bool(False),
+    addResolutions = cms.bool(False),
+    getJetMCFlavour = cms.bool(False),
+    addDiscriminators = cms.bool(False),
+    jetChargeSource = cms.InputTag("patJetCharge"),
+    JetFlavourInfoSource = cms.InputTag("patJetFlavourAssociation"),
+    addJetCorrFactors = cms.bool(True),
+    jetIDMap = cms.InputTag("ak4JetID"),
+    addJetID = cms.bool(False)
+)
+
+
+process.patJetsAK8CHS = cms.EDProducer("PATJetProducer",
+    addJetCharge = cms.bool(False),
+    addGenJetMatch = cms.bool(False),
+    embedGenJetMatch = cms.bool(True),
+    addAssociatedTracks = cms.bool(False),
+    addBTagInfo = cms.bool(False),
+    partonJetSource = cms.InputTag("NOT_IMPLEMENTED"),
+    addGenPartonMatch = cms.bool(False),
+    JetPartonMapSource = cms.InputTag("patJetFlavourAssociationLegacy"),
+    resolutions = cms.PSet(
+
+    ),
+    genPartonMatch = cms.InputTag("patJetPartonMatch"),
+    addTagInfos = cms.bool(False),
+    addPartonJetMatch = cms.bool(False),
+    embedGenPartonMatch = cms.bool(False),
+    efficiencies = cms.PSet(
+
+    ),
+    genJetMatch = cms.InputTag("patJetGenJetMatch"),
+    useLegacyJetMCFlavour = cms.bool(False),
+    userData = cms.PSet(
+        userCands = cms.PSet(
+            src = cms.VInputTag("")
+        ),
+        userInts = cms.PSet(
+            src = cms.VInputTag("")
+        ),
+        userFloats = cms.PSet(
+            src = cms.VInputTag("")
+        ),
+        userClasses = cms.PSet(
+            src = cms.VInputTag("")
+        ),
+        userFunctionLabels = cms.vstring(),
+        userFunctions = cms.vstring()
+    ),
+    jetSource = cms.InputTag("ak8PFJetsCHS"),
+    addEfficiencies = cms.bool(False),
+    discriminatorSources = cms.VInputTag(cms.InputTag("jetBProbabilityBJetTags"), cms.InputTag("jetProbabilityBJetTags"), cms.InputTag("trackCountingHighPurBJetTags"), cms.InputTag("trackCountingHighEffBJetTags"), cms.InputTag("simpleSecondaryVertexHighEffBJetTags"), 
+        cms.InputTag("simpleSecondaryVertexHighPurBJetTags"), cms.InputTag("combinedSecondaryVertexBJetTags")),
+    trackAssociationSource = cms.InputTag("ak4JetTracksAssociatorAtVertexPF"),
+    tagInfoSources = cms.VInputTag(),
+    jetCorrFactorsSource = cms.VInputTag(cms.InputTag("patJetCorrFactorsAK8CHS")),
+    embedPFCandidates = cms.bool(False),
+    addJetFlavourInfo = cms.bool(False),
+    addResolutions = cms.bool(False),
+    getJetMCFlavour = cms.bool(False),
+    addDiscriminators = cms.bool(False),
+    jetChargeSource = cms.InputTag("patJetCharge"),
+    JetFlavourInfoSource = cms.InputTag("patJetFlavourAssociation"),
+    addJetCorrFactors = cms.bool(True),
+    jetIDMap = cms.InputTag("ak4JetID"),
+    addJetID = cms.bool(False)
+)
+
+
+process.pfAllElectronsClones = cms.EDProducer("PFCandidateProductFromFwdPtrProducer",
+    src = cms.InputTag("pfAllElectrons")
+)
+
+
+process.pfAllMuonsClones = cms.EDProducer("PFCandidateProductFromFwdPtrProducer",
+    src = cms.InputTag("pfAllMuons")
+)
+
+
+process.pfNoPileUp = cms.EDProducer("TPPFCandidatesOnPFCandidates",
+    bottomCollection = cms.InputTag("particleFlowPtrs"),
+    enable = cms.bool(True),
+    topCollection = cms.InputTag("pfPileUp"),
+    name = cms.untracked.string('pileUpOnPFCandidates'),
+    verbose = cms.untracked.bool(False)
+)
+
+
+process.pfNoPileUpIso = cms.EDProducer("TPPFCandidatesOnPFCandidates",
+    bottomCollection = cms.InputTag("particleFlowTmpPtrs"),
+    enable = cms.bool(True),
+    topCollection = cms.InputTag("pfPileUpIso"),
+    name = cms.untracked.string('pileUpOnPFCandidates'),
+    verbose = cms.untracked.bool(False)
+)
+
+
+process.pfNoPileUpJME = cms.EDProducer("TPPFCandidatesOnPFCandidates",
+    bottomCollection = cms.InputTag("particleFlowPtrs"),
+    enable = cms.bool(True),
+    topCollection = cms.InputTag("pfPileUpJME"),
+    name = cms.untracked.string('pileUpOnPFCandidates'),
+    verbose = cms.untracked.bool(False)
+)
+
+
+process.pfPileUp = cms.EDProducer("PFPileUp",
+    PFCandidates = cms.InputTag("particleFlowPtrs"),
+    Enable = cms.bool(True),
+    checkClosestZVertex = cms.bool(False),
+    verbose = cms.untracked.bool(False),
+    Vertices = cms.InputTag("goodOfflinePrimaryVertices")
+)
+
+
+process.pfPileUpIso = cms.EDProducer("PFPileUp",
+    checkClosestZVertex = cms.bool(True),
+    Enable = cms.bool(True),
+    PFCandidates = cms.InputTag("particleFlowTmpPtrs"),
+    verbose = cms.untracked.bool(False),
+    Vertices = cms.InputTag("offlinePrimaryVertices")
+)
+
+
+process.pfPileUpJME = cms.EDProducer("PFPileUp",
+    checkClosestZVertex = cms.bool(False),
+    Enable = cms.bool(True),
+    PFCandidates = cms.InputTag("particleFlowPtrs"),
+    verbose = cms.untracked.bool(False),
+    Vertices = cms.InputTag("goodOfflinePrimaryVertices")
+)
+
+
+process.goodOfflinePrimaryVertices = cms.EDFilter("VertexSelector",
+    filter = cms.bool(False),
+    src = cms.InputTag("offlinePrimaryVertices"),
+    cut = cms.string('!isFake && ndof >= 4.0 && abs(z) <= 24.0 && abs(position.Rho) <= 2.0')
+)
+
+
+process.pfAllChargedHadrons = cms.EDFilter("PFCandidateFwdPtrCollectionPdgIdFilter",
+    pdgId = cms.vint32(211, -211, 321, -321, 999211, 
+        2212, -2212),
+    makeClones = cms.bool(True),
+    src = cms.InputTag("pfNoPileUpIso")
+)
+
+
+process.pfAllChargedParticles = cms.EDFilter("PFCandidateFwdPtrCollectionPdgIdFilter",
+    pdgId = cms.vint32(211, -211, 321, -321, 999211, 
+        2212, -2212, 11, -11, 13, 
+        -13),
+    makeClones = cms.bool(True),
+    src = cms.InputTag("pfNoPileUpIso")
+)
+
+
+process.pfAllElectrons = cms.EDFilter("PFCandidateFwdPtrCollectionPdgIdFilter",
+    pdgId = cms.vint32(11, -11),
+    makeClones = cms.bool(True),
+    src = cms.InputTag("pfNoMuon")
+)
+
+
+process.pfAllMuons = cms.EDFilter("PFCandidateFwdPtrCollectionPdgIdFilter",
+    pdgId = cms.vint32(-13, 13),
+    makeClones = cms.bool(True),
+    src = cms.InputTag("pfNoPileUp")
+)
+
+
+process.pfAllNeutralHadrons = cms.EDFilter("PFCandidateFwdPtrCollectionPdgIdFilter",
+    pdgId = cms.vint32(111, 130, 310, 2112),
+    makeClones = cms.bool(True),
+    src = cms.InputTag("pfNoPileUpIso")
+)
+
+
+process.pfAllNeutralHadronsAndPhotons = cms.EDFilter("PFCandidateFwdPtrCollectionPdgIdFilter",
+    pdgId = cms.vint32(22, 111, 130, 310, 2112),
+    makeClones = cms.bool(True),
+    src = cms.InputTag("pfNoPileUpIso")
+)
+
+
+process.pfAllPhotons = cms.EDFilter("PFCandidateFwdPtrCollectionPdgIdFilter",
+    pdgId = cms.vint32(22),
+    makeClones = cms.bool(True),
+    src = cms.InputTag("pfNoPileUpIso")
+)
+
+
+process.pfPileUpAllChargedParticles = cms.EDFilter("PFCandidateFwdPtrCollectionPdgIdFilter",
+    pdgId = cms.vint32(211, -211, 321, -321, 999211, 
+        2212, -2212, 11, -11, 13, 
+        -13),
+    makeClones = cms.bool(True),
+    src = cms.InputTag("pfPileUpIso")
+)
+
+
+process.out = cms.OutputModule("PoolOutputModule",
+    fileName = cms.untracked.string(NAME+'_Prod.root'),
+    outputCommands = cms.untracked.vstring('drop *', 
+        'keep *_patJets*__*', 
+        'keep *_TriggerResults_*_*', 
+        'keep *_hltTriggerSummaryAOD_*_*', 
+        'keep *_hltAntiKT5CaloJets_*_*', 
+        'keep *_hltAK8HtMht_*_*', 
+        'keep *_hltTowerMakerForAll_*_*', 
+        'keep *_hltGtDigis_*_*', 
+        'keep *_hltAK8PFHT_*_*', 
+        'keep *_hltAK4PFJetsCorrected_*_*', 
+        'keep *_hltAK8PFJetsCorrected_*_*', 
+        'keep *_hltAK8PFTrimHT_*_*', 
+        'keep *_hltAK8PFJets_*_*', 
+        'keep *_hltAK8CaloJetsCorrectedIDPassed_*_*', 
+        'keep *_hltAK4PFJetsTrim_*_*', 
+        'keep *_hltL1GtObjectMap_*_*', 
+        'keep *_hltAK4CaloJetsPF_*_*', 
+        'keep *_hltAntiKT5PFJetsNoPU_*_*', 
+        'keep *_hltL1extraParticles_*_*', 
+        'keep *_hltAntiKT5PFJets_*_*', 
+        'keep *_hltPFHT_*_*', 
+        'keep *_hltAK8TrimJets_*_*', 
+        'keep *_hltAK8PFJetsTrim_*_*', 
+        'keep *_hltParticleFlow_*_*', 
+        'keep *_hltLightPFTracks_*_*', 
+        'keep *_hltAK4PFJets_*_*', 
+        'keep *_hltHtMht_*_*')
+)
+
+
+process.pfNoPileUpIsoSequence = cms.Sequence(process.pfPileUpIso+process.pfNoPileUpIso)
+
+
+process.pfNoPileUpSequence = cms.Sequence(process.goodOfflinePrimaryVertices+process.pfPileUp+process.pfNoPileUp)
+
+
+process.pfSortByTypeSequence = cms.Sequence(process.pfAllNeutralHadrons+process.pfAllChargedHadrons+process.pfAllPhotons+process.pfAllChargedParticles+process.pfPileUpAllChargedParticles+process.pfAllNeutralHadronsAndPhotons)
+
+
+process.pfNoPileUpJMESequence = cms.Sequence(process.goodOfflinePrimaryVertices+process.pfPileUpJME+process.pfNoPileUpJME)
+
+
+process.pfParticleSelectionSequence = cms.Sequence(process.pfNoPileUpIsoSequence+process.pfNoPileUpSequence+process.pfSortByTypeSequence)
+
+
+process.pileUpSubtractionSequence = cms.Sequence(process.pfNoPileUpSequence+process.pfParticleSelectionSequence)
+
+
+process.outpath = cms.EndPath(process.out)
+
+
+process.CSCGeometryESModule = cms.ESProducer("CSCGeometryESModule",
+    appendToDataLabel = cms.string(''),
+    useDDD = cms.bool(True),
+    debugV = cms.untracked.bool(False),
+    useGangedStripsInME1a = cms.bool(True),
+    alignmentsLabel = cms.string(''),
+    useOnlyWiresInME1a = cms.bool(False),
+    useRealWireGeometry = cms.bool(True),
+    useCentreTIOffsets = cms.bool(False),
+    applyAlignment = cms.bool(True)
+)
+
+
+process.CaloGeometryBuilder = cms.ESProducer("CaloGeometryBuilder",
+    SelectedCalos = cms.vstring('HCAL', 
+        'ZDC', 
+        'CASTOR', 
+        'EcalBarrel', 
+        'EcalEndcap', 
+        'EcalPreshower', 
+        'TOWER')
+)
+
+
+process.CaloTopologyBuilder = cms.ESProducer("CaloTopologyBuilder")
+
+
+process.CaloTowerHardcodeGeometryEP = cms.ESProducer("CaloTowerHardcodeGeometryEP")
+
+
+process.CastorDbProducer = cms.ESProducer("CastorDbProducer")
+
+
+process.CastorHardcodeGeometryEP = cms.ESProducer("CastorHardcodeGeometryEP")
+
+
+process.DTGeometryESModule = cms.ESProducer("DTGeometryESModule",
+    appendToDataLabel = cms.string(''),
+    fromDDD = cms.bool(True),
+    applyAlignment = cms.bool(True),
+    alignmentsLabel = cms.string('')
+)
+
+
+process.EcalBarrelGeometryEP = cms.ESProducer("EcalBarrelGeometryEP",
+    applyAlignment = cms.bool(False)
+)
+
+
+process.EcalElectronicsMappingBuilder = cms.ESProducer("EcalElectronicsMappingBuilder")
+
+
+process.EcalEndcapGeometryEP = cms.ESProducer("EcalEndcapGeometryEP",
+    applyAlignment = cms.bool(False)
+)
+
+
+process.EcalLaserCorrectionService = cms.ESProducer("EcalLaserCorrectionService")
+
+
+process.EcalPreshowerGeometryEP = cms.ESProducer("EcalPreshowerGeometryEP",
+    applyAlignment = cms.bool(False)
+)
+
+
+process.EcalTrigTowerConstituentsMapBuilder = cms.ESProducer("EcalTrigTowerConstituentsMapBuilder",
+    MapFile = cms.untracked.string('Geometry/EcalMapping/data/EndCap_TTMap.txt')
+)
+
+
+process.GlobalTrackingGeometryESProducer = cms.ESProducer("GlobalTrackingGeometryESProducer")
+
+
+process.HcalHardcodeGeometryEP = cms.ESProducer("HcalHardcodeGeometryEP",
+    HcalReLabel = cms.PSet(
+        RelabelRules = cms.untracked.PSet(
+            Eta16 = cms.untracked.vint32(1, 1, 2, 2, 2, 
+                2, 2, 2, 2, 3, 
+                3, 3, 3, 3, 3, 
+                3, 3, 3, 3),
+            Eta17 = cms.untracked.vint32(1, 1, 2, 2, 3, 
+                3, 3, 4, 4, 4, 
+                4, 4, 5, 5, 5, 
+                5, 5, 5, 5),
+            Eta1 = cms.untracked.vint32(1, 2, 2, 2, 3, 
+                3, 3, 3, 3, 3, 
+                3, 3, 3, 3, 3, 
+                3, 3, 3, 3),
+            CorrectPhi = cms.untracked.bool(False)
+        ),
+        RelabelHits = cms.untracked.bool(False)
+    )
+)
+
+
+process.MuonDetLayerGeometryESProducer = cms.ESProducer("MuonDetLayerGeometryESProducer")
+
+
+process.MuonNumberingInitialization = cms.ESProducer("MuonNumberingInitialization")
+
+
+process.ParabolicParametrizedMagneticFieldProducer = cms.ESProducer("ParametrizedMagneticFieldProducer",
+    version = cms.string('Parabolic'),
+    parameters = cms.PSet(
+
+    ),
+    label = cms.untracked.string('ParabolicMf')
+)
+
+
+process.ParametrizedMagneticFieldProducer = cms.ESProducer("ParametrizedMagneticFieldProducer",
+    version = cms.string('OAE_1103l_071212'),
+    parameters = cms.PSet(
+        BValue = cms.string('3_8T')
+    ),
+    label = cms.untracked.string('parametrizedField')
+)
+
+
+process.RPCGeometryESModule = cms.ESProducer("RPCGeometryESModule",
+    useDDD = cms.untracked.bool(True),
+    compatibiltyWith11 = cms.untracked.bool(True)
+)
+
+
+process.SiStripRecHitMatcherESProducer = cms.ESProducer("SiStripRecHitMatcherESProducer",
+    PreFilter = cms.bool(False),
+    ComponentName = cms.string('StandardMatcher'),
+    NSigmaInside = cms.double(3.0)
+)
+
+
+process.StripCPEfromTrackAngleESProducer = cms.ESProducer("StripCPEESProducer",
+    ComponentType = cms.string('StripCPEfromTrackAngle'),
+    ComponentName = cms.string('StripCPEfromTrackAngle')
+)
+
+
+process.TrackerRecoGeometryESProducer = cms.ESProducer("TrackerRecoGeometryESProducer")
+
+
+process.VolumeBasedMagneticFieldESProducer = cms.ESProducer("VolumeBasedMagneticFieldESProducer",
+    scalingVolumes = cms.vint32(14100, 14200, 17600, 17800, 17900, 
+        18100, 18300, 18400, 18600, 23100, 
+        23300, 23400, 23600, 23800, 23900, 
+        24100, 28600, 28800, 28900, 29100, 
+        29300, 29400, 29600, 28609, 28809, 
+        28909, 29109, 29309, 29409, 29609, 
+        28610, 28810, 28910, 29110, 29310, 
+        29410, 29610, 28611, 28811, 28911, 
+        29111, 29311, 29411, 29611),
+    scalingFactors = cms.vdouble(1, 1, 0.994, 1.004, 1.004, 
+        1.005, 1.004, 1.004, 0.994, 0.965, 
+        0.958, 0.958, 0.953, 0.958, 0.958, 
+        0.965, 0.918, 0.924, 0.924, 0.906, 
+        0.924, 0.924, 0.918, 0.991, 0.998, 
+        0.998, 0.978, 0.998, 0.998, 0.991, 
+        0.991, 0.998, 0.998, 0.978, 0.998, 
+        0.998, 0.991, 0.991, 0.998, 0.998, 
+        0.978, 0.998, 0.998, 0.991),
+    useParametrizedTrackerField = cms.bool(True),
+    label = cms.untracked.string(''),
+    version = cms.string('grid_1103l_090322_3_8t'),
+    debugBuilder = cms.untracked.bool(False),
+    paramLabel = cms.string('parametrizedField'),
+    geometryVersion = cms.int32(90322),
+    gridFiles = cms.VPSet(cms.PSet(
+        path = cms.string('grid.[v].bin'),
+        master = cms.int32(1),
+        volumes = cms.string('1-312'),
+        sectors = cms.string('0')
+    ), 
+        cms.PSet(
+            path = cms.string('S3/grid.[v].bin'),
+            master = cms.int32(3),
+            volumes = cms.string('176-186,231-241,286-296'),
+            sectors = cms.string('3')
+        ), 
+        cms.PSet(
+            path = cms.string('S4/grid.[v].bin'),
+            master = cms.int32(4),
+            volumes = cms.string('176-186,231-241,286-296'),
+            sectors = cms.string('4')
+        ), 
+        cms.PSet(
+            path = cms.string('S9/grid.[v].bin'),
+            master = cms.int32(9),
+            volumes = cms.string('14,15,20,21,24-27,32,33,40,41,48,49,56,57,62,63,70,71,286-296'),
+            sectors = cms.string('9')
+        ), 
+        cms.PSet(
+            path = cms.string('S10/grid.[v].bin'),
+            master = cms.int32(10),
+            volumes = cms.string('14,15,20,21,24-27,32,33,40,41,48,49,56,57,62,63,70,71,286-296'),
+            sectors = cms.string('10')
+        ), 
+        cms.PSet(
+            path = cms.string('S11/grid.[v].bin'),
+            master = cms.int32(11),
+            volumes = cms.string('14,15,20,21,24-27,32,33,40,41,48,49,56,57,62,63,70,71,286-296'),
+            sectors = cms.string('11')
+        )),
+    cacheLastVolume = cms.untracked.bool(True)
+)
+
+
+process.ZdcHardcodeGeometryEP = cms.ESProducer("ZdcHardcodeGeometryEP")
+
+
+process.fakeForIdealAlignment = cms.ESProducer("FakeAlignmentProducer",
+    appendToDataLabel = cms.string('fakeForIdeal')
+)
+
+
+process.hcalTopologyIdeal = cms.ESProducer("HcalTopologyIdealEP",
+    Exclude = cms.untracked.string(''),
+    appendToDataLabel = cms.string(''),
+    hcalTopologyConstants = cms.PSet(
+        maxDepthHE = cms.int32(3),
+        maxDepthHB = cms.int32(2),
+        mode = cms.string('HcalTopologyMode::LHC')
+    )
+)
+
+
+process.hcal_db_producer = cms.ESProducer("HcalDbProducer",
+    file = cms.untracked.string(''),
+    dump = cms.untracked.vstring('')
+)
+
+
+process.idealForDigiCSCGeometry = cms.ESProducer("CSCGeometryESModule",
+    appendToDataLabel = cms.string('idealForDigi'),
+    useDDD = cms.bool(True),
+    debugV = cms.untracked.bool(False),
+    useGangedStripsInME1a = cms.bool(True),
+    alignmentsLabel = cms.string('fakeForIdeal'),
+    useOnlyWiresInME1a = cms.bool(False),
+    useRealWireGeometry = cms.bool(True),
+    useCentreTIOffsets = cms.bool(False),
+    applyAlignment = cms.bool(False)
+)
+
+
+process.idealForDigiDTGeometry = cms.ESProducer("DTGeometryESModule",
+    appendToDataLabel = cms.string('idealForDigi'),
+    fromDDD = cms.bool(True),
+    applyAlignment = cms.bool(False),
+    alignmentsLabel = cms.string('fakeForIdeal')
+)
+
+
+process.idealForDigiTrackerGeometry = cms.ESProducer("TrackerDigiGeometryESModule",
+    appendToDataLabel = cms.string('idealForDigi'),
+    fromDDD = cms.bool(True),
+    trackerGeometryConstants = cms.PSet(
+        ROCS_X = cms.int32(0),
+        ROCS_Y = cms.int32(0),
+        upgradeGeometry = cms.bool(False),
+        BIG_PIX_PER_ROC_Y = cms.int32(2),
+        BIG_PIX_PER_ROC_X = cms.int32(1),
+        ROWS_PER_ROC = cms.int32(80),
+        COLS_PER_ROC = cms.int32(52)
+    ),
+    applyAlignment = cms.bool(False),
+    alignmentsLabel = cms.string('fakeForIdeal')
+)
+
+
+process.siPixelQualityESProducer = cms.ESProducer("SiPixelQualityESProducer",
+    ListOfRecordToMerge = cms.VPSet(cms.PSet(
+        record = cms.string('SiPixelQualityFromDbRcd'),
+        tag = cms.string('')
+    ), 
+        cms.PSet(
+            record = cms.string('SiPixelDetVOffRcd'),
+            tag = cms.string('')
+        ))
+)
+
+
+process.siStripBackPlaneCorrectionDepESProducer = cms.ESProducer("SiStripBackPlaneCorrectionDepESProducer",
+    LatencyRecord = cms.PSet(
+        record = cms.string('SiStripLatencyRcd'),
+        label = cms.untracked.string('')
+    ),
+    BackPlaneCorrectionDeconvMode = cms.PSet(
+        record = cms.string('SiStripBackPlaneCorrectionRcd'),
+        label = cms.untracked.string('deconvolution')
+    ),
+    BackPlaneCorrectionPeakMode = cms.PSet(
+        record = cms.string('SiStripBackPlaneCorrectionRcd'),
+        label = cms.untracked.string('peak')
+    )
+)
+
+
+process.siStripGainESProducer = cms.ESProducer("SiStripGainESProducer",
+    printDebug = cms.untracked.bool(False),
+    appendToDataLabel = cms.string(''),
+    APVGain = cms.VPSet(cms.PSet(
+        Record = cms.string('SiStripApvGainRcd'),
+        NormalizationFactor = cms.untracked.double(1.0),
+        Label = cms.untracked.string('')
+    ), 
+        cms.PSet(
+            Record = cms.string('SiStripApvGain2Rcd'),
+            NormalizationFactor = cms.untracked.double(1.0),
+            Label = cms.untracked.string('')
+        )),
+    AutomaticNormalization = cms.bool(False)
+)
+
+
+process.siStripLorentzAngleDepESProducer = cms.ESProducer("SiStripLorentzAngleDepESProducer",
+    LatencyRecord = cms.PSet(
+        record = cms.string('SiStripLatencyRcd'),
+        label = cms.untracked.string('')
+    ),
+    LorentzAngleDeconvMode = cms.PSet(
+        record = cms.string('SiStripLorentzAngleRcd'),
+        label = cms.untracked.string('deconvolution')
+    ),
+    LorentzAnglePeakMode = cms.PSet(
+        record = cms.string('SiStripLorentzAngleRcd'),
+        label = cms.untracked.string('peak')
+    )
+)
+
+
+process.siStripQualityESProducer = cms.ESProducer("SiStripQualityESProducer",
+    appendToDataLabel = cms.string(''),
+    PrintDebugOutput = cms.bool(False),
+    ThresholdForReducedGranularity = cms.double(0.3),
+    UseEmptyRunInfo = cms.bool(False),
+    ReduceGranularity = cms.bool(False),
+    ListOfRecordToMerge = cms.VPSet(cms.PSet(
+        record = cms.string('SiStripDetVOffRcd'),
+        tag = cms.string('')
+    ), 
+        cms.PSet(
+            record = cms.string('SiStripDetCablingRcd'),
+            tag = cms.string('')
+        ), 
+        cms.PSet(
+            record = cms.string('RunInfoRcd'),
+            tag = cms.string('')
+        ), 
+        cms.PSet(
+            record = cms.string('SiStripBadChannelRcd'),
+            tag = cms.string('')
+        ), 
+        cms.PSet(
+            record = cms.string('SiStripBadFiberRcd'),
+            tag = cms.string('')
+        ), 
+        cms.PSet(
+            record = cms.string('SiStripBadModuleRcd'),
+            tag = cms.string('')
+        ), 
+        cms.PSet(
+            record = cms.string('SiStripBadStripRcd'),
+            tag = cms.string('')
+        ))
+)
+
+
+process.sistripconn = cms.ESProducer("SiStripConnectivity")
+
+
+process.trackerGeometry = cms.ESProducer("TrackerDigiGeometryESModule",
+    appendToDataLabel = cms.string(''),
+    fromDDD = cms.bool(True),
+    trackerGeometryConstants = cms.PSet(
+        ROCS_X = cms.int32(0),
+        ROCS_Y = cms.int32(0),
+        upgradeGeometry = cms.bool(False),
+        BIG_PIX_PER_ROC_Y = cms.int32(2),
+        BIG_PIX_PER_ROC_X = cms.int32(1),
+        ROWS_PER_ROC = cms.int32(80),
+        COLS_PER_ROC = cms.int32(52)
+    ),
+    applyAlignment = cms.bool(True),
+    alignmentsLabel = cms.string('')
+)
+
+
+process.trackerNumberingGeometry = cms.ESProducer("TrackerGeometricDetESModule",
+    appendToDataLabel = cms.string(''),
+    fromDDD = cms.bool(True),
+    layerNumberPXB = cms.uint32(16),
+    totalBlade = cms.uint32(24)
+)
+
+
+process.trackerTopologyConstants = cms.ESProducer("TrackerTopologyEP",
+    tob_rodStartBit = cms.uint32(5),
+    tib_str_int_extStartBit = cms.uint32(10),
+    tib_layerMask = cms.uint32(7),
+    pxf_bladeMask = cms.uint32(63),
+    appendToDataLabel = cms.string(''),
+    pxb_ladderStartBit = cms.uint32(8),
+    pxb_layerStartBit = cms.uint32(16),
+    tec_wheelStartBit = cms.uint32(14),
+    tib_str_int_extMask = cms.uint32(3),
+    tec_ringStartBit = cms.uint32(5),
+    tib_moduleStartBit = cms.uint32(2),
+    tib_sterMask = cms.uint32(3),
+    tid_sideStartBit = cms.uint32(13),
+    tid_module_fw_bwStartBit = cms.uint32(7),
+    tid_ringMask = cms.uint32(3),
+    tob_sterMask = cms.uint32(3),
+    tec_petal_fw_bwStartBit = cms.uint32(12),
+    tec_ringMask = cms.uint32(7),
+    tib_strMask = cms.uint32(63),
+    tec_sterMask = cms.uint32(3),
+    tec_wheelMask = cms.uint32(15),
+    tec_sideStartBit = cms.uint32(18),
+    pxb_moduleMask = cms.uint32(63),
+    pxf_panelStartBit = cms.uint32(8),
+    tid_sideMask = cms.uint32(3),
+    tob_moduleMask = cms.uint32(7),
+    tid_ringStartBit = cms.uint32(9),
+    pxf_sideMask = cms.uint32(3),
+    pxb_moduleStartBit = cms.uint32(2),
+    pxf_diskStartBit = cms.uint32(16),
+    tib_str_fw_bwMask = cms.uint32(3),
+    tec_moduleMask = cms.uint32(7),
+    tid_sterMask = cms.uint32(3),
+    tob_rod_fw_bwMask = cms.uint32(3),
+    tob_layerStartBit = cms.uint32(14),
+    tec_petal_fw_bwMask = cms.uint32(3),
+    tib_strStartBit = cms.uint32(4),
+    tec_sterStartBit = cms.uint32(0),
+    tid_moduleMask = cms.uint32(31),
+    tib_sterStartBit = cms.uint32(0),
+    tid_sterStartBit = cms.uint32(0),
+    pxf_moduleStartBit = cms.uint32(2),
+    pxf_diskMask = cms.uint32(15),
+    tob_moduleStartBit = cms.uint32(2),
+    tid_wheelStartBit = cms.uint32(11),
+    tob_layerMask = cms.uint32(7),
+    tid_module_fw_bwMask = cms.uint32(3),
+    tob_rod_fw_bwStartBit = cms.uint32(12),
+    tec_petalMask = cms.uint32(15),
+    pxb_ladderMask = cms.uint32(255),
+    tec_moduleStartBit = cms.uint32(2),
+    tob_rodMask = cms.uint32(127),
+    tec_sideMask = cms.uint32(3),
+    pxf_sideStartBit = cms.uint32(23),
+    pxb_layerMask = cms.uint32(15),
+    tib_layerStartBit = cms.uint32(14),
+    pxf_panelMask = cms.uint32(3),
+    tib_moduleMask = cms.uint32(3),
+    pxf_bladeStartBit = cms.uint32(10),
+    tid_wheelMask = cms.uint32(3),
+    tob_sterStartBit = cms.uint32(0),
+    tid_moduleStartBit = cms.uint32(2),
+    tec_petalStartBit = cms.uint32(8),
+    tib_str_fw_bwStartBit = cms.uint32(12),
+    pxf_moduleMask = cms.uint32(63)
+)
+
+
+process.GlobalTag = cms.ESSource("PoolDBESSource",
+    DBParameters = cms.PSet(
+        authenticationPath = cms.untracked.string(''),
+        enableReadOnlySessionOnUpdateConnection = cms.untracked.bool(False),
+        idleConnectionCleanupPeriod = cms.untracked.int32(10),
+        messageLevel = cms.untracked.int32(0),
+        enablePoolAutomaticCleanUp = cms.untracked.bool(False),
+        enableConnectionSharing = cms.untracked.bool(True),
+        connectionRetrialTimeOut = cms.untracked.int32(60),
+        connectionTimeOut = cms.untracked.int32(60),
+        authenticationSystem = cms.untracked.int32(0),
+        connectionRetrialPeriod = cms.untracked.int32(10)
+    ),
+    BlobStreamerName = cms.untracked.string('TBufferBlobStreamingService'),
+    toGet = cms.VPSet(cms.PSet(
+        record = cms.string('JetCorrectionsRecord'),
+        tag = cms.string('JetCorrectorParametersCollection_CSA14_V1_MC_AK4PFchs'),
+	connect = cms.untracked.string('frontier://FrontierProd/CMS_COND_31X_PHYSICSTOOLS'),
+        label = cms.untracked.string('AK4PFchs')
+    ), 
+        cms.PSet(
+            record = cms.string('JetCorrectionsRecord'),
+            tag = cms.string('JetCorrectorParametersCollection_CSA14_V1_MC_AK8PFchs'),
+	    connect = cms.untracked.string('frontier://FrontierProd/CMS_COND_31X_PHYSICSTOOLS'),
+            label = cms.untracked.string('AK8PFchs')
+        )),
+    connect = cms.string('frontier://FrontierProd/CMS_COND_31X_GLOBALTAG'),
+    globaltag = cms.string(myPATGT),
+)
+
+
+process.XMLIdealGeometryESSource = cms.ESSource("XMLIdealGeometryESSource",
+    geomXMLFiles = cms.vstring('Geometry/CMSCommonData/data/materials.xml', 
+        'Geometry/CMSCommonData/data/rotations.xml', 
+        'Geometry/CMSCommonData/data/normal/cmsextent.xml', 
+        'Geometry/CMSCommonData/data/cms.xml', 
+        'Geometry/CMSCommonData/data/cmsMother.xml', 
+        'Geometry/CMSCommonData/data/cmsTracker.xml', 
+        'Geometry/CMSCommonData/data/caloBase.xml', 
+        'Geometry/CMSCommonData/data/cmsCalo.xml', 
+        'Geometry/CMSCommonData/data/muonBase.xml', 
+        'Geometry/CMSCommonData/data/cmsMuon.xml', 
+        'Geometry/CMSCommonData/data/mgnt.xml', 
+        'Geometry/CMSCommonData/data/beampipe.xml', 
+        'Geometry/CMSCommonData/data/cmsBeam.xml', 
+        'Geometry/CMSCommonData/data/muonMB.xml', 
+        'Geometry/CMSCommonData/data/muonMagnet.xml', 
+        'Geometry/TrackerCommonData/data/pixfwdMaterials.xml', 
+        'Geometry/TrackerCommonData/data/pixfwdCommon.xml', 
+        'Geometry/TrackerCommonData/data/pixfwdPlaq.xml', 
+        'Geometry/TrackerCommonData/data/pixfwdPlaq1x2.xml', 
+        'Geometry/TrackerCommonData/data/pixfwdPlaq1x5.xml', 
+        'Geometry/TrackerCommonData/data/pixfwdPlaq2x3.xml', 
+        'Geometry/TrackerCommonData/data/pixfwdPlaq2x4.xml', 
+        'Geometry/TrackerCommonData/data/pixfwdPlaq2x5.xml', 
+        'Geometry/TrackerCommonData/data/pixfwdPanelBase.xml', 
+        'Geometry/TrackerCommonData/data/pixfwdPanel.xml', 
+        'Geometry/TrackerCommonData/data/pixfwdBlade.xml', 
+        'Geometry/TrackerCommonData/data/pixfwdNipple.xml', 
+        'Geometry/TrackerCommonData/data/pixfwdDisk.xml', 
+        'Geometry/TrackerCommonData/data/pixfwdCylinder.xml', 
+        'Geometry/TrackerCommonData/data/pixfwd.xml', 
+        'Geometry/TrackerCommonData/data/pixbarmaterial.xml', 
+        'Geometry/TrackerCommonData/data/pixbarladder.xml', 
+        'Geometry/TrackerCommonData/data/pixbarladderfull.xml', 
+        'Geometry/TrackerCommonData/data/pixbarladderhalf.xml', 
+        'Geometry/TrackerCommonData/data/pixbarlayer.xml', 
+        'Geometry/TrackerCommonData/data/pixbarlayer0.xml', 
+        'Geometry/TrackerCommonData/data/pixbarlayer1.xml', 
+        'Geometry/TrackerCommonData/data/pixbarlayer2.xml', 
+        'Geometry/TrackerCommonData/data/pixbar.xml', 
+        'Geometry/TrackerCommonData/data/tibtidcommonmaterial.xml', 
+        'Geometry/TrackerCommonData/data/tibmaterial.xml', 
+        'Geometry/TrackerCommonData/data/tibmodpar.xml', 
+        'Geometry/TrackerCommonData/data/tibmodule0.xml', 
+        'Geometry/TrackerCommonData/data/tibmodule0a.xml', 
+        'Geometry/TrackerCommonData/data/tibmodule0b.xml', 
+        'Geometry/TrackerCommonData/data/tibmodule2.xml', 
+        'Geometry/TrackerCommonData/data/tibstringpar.xml', 
+        'Geometry/TrackerCommonData/data/tibstring0ll.xml', 
+        'Geometry/TrackerCommonData/data/tibstring0lr.xml', 
+        'Geometry/TrackerCommonData/data/tibstring0ul.xml', 
+        'Geometry/TrackerCommonData/data/tibstring0ur.xml', 
+        'Geometry/TrackerCommonData/data/tibstring0.xml', 
+        'Geometry/TrackerCommonData/data/tibstring1ll.xml', 
+        'Geometry/TrackerCommonData/data/tibstring1lr.xml', 
+        'Geometry/TrackerCommonData/data/tibstring1ul.xml', 
+        'Geometry/TrackerCommonData/data/tibstring1ur.xml', 
+        'Geometry/TrackerCommonData/data/tibstring1.xml', 
+        'Geometry/TrackerCommonData/data/tibstring2ll.xml', 
+        'Geometry/TrackerCommonData/data/tibstring2lr.xml', 
+        'Geometry/TrackerCommonData/data/tibstring2ul.xml', 
+        'Geometry/TrackerCommonData/data/tibstring2ur.xml', 
+        'Geometry/TrackerCommonData/data/tibstring2.xml', 
+        'Geometry/TrackerCommonData/data/tibstring3ll.xml', 
+        'Geometry/TrackerCommonData/data/tibstring3lr.xml', 
+        'Geometry/TrackerCommonData/data/tibstring3ul.xml', 
+        'Geometry/TrackerCommonData/data/tibstring3ur.xml', 
+        'Geometry/TrackerCommonData/data/tibstring3.xml', 
+        'Geometry/TrackerCommonData/data/tiblayerpar.xml', 
+        'Geometry/TrackerCommonData/data/tiblayer0.xml', 
+        'Geometry/TrackerCommonData/data/tiblayer1.xml', 
+        'Geometry/TrackerCommonData/data/tiblayer2.xml', 
+        'Geometry/TrackerCommonData/data/tiblayer3.xml', 
+        'Geometry/TrackerCommonData/data/tib.xml', 
+        'Geometry/TrackerCommonData/data/tidmaterial.xml', 
+        'Geometry/TrackerCommonData/data/tidmodpar.xml', 
+        'Geometry/TrackerCommonData/data/tidmodule0.xml', 
+        'Geometry/TrackerCommonData/data/tidmodule0r.xml', 
+        'Geometry/TrackerCommonData/data/tidmodule0l.xml', 
+        'Geometry/TrackerCommonData/data/tidmodule1.xml', 
+        'Geometry/TrackerCommonData/data/tidmodule1r.xml', 
+        'Geometry/TrackerCommonData/data/tidmodule1l.xml', 
+        'Geometry/TrackerCommonData/data/tidmodule2.xml', 
+        'Geometry/TrackerCommonData/data/tidringpar.xml', 
+        'Geometry/TrackerCommonData/data/tidring0.xml', 
+        'Geometry/TrackerCommonData/data/tidring0f.xml', 
+        'Geometry/TrackerCommonData/data/tidring0b.xml', 
+        'Geometry/TrackerCommonData/data/tidring1.xml', 
+        'Geometry/TrackerCommonData/data/tidring1f.xml', 
+        'Geometry/TrackerCommonData/data/tidring1b.xml', 
+        'Geometry/TrackerCommonData/data/tidring2.xml', 
+        'Geometry/TrackerCommonData/data/tid.xml', 
+        'Geometry/TrackerCommonData/data/tidf.xml', 
+        'Geometry/TrackerCommonData/data/tidb.xml', 
+        'Geometry/TrackerCommonData/data/tibtidservices.xml', 
+        'Geometry/TrackerCommonData/data/tibtidservicesf.xml', 
+        'Geometry/TrackerCommonData/data/tibtidservicesb.xml', 
+        'Geometry/TrackerCommonData/data/tobmaterial.xml', 
+        'Geometry/TrackerCommonData/data/tobmodpar.xml', 
+        'Geometry/TrackerCommonData/data/tobmodule0.xml', 
+        'Geometry/TrackerCommonData/data/tobmodule2.xml', 
+        'Geometry/TrackerCommonData/data/tobmodule4.xml', 
+        'Geometry/TrackerCommonData/data/tobrodpar.xml', 
+        'Geometry/TrackerCommonData/data/tobrod0c.xml', 
+        'Geometry/TrackerCommonData/data/tobrod0l.xml', 
+        'Geometry/TrackerCommonData/data/tobrod0h.xml', 
+        'Geometry/TrackerCommonData/data/tobrod0.xml', 
+        'Geometry/TrackerCommonData/data/tobrod1l.xml', 
+        'Geometry/TrackerCommonData/data/tobrod1h.xml', 
+        'Geometry/TrackerCommonData/data/tobrod1.xml', 
+        'Geometry/TrackerCommonData/data/tobrod2c.xml', 
+        'Geometry/TrackerCommonData/data/tobrod2l.xml', 
+        'Geometry/TrackerCommonData/data/tobrod2h.xml', 
+        'Geometry/TrackerCommonData/data/tobrod2.xml', 
+        'Geometry/TrackerCommonData/data/tobrod3l.xml', 
+        'Geometry/TrackerCommonData/data/tobrod3h.xml', 
+        'Geometry/TrackerCommonData/data/tobrod3.xml', 
+        'Geometry/TrackerCommonData/data/tobrod4c.xml', 
+        'Geometry/TrackerCommonData/data/tobrod4l.xml', 
+        'Geometry/TrackerCommonData/data/tobrod4h.xml', 
+        'Geometry/TrackerCommonData/data/tobrod4.xml', 
+        'Geometry/TrackerCommonData/data/tobrod5l.xml', 
+        'Geometry/TrackerCommonData/data/tobrod5h.xml', 
+        'Geometry/TrackerCommonData/data/tobrod5.xml', 
+        'Geometry/TrackerCommonData/data/tob.xml', 
+        'Geometry/TrackerCommonData/data/tecmaterial.xml', 
+        'Geometry/TrackerCommonData/data/tecmodpar.xml', 
+        'Geometry/TrackerCommonData/data/tecmodule0.xml', 
+        'Geometry/TrackerCommonData/data/tecmodule0r.xml', 
+        'Geometry/TrackerCommonData/data/tecmodule0s.xml', 
+        'Geometry/TrackerCommonData/data/tecmodule1.xml', 
+        'Geometry/TrackerCommonData/data/tecmodule1r.xml', 
+        'Geometry/TrackerCommonData/data/tecmodule1s.xml', 
+        'Geometry/TrackerCommonData/data/tecmodule2.xml', 
+        'Geometry/TrackerCommonData/data/tecmodule3.xml', 
+        'Geometry/TrackerCommonData/data/tecmodule4.xml', 
+        'Geometry/TrackerCommonData/data/tecmodule4r.xml', 
+        'Geometry/TrackerCommonData/data/tecmodule4s.xml', 
+        'Geometry/TrackerCommonData/data/tecmodule5.xml', 
+        'Geometry/TrackerCommonData/data/tecmodule6.xml', 
+        'Geometry/TrackerCommonData/data/tecpetpar.xml', 
+        'Geometry/TrackerCommonData/data/tecring0.xml', 
+        'Geometry/TrackerCommonData/data/tecring1.xml', 
+        'Geometry/TrackerCommonData/data/tecring2.xml', 
+        'Geometry/TrackerCommonData/data/tecring3.xml', 
+        'Geometry/TrackerCommonData/data/tecring4.xml', 
+        'Geometry/TrackerCommonData/data/tecring5.xml', 
+        'Geometry/TrackerCommonData/data/tecring6.xml', 
+        'Geometry/TrackerCommonData/data/tecring0f.xml', 
+        'Geometry/TrackerCommonData/data/tecring1f.xml', 
+        'Geometry/TrackerCommonData/data/tecring2f.xml', 
+        'Geometry/TrackerCommonData/data/tecring3f.xml', 
+        'Geometry/TrackerCommonData/data/tecring4f.xml', 
+        'Geometry/TrackerCommonData/data/tecring5f.xml', 
+        'Geometry/TrackerCommonData/data/tecring6f.xml', 
+        'Geometry/TrackerCommonData/data/tecring0b.xml', 
+        'Geometry/TrackerCommonData/data/tecring1b.xml', 
+        'Geometry/TrackerCommonData/data/tecring2b.xml', 
+        'Geometry/TrackerCommonData/data/tecring3b.xml', 
+        'Geometry/TrackerCommonData/data/tecring4b.xml', 
+        'Geometry/TrackerCommonData/data/tecring5b.xml', 
+        'Geometry/TrackerCommonData/data/tecring6b.xml', 
+        'Geometry/TrackerCommonData/data/tecpetalf.xml', 
+        'Geometry/TrackerCommonData/data/tecpetalb.xml', 
+        'Geometry/TrackerCommonData/data/tecpetal0.xml', 
+        'Geometry/TrackerCommonData/data/tecpetal0f.xml', 
+        'Geometry/TrackerCommonData/data/tecpetal0b.xml', 
+        'Geometry/TrackerCommonData/data/tecpetal3.xml', 
+        'Geometry/TrackerCommonData/data/tecpetal3f.xml', 
+        'Geometry/TrackerCommonData/data/tecpetal3b.xml', 
+        'Geometry/TrackerCommonData/data/tecpetal6f.xml', 
+        'Geometry/TrackerCommonData/data/tecpetal6b.xml', 
+        'Geometry/TrackerCommonData/data/tecpetal8f.xml', 
+        'Geometry/TrackerCommonData/data/tecpetal8b.xml', 
+        'Geometry/TrackerCommonData/data/tecwheel.xml', 
+        'Geometry/TrackerCommonData/data/tecwheela.xml', 
+        'Geometry/TrackerCommonData/data/tecwheelb.xml', 
+        'Geometry/TrackerCommonData/data/tecwheelc.xml', 
+        'Geometry/TrackerCommonData/data/tecwheeld.xml', 
+        'Geometry/TrackerCommonData/data/tecwheel6.xml', 
+        'Geometry/TrackerCommonData/data/tecservices.xml', 
+        'Geometry/TrackerCommonData/data/tecbackplate.xml', 
+        'Geometry/TrackerCommonData/data/tec.xml', 
+        'Geometry/TrackerCommonData/data/trackermaterial.xml', 
+        'Geometry/TrackerCommonData/data/tracker.xml', 
+        'Geometry/TrackerCommonData/data/trackerpixbar.xml', 
+        'Geometry/TrackerCommonData/data/trackerpixfwd.xml', 
+        'Geometry/TrackerCommonData/data/trackertibtidservices.xml', 
+        'Geometry/TrackerCommonData/data/trackertib.xml', 
+        'Geometry/TrackerCommonData/data/trackertid.xml', 
+        'Geometry/TrackerCommonData/data/trackertob.xml', 
+        'Geometry/TrackerCommonData/data/trackertec.xml', 
+        'Geometry/TrackerCommonData/data/trackerbulkhead.xml', 
+        'Geometry/TrackerCommonData/data/trackerother.xml', 
+        'Geometry/EcalCommonData/data/eregalgo.xml', 
+        'Geometry/EcalCommonData/data/ebalgo.xml', 
+        'Geometry/EcalCommonData/data/ebcon.xml', 
+        'Geometry/EcalCommonData/data/ebrot.xml', 
+        'Geometry/EcalCommonData/data/eecon.xml', 
+        'Geometry/EcalCommonData/data/eefixed.xml', 
+        'Geometry/EcalCommonData/data/eehier.xml', 
+        'Geometry/EcalCommonData/data/eealgo.xml', 
+        'Geometry/EcalCommonData/data/escon.xml', 
+        'Geometry/EcalCommonData/data/esalgo.xml', 
+        'Geometry/EcalCommonData/data/eeF.xml', 
+        'Geometry/EcalCommonData/data/eeB.xml', 
+        'Geometry/HcalCommonData/data/hcalrotations.xml', 
+        'Geometry/HcalCommonData/data/hcalalgo.xml', 
+        'Geometry/HcalCommonData/data/hcalbarrelalgo.xml', 
+        'Geometry/HcalCommonData/data/hcalendcapalgo.xml', 
+        'Geometry/HcalCommonData/data/hcalouteralgo.xml', 
+        'Geometry/HcalCommonData/data/hcalforwardalgo.xml', 
+        'Geometry/HcalCommonData/data/average/hcalforwardmaterial.xml', 
+        'Geometry/MuonCommonData/data/mbCommon.xml', 
+        'Geometry/MuonCommonData/data/mb1.xml', 
+        'Geometry/MuonCommonData/data/mb2.xml', 
+        'Geometry/MuonCommonData/data/mb3.xml', 
+        'Geometry/MuonCommonData/data/mb4.xml', 
+        'Geometry/MuonCommonData/data/muonYoke.xml', 
+        'Geometry/MuonCommonData/data/mf.xml', 
+        'Geometry/ForwardCommonData/data/forward.xml', 
+        'Geometry/ForwardCommonData/data/bundle/forwardshield.xml', 
+        'Geometry/ForwardCommonData/data/brmrotations.xml', 
+        'Geometry/ForwardCommonData/data/brm.xml', 
+        'Geometry/ForwardCommonData/data/totemMaterials.xml', 
+        'Geometry/ForwardCommonData/data/totemRotations.xml', 
+        'Geometry/ForwardCommonData/data/totemt1.xml', 
+        'Geometry/ForwardCommonData/data/totemt2.xml', 
+        'Geometry/ForwardCommonData/data/ionpump.xml', 
+        'Geometry/MuonCommonData/data/muonNumbering.xml', 
+        'Geometry/TrackerCommonData/data/trackerStructureTopology.xml', 
+        'Geometry/TrackerSimData/data/trackersens.xml', 
+        'Geometry/TrackerRecoData/data/trackerRecoMaterial.xml', 
+        'Geometry/EcalSimData/data/ecalsens.xml', 
+        'Geometry/HcalCommonData/data/hcalsenspmf.xml', 
+        'Geometry/HcalSimData/data/hf.xml', 
+        'Geometry/HcalSimData/data/hfpmt.xml', 
+        'Geometry/HcalSimData/data/hffibrebundle.xml', 
+        'Geometry/HcalSimData/data/CaloUtil.xml', 
+        'Geometry/MuonSimData/data/muonSens.xml', 
+        'Geometry/DTGeometryBuilder/data/dtSpecsFilter.xml', 
+        'Geometry/CSCGeometryBuilder/data/cscSpecsFilter.xml', 
+        'Geometry/CSCGeometryBuilder/data/cscSpecs.xml', 
+        'Geometry/RPCGeometryBuilder/data/RPCSpecs.xml', 
+        'Geometry/ForwardCommonData/data/brmsens.xml', 
+        'Geometry/HcalSimData/data/HcalProdCuts.xml', 
+        'Geometry/EcalSimData/data/EcalProdCuts.xml', 
+        'Geometry/EcalSimData/data/ESProdCuts.xml', 
+        'Geometry/TrackerSimData/data/trackerProdCuts.xml', 
+        'Geometry/TrackerSimData/data/trackerProdCutsBEAM.xml', 
+        'Geometry/MuonSimData/data/muonProdCuts.xml', 
+        'Geometry/ForwardSimData/data/ForwardShieldProdCuts.xml', 
+        'Geometry/CMSCommonData/data/FieldParameters.xml'),
+    rootNodeName = cms.string('cms:OCMS')
+)
+
+
+process.eegeom = cms.ESSource("EmptyESSource",
+    iovIsRunNotTime = cms.bool(True),
+    recordName = cms.string('EcalMappingRcd'),
+    firstValid = cms.vuint32(1)
+)
+
+
+process.es_hardcode = cms.ESSource("HcalHardcodeCalibrations",
+    HcalReLabel = cms.PSet(
+        RelabelRules = cms.untracked.PSet(
+            Eta16 = cms.untracked.vint32(1, 1, 2, 2, 2, 
+                2, 2, 2, 2, 3, 
+                3, 3, 3, 3, 3, 
+                3, 3, 3, 3),
+            Eta17 = cms.untracked.vint32(1, 1, 2, 2, 3, 
+                3, 3, 4, 4, 4, 
+                4, 4, 5, 5, 5, 
+                5, 5, 5, 5),
+            Eta1 = cms.untracked.vint32(1, 2, 2, 2, 3, 
+                3, 3, 3, 3, 3, 
+                3, 3, 3, 3, 3, 
+                3, 3, 3, 3),
+            CorrectPhi = cms.untracked.bool(False)
+        ),
+        RelabelHits = cms.untracked.bool(False)
+    ),
+    HERecalibration = cms.bool(False),
+    toGet = cms.untracked.vstring('GainWidths'),
+    GainWidthsForTrigPrims = cms.bool(False),
+    HEreCalibCutoff = cms.double(20.0),
+    HFRecalibration = cms.bool(False),
+    iLumi = cms.double(-1.0),
+    hcalTopologyConstants = cms.PSet(
+        maxDepthHE = cms.int32(3),
+        maxDepthHB = cms.int32(2),
+        mode = cms.string('HcalTopologyMode::LHC')
+    )
+)
+
+
+process.magfield = cms.ESSource("XMLIdealGeometryESSource",
+    geomXMLFiles = cms.vstring('Geometry/CMSCommonData/data/normal/cmsextent.xml', 
+        'Geometry/CMSCommonData/data/cms.xml', 
+        'Geometry/CMSCommonData/data/cmsMagneticField.xml', 
+        'MagneticField/GeomBuilder/data/MagneticFieldVolumes_1103l.xml', 
+        'Geometry/CMSCommonData/data/materials.xml'),
+    rootNodeName = cms.string('cmsMagneticField:MAGF')
+)
+
+
+process.prefer("es_hardcode")
+
+process.prefer("magfield")
+
+process.CondDBSetup = cms.PSet(
+    DBParameters = cms.PSet(
+        authenticationPath = cms.untracked.string(''),
+        enableReadOnlySessionOnUpdateConnection = cms.untracked.bool(False),
+        idleConnectionCleanupPeriod = cms.untracked.int32(10),
+        messageLevel = cms.untracked.int32(0),
+        enablePoolAutomaticCleanUp = cms.untracked.bool(False),
+        enableConnectionSharing = cms.untracked.bool(True),
+        connectionRetrialTimeOut = cms.untracked.int32(60),
+        connectionTimeOut = cms.untracked.int32(60),
+        authenticationSystem = cms.untracked.int32(0),
+        connectionRetrialPeriod = cms.untracked.int32(10)
+    )
+)
+
+process.HcalReLabel = cms.PSet(
+    RelabelRules = cms.untracked.PSet(
+        Eta16 = cms.untracked.vint32(1, 1, 2, 2, 2, 
+            2, 2, 2, 2, 3, 
+            3, 3, 3, 3, 3, 
+            3, 3, 3, 3),
+        Eta17 = cms.untracked.vint32(1, 1, 2, 2, 3, 
+            3, 3, 4, 4, 4, 
+            4, 4, 5, 5, 5, 
+            5, 5, 5, 5),
+        Eta1 = cms.untracked.vint32(1, 2, 2, 2, 3, 
+            3, 3, 3, 3, 3, 
+            3, 3, 3, 3, 3, 
+            3, 3, 3, 3),
+        CorrectPhi = cms.untracked.bool(False)
+    ),
+    RelabelHits = cms.untracked.bool(False)
+)
+
+process.fieldScaling = cms.PSet(
+    scalingVolumes = cms.vint32(14100, 14200, 17600, 17800, 17900, 
+        18100, 18300, 18400, 18600, 23100, 
+        23300, 23400, 23600, 23800, 23900, 
+        24100, 28600, 28800, 28900, 29100, 
+        29300, 29400, 29600, 28609, 28809, 
+        28909, 29109, 29309, 29409, 29609, 
+        28610, 28810, 28910, 29110, 29310, 
+        29410, 29610, 28611, 28811, 28911, 
+        29111, 29311, 29411, 29611),
+    scalingFactors = cms.vdouble(1, 1, 0.994, 1.004, 1.004, 
+        1.005, 1.004, 1.004, 0.994, 0.965, 
+        0.958, 0.958, 0.953, 0.958, 0.958, 
+        0.965, 0.918, 0.924, 0.924, 0.906, 
+        0.924, 0.924, 0.918, 0.991, 0.998, 
+        0.998, 0.978, 0.998, 0.998, 0.991, 
+        0.991, 0.998, 0.998, 0.978, 0.998, 
+        0.998, 0.991, 0.991, 0.998, 0.998, 
+        0.978, 0.998, 0.998, 0.991)
+)
+
+process.options = cms.untracked.PSet(
+    wantSummary = cms.untracked.bool(True),
+    allowUnscheduled = cms.untracked.bool(True)
+)
+
+childProcess = process
+process = parentProcess8743382342089
+process.subProcess = cms.SubProcess( process = childProcess, SelectEvents = cms.untracked.PSet(
+    SelectEvents = cms.vstring('*')
+), outputCommands = cms.untracked.vstring('keep *'))
 process.hltAK4CaloJets = cms.EDProducer("FastjetJetProducer",
     Active_Area_Repeats = cms.int32(5),
     useMassDropTagger = cms.bool(False),
@@ -5590,8 +6870,7 @@ process.hltGetRaw = cms.EDAnalyzer("HLTGetRaw",
 
 process.output = cms.OutputModule("PoolOutputModule",
     splitLevel = cms.untracked.int32(0),
-    outputCommands = cms.untracked.vstring('drop *', 
-        'keep *_TriggerResults_*_*', 
+    outputCommands = cms.untracked.vstring('keep *_TriggerResults_*_*', 
         'keep *_hltTriggerSummaryAOD_*_*', 
         'keep *_hltAntiKT5CaloJets_*_*', 
         'keep *_hltAK8HtMht_*_*', 
@@ -5831,9 +7110,6 @@ process.HLT_AK8PFNOJECTrimHT850_v1 = cms.Path(cms.ignore(process.hltTriggerType)
 
 
 process.HLT_AK8PFJet360Trim_Mass30_v1 = cms.Path(cms.ignore(process.hltTriggerType)+process.HLTL1UnpackerSequence+process.HLTBeamSpot+cms.ignore(process.hltL1sL1SingleJet128)+process.HLTAK8CaloJetsSequence+cms.ignore(process.hltAK8SingleCaloJet260)+process.HLTAK4CaloJetsPrePFRecoSequence+cms.ignore(process.hltAK4CaloJetsPFEt5)+process.HLTAK8PFJetsReconstructionSequence+process.HLTAK8PFJetsCorrectionSequence+process.hltAK8PFJetsCorrectedMatchedToCaloJets260+process.hltAK8TrimJets+cms.ignore(process.hltAK8SinglePFJet360TrimMass30)+cms.ignore(process.hltBoolEnd))
-
-
-process.HLTOutput_openhlt = cms.EndPath(process.output)
 
 
 process.DQMStore = cms.Service("DQMStore",

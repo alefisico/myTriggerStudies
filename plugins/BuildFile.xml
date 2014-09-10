@@ -1,5 +1,6 @@
 <flags   EDM_PLUGIN="1"/>
 <use   name="FWCore/Framework"/>
+<use name="FWCore/PluginManager"/>
 <use   name="FWCore/ParameterSet"/>
 <use   name="root"/>
 <use   name="boost"/>
@@ -10,7 +11,6 @@
 <use   name="DataFormats/PatCandidates"/>
 <use   name="DataFormats/HepMCCandidate"/>
 <use   name="DataFormats/CaloTowers"/>
-<use   name="DataFormats/HcalRecHit"/>
 <use   name="DataFormats/HcalDigi"/>
 <use   name="DataFormats/HcalDetId"/>
 <use   name="DataFormats/FEDRawData"/>
@@ -25,3 +25,16 @@
 <use   name="PhysicsTools/PatUtils"/>
 <use   name="PhysicsTools/PatAlgos"/>
 <use   name="CondFormats/JetMETObjects"/>
+<use   name="DataFormats/Common"/>
+<use   name="DataFormats/HLTReco"/>
+<use   name="DataFormats/HcalRecHit"/>
+<use   name="DataFormats/METReco"/>
+<use   name="DataFormats/Math"/>
+<use   name="Geometry/CaloTopology"/>
+<use   name="FWCore/MessageLogger"/>
+<use   name="FWCore/Utilities"/>
+<use   name="RecoMET/METAlgorithms"/>
+<use   name="HLTrigger/HLTcore"/>
+<use   name="RecoJets/JetProducers"/>
+<use   name="TrackingTools/IPTools"/>
+<use   name="TrackingTools/TransientTrack"/>

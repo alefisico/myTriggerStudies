@@ -43,6 +43,8 @@
 #include "DataFormats/Math/interface/deltaR.h"
 
 #include "DataFormats/PatCandidates/interface/MET.h"
+#include "DataFormats/METReco/interface/MET.h"
+#include "DataFormats/METReco/interface/METFwd.h"
 #include "DataFormats/Common/interface/View.h"
 #include "DataFormats/JetReco/interface/BasicJet.h"
 #include "DataFormats/JetReco/interface/CaloJet.h"
@@ -81,16 +83,30 @@ class TriggerPlotter : public edm::EDProducer {
 	
       edm::Service<TFileService> fs;						// Output File 
       //std::string label_;
+      edm::InputTag srcHT_;
       edm::InputTag srcJets_;
       edm::InputTag srcJetsNOJEC_;
+      TH1D * numJets;
       TH1D * jet1pt;
       TH1D * jet1mass;
       TH1D * ht;
+      TH1D * hlt_HT;
       TH1D * eventJetMass;
+      TH2D * HTvsJet1pt;
+      TH2D * HTvsJet1mass;
+      TH2D * Jet1ptvsmass;
+      TH2D * HTvsEventJetMass;
+      TH1D * numJets_NOJEC;
       TH1D * jet1pt_NOJEC;
       TH1D * jet1mass_NOJEC;
       TH1D * ht_NOJEC;
       TH1D * eventJetMass_NOJEC;
+      TH2D * HTvsJet1pt_NOJEC;
+      TH2D * HTvsJet1mass_NOJEC;
+      TH2D * HTvsEventJetMass_NOJEC;
+      TH2D * Jet1ptvsmass_NOJEC;
+      TH2D * SelectHTvsJet1mass;
+      TH2D * SelectHTvsEventJetMass;
       
       TTree* tree;
       TTree* tree_NOJEC;
@@ -126,6 +142,7 @@ class TriggerPlotter : public edm::EDProducer {
 TriggerPlotter::TriggerPlotter(const edm::ParameterSet& iConfig)
 {
 	srcJets_  		= iConfig.getParameter<edm::InputTag> ( "hltJets" );   			// Obtain inputs
+	srcHT_  		= iConfig.getParameter<edm::InputTag> ( "hltHT" );   			// Obtain inputs
 	srcJetsNOJEC_  		= iConfig.getParameter<edm::InputTag> ( "hltJetsNOJEC" );   			// Obtain inputs
   
 }
@@ -154,7 +171,20 @@ TriggerPlotter::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	using namespace edm;
 	using namespace reco;
 
-  	//edm::Handle<edm::View<reco::MET> > jets;
+  	//edm::Handle<edm::View<reco::MET> > hltHT;
+	//edm::Handle<std::vector<reco::MET> > hltHT;
+	//iEvent.getByLabel(srcHT_, hltHT);
+	//reco::MET imet = *(hltHT->begin());
+	//std::vector<reco::MET> const & imet = *hltHT;
+    	//for(reco::MET ijet=hltHT->begin(); ijet!=hltHT->end();ijet++){
+		//cout<< ijet.sumEt() << endl;
+	//}
+	//hlt_HT->Fill( imet.sumEt() );
+	//hlt_HT->Fill( imet[1].sumEt() );
+	edm::Handle<reco::METCollection> hht;
+	iEvent.getByLabel( srcHT_, hht);
+	if (hht->size() > 0) hlt_HT->Fill(  hht->front().sumEt());
+
   	edm::Handle<edm::View<reco::Jet> > jets;
 	iEvent.getByLabel(srcJets_,jets);
 
@@ -163,22 +193,28 @@ TriggerPlotter::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	double HT = 0;
 	double EventJetMass = 0;
     	for(edm::View<reco::Jet>::const_iterator ijet=jets->begin(); ijet!=jets->end();ijet++){
-    	//for(edm::View<reco::MET>::const_iterator ijet=jets->begin(); ijet!=jets->end();ijet++){
+
+		if ( ijet->pt() < 40.0 || abs( ijet->eta() ) > 3.0 ) continue;
     		p4jet.push_back( TLorentzVector( ijet->px(), ijet->py(), ijet->pz(), ijet->energy() ) );
 		HT += ijet->pt();
 		EventJetMass += ijet->mass();
 
 		jetPtVec->push_back( ijet->pt() ); 
-		jetEtaVec->push_back( ijet->eta() ); 
+		/*jetEtaVec->push_back( ijet->eta() ); 
 		jetPhiVec->push_back( ijet->phi() ); 
-		jetEnergyVec->push_back( ijet->energy() ); 
+		jetEnergyVec->push_back( ijet->energy() ); */
 	} 
 
 	if( p4jet.size() > 0 ){
+		numJets->Fill( p4jet.size() );
 		jet1pt->Fill( p4jet[0].Pt() );
 		jet1mass->Fill( p4jet[0].M() );
 		ht->Fill( HT );
 		eventJetMass->Fill( EventJetMass );
+		HTvsJet1pt->Fill( HT, p4jet[0].Pt() );
+		HTvsJet1mass->Fill( HT, p4jet[0].M() );
+		Jet1ptvsmass->Fill( p4jet[0].Pt(), p4jet[0].M() );
+		HTvsEventJetMass->Fill( HT, EventJetMass );
 	}
 
   	edm::Handle<edm::View<reco::Jet> > jets_NOJEC;
@@ -189,21 +225,31 @@ TriggerPlotter::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	double HT_NOJEC = 0;
 	double EventJetMass_NOJEC = 0;
     	for(edm::View<reco::Jet>::const_iterator ijet_NOJEC=jets_NOJEC->begin(); ijet_NOJEC!=jets_NOJEC->end();ijet_NOJEC++){
+
+		if ( ijet_NOJEC->pt() < 40.0 || abs( ijet_NOJEC->eta() ) > 3.0 ) continue;
+
     		p4jet_NOJEC.push_back( TLorentzVector( ijet_NOJEC->px(), ijet_NOJEC->py(), ijet_NOJEC->pz(), ijet_NOJEC->energy() ) );
 		HT_NOJEC += ijet_NOJEC->pt();
 		EventJetMass_NOJEC += ijet_NOJEC->mass();
 
-		jetPtVec_NOJEC->push_back( ijet_NOJEC->pt() ); 
+		/*jetPtVec_NOJEC->push_back( ijet_NOJEC->pt() ); 
 		jetEtaVec_NOJEC->push_back( ijet_NOJEC->eta() ); 
 		jetPhiVec_NOJEC->push_back( ijet_NOJEC->phi() ); 
-		jetEnergyVec_NOJEC->push_back( ijet_NOJEC->energy() ); 
+		jetEnergyVec_NOJEC->push_back( ijet_NOJEC->energy() ); */
 	} 
 
 	if( p4jet_NOJEC.size() > 0 ){
+		numJets_NOJEC->Fill( p4jet_NOJEC.size() );
 		jet1pt_NOJEC->Fill( p4jet_NOJEC[0].Pt() );
 		jet1mass_NOJEC->Fill( p4jet_NOJEC[0].M() );
 		ht_NOJEC->Fill( HT_NOJEC );
 		eventJetMass_NOJEC->Fill( EventJetMass_NOJEC );
+		HTvsJet1pt_NOJEC->Fill( HT_NOJEC, p4jet_NOJEC[0].Pt() );
+		HTvsJet1mass_NOJEC->Fill( HT_NOJEC, p4jet_NOJEC[0].M() );
+		Jet1ptvsmass_NOJEC->Fill( p4jet_NOJEC[0].Pt(), p4jet_NOJEC[0].M() );
+		HTvsEventJetMass_NOJEC->Fill( HT_NOJEC, EventJetMass_NOJEC );
+		SelectHTvsJet1mass->Fill( HT, p4jet_NOJEC[0].M() );
+		SelectHTvsEventJetMass->Fill( HT, EventJetMass_NOJEC );
 	}
 
 	tree->Fill();
@@ -215,10 +261,17 @@ TriggerPlotter::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 void 
 TriggerPlotter::beginJob()
 {
+	hlt_HT = fs->make<TH1D>("hltHT" , "hltHT", 200 ,0., 2000. );	
+
+	numJets = fs->make<TH1D>("numJets" , "Jet Multiplicity", 20 ,0., 20. );	
 	jet1pt = fs->make<TH1D>("jet1pt" , "Leading Jet p_{T}", 200 ,0., 2000. );	
-	jet1mass = fs->make<TH1D>("jet1mass" , "Leading Mass p_{T}", 50 ,0., 500. );	
-	ht = fs->make<TH1D>("ht" , "HT", 500 ,0., 5000. );	
-	eventJetMass = fs->make<TH1D>("eventJetMass" , "Event Jet Mass", 500 ,0., 5000. );	
+	jet1mass = fs->make<TH1D>("jet1mass" , "Leading Mass p_{T}", 40 ,0., 200. );	
+	ht = fs->make<TH1D>("ht" , "HT", 200 ,0., 2000. );	
+	eventJetMass = fs->make<TH1D>("eventJetMass" , "Event Jet Mass", 50 ,0., 500. );	
+	HTvsJet1pt = fs->make<TH2D>("HTvsJet1pt", "HT vs Leading Jet Pt", 200 ,0., 2000., 200 ,0., 2000. );	
+	HTvsJet1mass = fs->make<TH2D>("HTvsJet1mass", "HT vs Leading Mass", 200 ,0., 2000., 40 ,0., 200. );	
+	Jet1ptvsmass = fs->make<TH2D>("Jet1ptvsmass", "Leading Mass vs p_{T}", 200 ,0., 2000., 40 ,0., 200. );	
+	HTvsEventJetMass = fs->make<TH2D>("HTvsEventJetMass", "HT vs Event Jet Mass", 200 ,0., 2000., 50 ,0., 500.);	
 
 	tree = fs->make<TTree>("JetVariables", "JetVariables");
 	jetPtVec = new std::vector<float>;
@@ -230,10 +283,17 @@ TriggerPlotter::beginJob()
 	tree->Branch("jetPhi", "vector<float>", &jetPhiVec);
 	tree->Branch("jetEnergy", "vector<float>", &jetEnergyVec);
 
+	numJets_NOJEC = fs->make<TH1D>("numJets_NOJEC" , "Jet Multiplicity", 20 ,0., 20. );	
 	jet1pt_NOJEC = fs->make<TH1D>("jet1pt_NOJEC" , "Leading Jet p_{T}", 200 ,0., 2000. );	
-	jet1mass_NOJEC = fs->make<TH1D>("jet1mass_NOJEC" , "Leading Mass p_{T}", 50 ,0., 500. );	
-	ht_NOJEC = fs->make<TH1D>("ht_NOJEC" , "HT", 500 ,0., 5000. );	
-	eventJetMass_NOJEC = fs->make<TH1D>("eventJetMass_NOJEC" , "Event Jet Mass", 500 ,0., 5000. );	
+	jet1mass_NOJEC = fs->make<TH1D>("jet1mass_NOJEC" , "Leading Mass p_{T}", 40 ,0., 200. );	
+	ht_NOJEC = fs->make<TH1D>("ht_NOJEC" , "HT", 200 ,0., 2000. );	
+	eventJetMass_NOJEC = fs->make<TH1D>("eventJetMass_NOJEC" , "Event Jet Mass", 50 ,0., 500. );	
+	HTvsJet1pt_NOJEC = fs->make<TH2D>("HTvsJet1pt_NOJEC", "HT vs Leading Jet Pt", 200 ,0., 2000., 200 ,0., 2000. );	
+	HTvsJet1mass_NOJEC = fs->make<TH2D>("HTvsJet1mass_NOJEC", "HT vs Leading Mass p_{T}", 200 ,0., 2000., 40 ,0., 200. );	
+	HTvsEventJetMass_NOJEC = fs->make<TH2D>("HTvsEventJetMass_NOJEC", "HT vs Event Jet Mass", 200 ,0., 2000., 50 ,0.,500.);	
+	Jet1ptvsmass_NOJEC = fs->make<TH2D>("Jet1ptvsmass_NOJEC", "Leading Mass vs p_{T}", 200 ,0., 2000., 40 ,0., 200. );	
+	SelectHTvsJet1mass = fs->make<TH2D>("SelectHTvsJet1mass", "HT vs Leading Mass p_{T}", 200 ,0., 2000., 40 ,0., 200. );	
+	SelectHTvsEventJetMass = fs->make<TH2D>("SelectHTvsEventJetMass", "HT vs Event Jet Mass", 200 ,0., 2000., 50 ,0.,500.);	
 
 	tree_NOJEC = fs->make<TTree>("JetVariables_NOJEC", "JetVariables_NOJEC");
 	jetPtVec_NOJEC = new std::vector<float>;
