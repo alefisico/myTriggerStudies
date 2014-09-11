@@ -46,6 +46,10 @@
 #include "DataFormats/PatCandidates/interface/Jet.h"
 #include "DataFormats/JetReco/interface/PFJetCollection.h"
 
+#include "DataFormats/PatCandidates/interface/MET.h"
+#include "DataFormats/METReco/interface/MET.h"
+#include "DataFormats/METReco/interface/METFwd.h"
+
 #include "TMath.h"
 #include "TH2D.h"
 #include "TH1D.h"
@@ -78,6 +82,10 @@ class OverlapTriggers : public edm::EDAnalyzer {
 		//edm::InputTag hltJets;
 		std::string trigger1;
 		std::string trigger2;
+		edm::InputTag oneHLTPFJets;
+		edm::InputTag twoHLTPFJets;
+		edm::InputTag oneHLTHT;
+		edm::InputTag twoHLTHT;
 
 		HLTConfigProvider hltConfig;
 		int triggerBit1;
@@ -88,6 +96,7 @@ class OverlapTriggers : public edm::EDAnalyzer {
 		int bothTriggers = 0;
 		int noneTriggers = 0;
 		double totalNumberEvents = 0;
+		double totalNumberEventsPassing = 0;
 
 };
 
@@ -96,6 +105,10 @@ class OverlapTriggers : public edm::EDAnalyzer {
 OverlapTriggers::OverlapTriggers(const edm::ParameterSet& iConfig){
 	trigger1		= iConfig.getParameter<std::string> ( "trigger1" );   			// Obtain inputs
 	trigger2		= iConfig.getParameter<std::string> ( "trigger2" );   			// Obtain inputs
+	oneHLTPFJets		= iConfig.getParameter<edm::InputTag> ( "oneHLTPFJets" );   			// Obtain inputs
+	twoHLTPFJets		= iConfig.getParameter<edm::InputTag> ( "twoHLTPFJets" );   			// Obtain inputs
+	oneHLTHT		= iConfig.getParameter<edm::InputTag> ( "oneHLTHT" );   			// Obtain inputs
+	twoHLTHT		= iConfig.getParameter<edm::InputTag> ( "twoHLTHT" );   			// Obtain inputs
 }
 
 
@@ -138,12 +151,71 @@ void OverlapTriggers::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 	edm::Handle<edm::TriggerResults> triggerResults;
 	iEvent.getByLabel(triggerResultsLabel, triggerResults);
 
+	edm::Handle<reco::METCollection> oneHLTPFHT;
+	iEvent.getByLabel(oneHLTHT, oneHLTPFHT);
+	double oneHT = 0;
+	if (oneHLTPFHT->size() > 0) oneHT = oneHLTPFHT->front().sumEt();
 
-	if (triggerResults->accept(triggerBit1) && triggerResults->accept(triggerBit2)) bothTriggers+=1;
-	else{
-		if (triggerResults->accept(triggerBit1) ) onlyTrigger1+=1;
-		if (triggerResults->accept(triggerBit2) ) onlyTrigger2+=1;
-		if (!triggerResults->accept(triggerBit1) && !triggerResults->accept(triggerBit2)) noneTriggers+=1;
+	edm::Handle<reco::METCollection> twoHLTPFHT;
+	iEvent.getByLabel(twoHLTHT, twoHLTPFHT);
+	double twoHT = 0;
+	if (twoHLTPFHT->size() > 0) twoHT = twoHLTPFHT->front().sumEt();
+
+  	edm::Handle<edm::View<reco::Jet> > onePFJets;
+	iEvent.getByLabel(oneHLTPFJets, onePFJets);
+  	std::vector< TLorentzVector > oneJets;
+
+  	edm::Handle<edm::View<reco::Jet> > twoPFJets;
+	iEvent.getByLabel(twoHLTPFJets, twoPFJets);
+  	std::vector< TLorentzVector > twoJets;
+
+    	for(edm::View<reco::Jet>::const_iterator ijet=onePFJets->begin(); ijet!=onePFJets->end();ijet++){
+		if ( ijet->pt() < 40.0 || abs( ijet->eta() ) > 3.0 ) continue;
+    		oneJets.push_back( TLorentzVector( ijet->px(), ijet->py(), ijet->pz(), ijet->energy() ) );
+	} 
+
+    	for(edm::View<reco::Jet>::const_iterator ijet=twoPFJets->begin(); ijet!=twoPFJets->end();ijet++){
+		if ( ijet->pt() < 40.0 || abs( ijet->eta() ) > 3.0 ) continue;
+    		twoJets.push_back( TLorentzVector( ijet->px(), ijet->py(), ijet->pz(), ijet->energy() ) );
+	} 
+
+	if ( oneJets.size() > 0 ){
+		histos2D_[ "HTvsMassOneAll" ]->Fill( oneHT, oneJets[0].M() );
+		histos2D_[ "HTvsPtOneAll" ]->Fill( oneHT, oneJets[0].Pt() );
+		histos2D_[ "PtvsMassOneAll" ]->Fill( oneJets[0].Pt(), oneJets[0].M() );
+	}
+	
+	if ( twoJets.size() > 0 ){
+		histos2D_[ "HTvsMassTwoAll" ]->Fill( twoHT, twoJets[0].M() );
+		histos2D_[ "HTvsPtTwoAll" ]->Fill( twoHT, twoJets[0].Pt() );
+		histos2D_[ "PtvsMassTwoAll" ]->Fill( twoJets[0].Pt(), twoJets[0].M() );
+	}
+	
+	if (triggerResults->accept(triggerBit1) || triggerResults->accept(triggerBit2)){
+		totalNumberEventsPassing+=1;
+
+		if (triggerResults->accept(triggerBit1) && triggerResults->accept(triggerBit2)){
+	       		bothTriggers+=1;
+			histos2D_[ "HTvsMassBoth" ]->Fill( oneHT, oneJets[0].M() );
+			histos2D_[ "HTvsPtBoth" ]->Fill( oneHT, oneJets[0].Pt() );
+			histos2D_[ "PtvsMassBoth" ]->Fill( oneJets[0].Pt(), oneJets[0].M() );
+		} else {
+			if (triggerResults->accept(triggerBit1) ){
+		       		onlyTrigger1+=1;
+				histos2D_[ "HTvsMassOne" ]->Fill( oneHT, oneJets[0].M() );
+				histos2D_[ "HTvsPtOne" ]->Fill( oneHT, oneJets[0].Pt() );
+				histos2D_[ "PtvsMassOne" ]->Fill( oneJets[0].Pt(), oneJets[0].M() );
+
+			} else {
+		       		onlyTrigger2+=1;
+				histos2D_[ "HTvsMassTwo" ]->Fill( twoHT, twoJets[0].M() );
+				histos2D_[ "HTvsPtTwo" ]->Fill( twoHT, twoJets[0].Pt() );
+				histos2D_[ "PtvsMassTwo" ]->Fill( twoJets[0].Pt(), twoJets[0].M() );
+			}
+		}
+	
+	} else {
+	       	noneTriggers+=1;
 	}
 
 	totalNumberEvents+=1;
@@ -157,24 +229,92 @@ void OverlapTriggers::beginJob() {
 
 	const char *labelTrigger1 = trigger1.c_str();
 	const char *labelTrigger2 = trigger2.c_str();
-	histos1D_[ "overlap" ] = fileService->make< TH1D >( "overlapTriggers", "OverlapTriggers", 4, 0., 4);
+	histos1D_[ "overlapOverAll" ] = fileService->make< TH1D >( "overlapOverAllTriggers", "OverlapTriggers", 4, 0., 4);
+    	histos1D_[ "overlapOverAll" ]->GetXaxis()->SetBinLabel( 1, labelTrigger1 );
+    	histos1D_[ "overlapOverAll" ]->GetXaxis()->SetBinLabel( 2, labelTrigger2 );
+    	histos1D_[ "overlapOverAll" ]->GetXaxis()->SetBinLabel( 3, "Overlap" );
+    	histos1D_[ "overlapOverAll" ]->GetXaxis()->SetBinLabel( 4, "None" );
+    	histos1D_[ "overlapOverAll" ]->GetYaxis()->SetTitle( "Percentage" );
+
+	histos1D_[ "overlap" ] = fileService->make< TH1D >( "overlapTriggers", "OverlapTriggers", 3, 0., 3);
     	histos1D_[ "overlap" ]->GetXaxis()->SetBinLabel( 1, labelTrigger1 );
     	histos1D_[ "overlap" ]->GetXaxis()->SetBinLabel( 2, labelTrigger2 );
     	histos1D_[ "overlap" ]->GetXaxis()->SetBinLabel( 3, "Overlap" );
-    	histos1D_[ "overlap" ]->GetXaxis()->SetBinLabel( 4, "None" );
     	histos1D_[ "overlap" ]->GetYaxis()->SetTitle( "Percentage" );
 
+	histos2D_[ "HTvsMassOneAll" ] = fileService->make< TH2D >( "HTvsMassOneAll", labelTrigger1, 100, 0., 2000, 20, 0., 400. );
+	histos2D_[ "HTvsMassOneAll" ]->SetXTitle( "HT [GeV]" );
+	histos2D_[ "HTvsMassOneAll" ]->SetYTitle( "Leading Jet Mass [GeV]" );
+
+	histos2D_[ "HTvsMassTwoAll" ] = fileService->make< TH2D >( "HTvsMassTwoAll", labelTrigger2, 100, 0., 2000, 20, 0., 400. );
+	histos2D_[ "HTvsMassTwoAll" ]->SetXTitle( "HT [GeV]" );
+	histos2D_[ "HTvsMassTwoAll" ]->SetYTitle( "Leading Jet Mass [GeV]" );
+
+	histos2D_[ "HTvsMassOne" ] = fileService->make< TH2D >( "HTvsMassOne", labelTrigger1, 100, 0., 2000, 20, 0., 400. );
+	histos2D_[ "HTvsMassOne" ]->SetXTitle( "HT [GeV]" );
+	histos2D_[ "HTvsMassOne" ]->SetYTitle( "Leading Jet Mass [GeV]" );
+
+	histos2D_[ "HTvsMassTwo" ] = fileService->make< TH2D >( "HTvsMassTwo", labelTrigger2, 100, 0., 2000, 20, 0., 400. );
+	histos2D_[ "HTvsMassTwo" ]->SetXTitle( "HT [GeV]" );
+	histos2D_[ "HTvsMassTwo" ]->SetYTitle( "Leading Jet Mass [GeV]" );
+
+	histos2D_[ "HTvsMassBoth" ] = fileService->make< TH2D >( "HTvsMassBoth", "Both Triggers", 100, 0., 2000, 20, 0., 400. );
+	histos2D_[ "HTvsMassBoth" ]->SetXTitle( "HT [GeV]" );
+	histos2D_[ "HTvsMassBoth" ]->SetYTitle( "Leading Jet Mass [GeV]" );
+
+	histos2D_[ "HTvsPtOneAll" ] = fileService->make< TH2D >( "HTvsPtOneAll", labelTrigger1, 100, 0., 2000, 50, 0., 1000. );
+	histos2D_[ "HTvsPtOneAll" ]->SetXTitle( "HT [GeV]" );
+	histos2D_[ "HTvsPtOneAll" ]->SetYTitle( "Leading Jet Pt [GeV]" );
+
+	histos2D_[ "HTvsPtTwoAll" ] = fileService->make< TH2D >( "HTvsPtTwoAll", labelTrigger2, 100, 0., 2000, 50, 0., 1000. );
+	histos2D_[ "HTvsPtTwoAll" ]->SetXTitle( "HT [GeV]" );
+	histos2D_[ "HTvsPtTwoAll" ]->SetYTitle( "Leading Jet Pt [GeV]" );
+
+	histos2D_[ "HTvsPtOne" ] = fileService->make< TH2D >( "HTvsPtOne", labelTrigger1, 100, 0., 2000, 50, 0., 1000. );
+	histos2D_[ "HTvsPtOne" ]->SetXTitle( "HT [GeV]" );
+	histos2D_[ "HTvsPtOne" ]->SetYTitle( "Leading Jet Pt [GeV]" );
+
+	histos2D_[ "HTvsPtTwo" ] = fileService->make< TH2D >( "HTvsPtTwo", labelTrigger2, 100, 0., 2000, 50, 0., 1000. );
+	histos2D_[ "HTvsPtTwo" ]->SetXTitle( "HT [GeV]" );
+	histos2D_[ "HTvsPtTwo" ]->SetYTitle( "Leading Jet Pt [GeV]" );
+
+	histos2D_[ "HTvsPtBoth" ] = fileService->make< TH2D >( "HTvsPtBoth", "Both", 100, 0., 2000, 50, 0., 1000. );
+	histos2D_[ "HTvsPtBoth" ]->SetXTitle( "HT [GeV]" );
+	histos2D_[ "HTvsPtBoth" ]->SetYTitle( "Leading Jet Pt [GeV]" );
+
+	histos2D_[ "PtvsMassOneAll" ] = fileService->make< TH2D >( "PtvsMassOneAll", labelTrigger1, 50, 0., 1000, 20, 0., 400. );
+	histos2D_[ "PtvsMassOneAll" ]->SetXTitle( "Leading Jet Pt [GeV]" );
+	histos2D_[ "PtvsMassOneAll" ]->SetYTitle( "Leading Jet Mass [GeV]" );
+
+	histos2D_[ "PtvsMassTwoAll" ] = fileService->make< TH2D >( "PtvsMassTwoAll", labelTrigger2, 50, 0., 1000, 20, 0., 400. );
+	histos2D_[ "PtvsMassTwoAll" ]->SetXTitle( "Leading Jet Pt [GeV]" );
+	histos2D_[ "PtvsMassTwoAll" ]->SetYTitle( "Leading Jet Mass [GeV]" );
+
+	histos2D_[ "PtvsMassOne" ] = fileService->make< TH2D >( "PtvsMassOne", labelTrigger1, 50, 0., 1000, 20, 0., 400. );
+	histos2D_[ "PtvsMassOne" ]->SetXTitle( "Leading Jet Pt [GeV]" );
+	histos2D_[ "PtvsMassOne" ]->SetYTitle( "Leading Jet Mass [GeV]" );
+
+	histos2D_[ "PtvsMassTwo" ] = fileService->make< TH2D >( "PtvsMassTwo", labelTrigger2, 50, 0., 1000, 20, 0., 400. );
+	histos2D_[ "PtvsMassTwo" ]->SetXTitle( "Leading Jet Pt [GeV]" );
+	histos2D_[ "PtvsMassTwo" ]->SetYTitle( "Leading Jet Mass [GeV]" );
+
+	histos2D_[ "PtvsMassBoth" ] = fileService->make< TH2D >( "PtvsMassBoth", "both", 50, 0., 1000, 20, 0., 400. );
+	histos2D_[ "PtvsMassBoth" ]->SetXTitle( "Leading Jet Pt [GeV]" );
+	histos2D_[ "PtvsMassBoth" ]->SetYTitle( "Leading Jet Mass [GeV]" );
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
 void OverlapTriggers::endJob() {
 
 	std::cout<< onlyTrigger1 << " " << onlyTrigger2 << " " << bothTriggers << " " << noneTriggers << std::endl;
-    histos1D_[ "overlap" ]->SetBinContent( 1, onlyTrigger1*100/totalNumberEvents );
-    histos1D_[ "overlap" ]->SetBinContent( 2, onlyTrigger2*100/totalNumberEvents );
-    histos1D_[ "overlap" ]->SetBinContent( 3, bothTriggers*100/totalNumberEvents );
-    histos1D_[ "overlap" ]->SetBinContent( 4, noneTriggers*100/totalNumberEvents );
+    histos1D_[ "overlapOverAll" ]->SetBinContent( 1, onlyTrigger1/totalNumberEvents );
+    histos1D_[ "overlapOverAll" ]->SetBinContent( 2, onlyTrigger2/totalNumberEvents );
+    histos1D_[ "overlapOverAll" ]->SetBinContent( 3, bothTriggers/totalNumberEvents );
+    histos1D_[ "overlapOverAll" ]->SetBinContent( 4, noneTriggers/totalNumberEvents );
 
+    histos1D_[ "overlap" ]->SetBinContent( 1, onlyTrigger1/totalNumberEventsPassing );
+    histos1D_[ "overlap" ]->SetBinContent( 2, onlyTrigger2/totalNumberEventsPassing );
+    histos1D_[ "overlap" ]->SetBinContent( 3, bothTriggers/totalNumberEventsPassing );
 }
 
 
