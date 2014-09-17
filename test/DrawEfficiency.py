@@ -40,6 +40,8 @@ def plot( inFile, signal, trigger, name, xmin, xmax, PU):
 		
 		if 'Efficiency' in plot:
 
+			histos[ name+'Passing'].Rebin( 2 )
+			histos[ name+'Denom'].Rebin( 2 )
 			effHisto = TGraphAsymmErrors( histos[ name+'Passing'], histos[ name+'Denom' ], "B" )
 			effHisto.GetYaxis().SetTitle( 'Efficiency / '+str(binWidth) )
 			effHisto.GetXaxis().SetTitle( name + ' [GeV]' )
@@ -84,12 +86,12 @@ def plot2D( inFile, signal, trigger, name, xmax, xmax2, PU ):
 		histo.GetYaxis().SetTitle( 'Leading Jet Mass [GeV]')
 		
 		if 'Efficiency' in plot:
-			histo.GetXaxis().SetRange( 20, 50 )
-			histo.GetYaxis().SetRange( 5, 25 )
-			gStyle.SetPaintTextFormat("4.1f")
+			histo.GetXaxis().SetRange( 6, 15 )
+			histo.GetYaxis().SetRange( 0, 12 )
+			gStyle.SetPaintTextFormat("4.3f")
 			can = TCanvas('c1', 'c1',  10, 10, 800, 500 )
 			histo.Draw('colz')
-			histo.Draw('same text')
+			histo.Draw('same texte')
 			setSelectionTrigger2D( signal + ' 13 TeV '+ PU, trigger, '' )
 			can.SaveAs( 'Plots/'+outputFileName )
 			del can
@@ -111,20 +113,20 @@ if __name__ == '__main__':
 	Signal = sys.argv[2] #'RPVSt100tojj'	
 	inputFile = TFile.Open('filesWithHistos_'+Signal+'_13TeV_pythia8_'+PU+'.root')
 	plotsList = [
-			['PFHT450', 'HT', 20, 50 ],
-			['PFHT450', 'jetMass', 0, 100 ],
-			['PFHT550', 'HT', 20, 50 ],
-			['PFHT550', 'jetMass', 0, 100 ],
-			['PFHT650', 'HT', 20, 50 ],
-			['PFHT650', 'jetMass', 0, 100 ],
-			['PFHT750', 'HT', 20, 50 ],
-			['PFHT750', 'jetMass', 0, 100 ],
-			['PFHT850', 'HT', 20, 50 ],
-			['PFHT850', 'jetMass', 0, 100 ],
-			['PFHT900', 'HT', 50, 100 ],
-			['PFHT900', 'jetMass', 0, 100 ],
-			['PFHT950', 'HT', 20, 50 ],
-			['PFHT950', 'jetMass', 0, 100 ],
+#			['PFHT450', 'HT', 20, 50 ],
+#			['PFHT450', 'jetMass', 0, 100 ],
+#			['PFHT550', 'HT', 20, 50 ],
+#			['PFHT550', 'jetMass', 0, 100 ],
+#			['PFHT650', 'HT', 20, 50 ],
+#			['PFHT650', 'jetMass', 0, 100 ],
+#			['PFHT750', 'HT', 20, 50 ],
+#			['PFHT750', 'jetMass', 0, 100 ],
+#			['PFHT850', 'HT', 20, 50 ],
+#			['PFHT850', 'jetMass', 0, 100 ],
+			['PFHT900', 'HT', 30, 65 ],
+#			['PFHT900', 'jetMass', 0, 100 ],
+#			['PFHT950', 'HT', 20, 50 ],
+#			['PFHT950', 'jetMass', 0, 100 ],
 #			['PFTrimHT450', 'HT', 20, 50 ],
 #			['PFTrimHT450', 'jetMass', 0, 100 ],
 #			['PFTrimHT450', 'jetMassHT', 0, 100 ],
@@ -525,9 +527,15 @@ if __name__ == '__main__':
 #			['AK8PFTrimHT850TrimMass45', 'HT', 20, 50 ],
 #			['AK8PFTrimHT850TrimMass45', 'jetMass', 0, 100 ],
 #			['AK8PFTrimHT850TrimMass45', 'jetMassHT', 0, 100 ],
-#			['AK8PFTrimHT850TrimMass50', 'HT', 20, 50 ],
-#			['AK8PFTrimHT850TrimMass50', 'jetMass', 0, 100 ],
-#			['AK8PFTrimHT850TrimMass50', 'jetMassHT', 0, 100 ],
+			['AK8PFTrimHT850TrimMass50', 'HT', 20, 50 ],
+			['AK8PFTrimHT850TrimMass50', 'jetMass', 0, 100 ],
+			['AK8PFTrimHT850TrimMass50', 'jetMassHT', 0, 100 ],
+			['AK8PFTrimHT850TrimMass50TrimMod', 'HT', 20, 50 ],
+			['AK8PFTrimHT850TrimMass50TrimMod', 'jetMass', 0, 100 ],
+			['AK8PFTrimHT850TrimMass50TrimMod', 'jetMassHT', 0, 100 ],
+		#	['AK8PFTrimHT850TrimMass40AK4CaloHT', 'HT', 20, 50 ],
+		#	['AK8PFTrimHT850TrimMass40AK4CaloHT', 'jetMass', 0, 100 ],
+		#	['AK8PFTrimHT850TrimMass40AK4CaloHT', 'jetMassHT', 0, 100 ],
 #			['AK8PFTrimHT850TrimMass55', 'HT', 20, 50 ],
 #			['AK8PFTrimHT850TrimMass55', 'jetMass', 0, 100 ],
 #			['AK8PFTrimHT850TrimMass55', 'jetMassHT', 0, 100 ],

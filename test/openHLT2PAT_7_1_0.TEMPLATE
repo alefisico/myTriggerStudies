@@ -109,22 +109,24 @@ process.patJetsAK4CHS.getJetMCFlavour = False
 process.patJetsAK4CHS.jetCorrFactorsSource = cms.VInputTag(cms.InputTag('patJetCorrFactorsAK4CHS'))
 #
 
-process.ak8PFJetsCHS = ak5PFJets.clone(
+from RecoJets.JetProducers.ak4PFJetsTrimmed_cfi import ak4PFJetsTrimmed
+process.ak8PFJetsCHStrimmed = ak4PFJetsTrimmed.clone(
   src = 'pfNoPileUp',
   jetPtMin = cms.double(20.0),
   doAreaFastjet = cms.bool(True),
   rParam = cms.double(0.8),
+  rFilt = cms.double(0.1),
 )
-jetSource2 = 'ak8PFJetsCHS'
+jetSource2 = 'ak8PFJetsCHStrimmed'
 
 #### Adding corrections 
 from PhysicsTools.PatAlgos.recoLayer0.jetCorrFactors_cfi import *
 process.patJetCorrFactorsAK8CHS = patJetCorrFactors.clone()
 process.patJetCorrFactorsAK8CHS.src = jetSource2
 ## will need to add L2L3 corrections in the cfg
-process.patJetCorrFactorsAK8CHS.levels = ['L1FastJet', 'L2Relative', 'L3Absolute']
+process.patJetCorrFactorsAK8CHS.levels = [ ] #'L1FastJet', 'L2Relative', 'L3Absolute']
 process.patJetCorrFactorsAK8CHS.payload = 'AK8PFchs'
-process.patJetCorrFactorsAK8CHS.useRho = True
+process.patJetCorrFactorsAK8CHS.useRho = False
 #
 #from PhysicsTools.PatAlgos.producersLayer1.jetProducer_cfi import *
 process.patJetsAK8CHS = patJets.clone()

@@ -7,6 +7,7 @@ Description: simple script to scale QCD Files
 '''
 
 from ROOT import TFile, TH1, TH2, TMath, gROOT, gPad, TTree
+import sys
 #from ROOT import *
 
 gROOT.Reset()
@@ -35,9 +36,9 @@ def scaleQCD( inFileName, treeName ):
 	infile = TFile( inFileName+'.root', "READ")
 	outfile = TFile( inFileName+'_Scaled.root', "RECREATE")
 
-	tree = infile.Get( treeName )
-	numEvents = tree.GetEntries()
-
+	allEvents = infile.Get( 'AK8PFTrimHT850TrimMass50vsPFHT900/overlapOverAllSimpleTriggers' )
+	numEvents = allEvents.GetEntries()
+	
 	scale = 0
 	for i in range( len( scaleFactors ) ):
 		if str(scaleFactors[i][0]) in inFileName: 
@@ -48,7 +49,6 @@ def scaleQCD( inFileName, treeName ):
 	for k in infile.GetListOfKeys(): 
 		name = k.GetName()
 		listDir.append( name )
-	#print listDir
 	for j in listDir:
 		outfile.mkdir(j)
 		outfile.cd(j)
@@ -56,9 +56,9 @@ def scaleQCD( inFileName, treeName ):
 		for q in dir.GetListOfKeys():
 			name = q.GetName()
 			h = infile.Get( j+'/'+name)
-			if isinstance(h, TTree): continue
 			hOut = h.Clone()
-			if not isinstance(h,TH2) and not "numJets" in name : hOut.Scale( scale )
+			if not isinstance(h,TH2): hOut.Scale( scale )
+			#if not isinstance(h,TH2) and not "overlap" in name : hOut.Scale( scale )
 			hOut.Write()
 		outfile.cd('/')
 	
@@ -67,15 +67,15 @@ def scaleQCD( inFileName, treeName ):
 	infile.Close()
 
 if __name__ == '__main__':
-	scaleQCD( 'hlt_jetmass_QCD_Pt-30to50_TuneZ2star_13TeV_pythia8_PU20bx25', 'triggerPlotterHT/JetVariables' )
-	scaleQCD( 'hlt_jetmass_QCD_Pt-50to80_TuneZ2star_13TeV_pythia8_PU20bx25', 'triggerPlotterHT/JetVariables' )
-	scaleQCD( 'hlt_jetmass_QCD_Pt-80to120_TuneZ2star_13TeV_pythia8_PU20bx25', 'triggerPlotterHT/JetVariables' )
-	scaleQCD( 'hlt_jetmass_QCD_Pt-120to170_TuneZ2star_13TeV_pythia8_PU20bx25', 'triggerPlotterHT/JetVariables' )
-	scaleQCD( 'hlt_jetmass_QCD_Pt-170to300_TuneZ2star_13TeV_pythia8_PU20bx25', 'triggerPlotterHT/JetVariables' )
-	scaleQCD( 'hlt_jetmass_QCD_Pt-300to470_TuneZ2star_13TeV_pythia8_PU20bx25', 'triggerPlotterHT/JetVariables' )
-	scaleQCD( 'hlt_jetmass_QCD_Pt-470to600_TuneZ2star_13TeV_pythia8_PU20bx25', 'triggerPlotterHT/JetVariables' )
-	scaleQCD( 'hlt_jetmass_QCD_Pt-600to800_TuneZ2star_13TeV_pythia8_PU20bx25', 'triggerPlotterHT/JetVariables' )
-	scaleQCD( 'hlt_jetmass_QCD_Pt-800to1000_TuneZ2star_13TeV_pythia8_PU20bx25', 'triggerPlotterHT/JetVariables' )
-	scaleQCD( 'hlt_jetmass_QCD_Pt-1000to1400_TuneZ2star_13TeV_pythia8_PU20bx25', 'triggerPlotterHT/JetVariables' )
-	scaleQCD( 'hlt_jetmass_QCD_Pt-1400to1800_TuneZ2star_13TeV_pythia8_PU20bx25', 'triggerPlotterHT/JetVariables' )
-	scaleQCD( 'hlt_jetmass_QCD_Pt-1800_TuneZ2star_13TeV_pythia8_PU20bx25', 'triggerPlotterHT/JetVariables' )
+	ptBins = [
+			'80to120',
+			'120to170',
+			'170to300',
+			'300to470',
+			'470to600',
+			'600to800',
+			'800to1000'
+			]
+	
+	for pt in ptBins:
+		scaleQCD( 'overlapStudies_QCD_Pt-'+pt+'_Tune4C_PU20bx25', 'triggerPlotterHT/JetVariables' )

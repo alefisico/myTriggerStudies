@@ -209,109 +209,109 @@
 
 
 
-#### AK8PFTrimHT450_JetTrimMod Triggers
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT450_JetTrimMod_v1 -c "hltPreAK8PFTrimHT450JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 0.0 )" -r "TrimMass00" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT450_JetTrimMod_v1 -c "hltPreAK8PFTrimHT450JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double(  5.0 )" -r "TrimMass05" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT450_JetTrimMod_v1 -c "hltPreAK8PFTrimHT450JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 10.0 )" -r "TrimMass10" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT450_JetTrimMod_v1 -c "hltPreAK8PFTrimHT450JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 15.0 )" -r "TrimMass15" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT450_JetTrimMod_v1 -c "hltPreAK8PFTrimHT450JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 20.0 )" -r "TrimMass20" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT450_JetTrimMod_v1 -c "hltPreAK8PFTrimHT450JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 25.0 )" -r "TrimMass25" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT450_JetTrimMod_v1 -c "hltPreAK8PFTrimHT450JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 30.0 )" -r "TrimMass30" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT450_JetTrimMod_v1 -c "hltPreAK8PFTrimHT450JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 35.0 )" -r "TrimMass35" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT450_JetTrimMod_v1 -c "hltPreAK8PFTrimHT450JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 40.0 )" -r "TrimMass40" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT450_JetTrimMod_v1 -c "hltPreAK8PFTrimHT450JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 45.0 )" -r "TrimMass45" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT450_JetTrimMod_v1 -c "hltPreAK8PFTrimHT450JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 50.0 )" -r "TrimMass50" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT450_JetTrimMod_v1 -c "hltPreAK8PFTrimHT450JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 55.0 )" -r "TrimMass55" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT450_JetTrimMod_v1 -c "hltPreAK8PFTrimHT450JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 60.0 )" -r "TrimMass60" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT450_JetTrimMod_v1 -c "hltPreAK8PFTrimHT450JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 65.0 )" -r "TrimMass65" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT450_JetTrimMod_v1 -c "hltPreAK8PFTrimHT450JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 70.0 )" -r "TrimMass70" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT450_JetTrimMod_v1 -c "hltPreAK8PFTrimHT450JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 75.0 )" -r "TrimMass75" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT450_JetTrimMod_v1 -c "hltPreAK8PFTrimHT450JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 80.0 )" -r "TrimMass80" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT450_JetTrimMod_v1 -c "hltPreAK8PFTrimHT450JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 85.0 )" -r "TrimMass85" -o hlt_tmp2.py
+#### AK8PFTrimHT450_AK4CaloHT Triggers
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT450_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT450AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 0.0 )" -r "TrimMass00" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT450_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT450AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double(  5.0 )" -r "TrimMass05" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT450_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT450AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 10.0 )" -r "TrimMass10" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT450_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT450AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 15.0 )" -r "TrimMass15" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT450_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT450AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 20.0 )" -r "TrimMass20" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT450_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT450AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 25.0 )" -r "TrimMass25" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT450_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT450AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 30.0 )" -r "TrimMass30" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT450_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT450AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 35.0 )" -r "TrimMass35" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT450_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT450AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 40.0 )" -r "TrimMass40" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT450_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT450AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 45.0 )" -r "TrimMass45" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT450_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT450AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 50.0 )" -r "TrimMass50" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT450_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT450AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 55.0 )" -r "TrimMass55" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT450_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT450AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 60.0 )" -r "TrimMass60" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT450_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT450AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 65.0 )" -r "TrimMass65" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT450_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT450AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 70.0 )" -r "TrimMass70" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT450_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT450AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 75.0 )" -r "TrimMass75" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT450_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT450AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 80.0 )" -r "TrimMass80" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT450_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT450AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 85.0 )" -r "TrimMass85" -o hlt_tmp2.py
 
 
-#### AK8PFTrimHT550_JetTrimMod Triggers
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT550_JetTrimMod_v1 -c "hltPreAK8PFTrimHT550JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 0.0 )" -r "TrimMass00" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT550_JetTrimMod_v1 -c "hltPreAK8PFTrimHT550JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double(  5.0 )" -r "TrimMass05" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT550_JetTrimMod_v1 -c "hltPreAK8PFTrimHT550JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 10.0 )" -r "TrimMass10" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT550_JetTrimMod_v1 -c "hltPreAK8PFTrimHT550JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 15.0 )" -r "TrimMass15" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT550_JetTrimMod_v1 -c "hltPreAK8PFTrimHT550JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 20.0 )" -r "TrimMass20" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT550_JetTrimMod_v1 -c "hltPreAK8PFTrimHT550JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 25.0 )" -r "TrimMass25" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT550_JetTrimMod_v1 -c "hltPreAK8PFTrimHT550JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 30.0 )" -r "TrimMass30" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT550_JetTrimMod_v1 -c "hltPreAK8PFTrimHT550JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 35.0 )" -r "TrimMass35" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT550_JetTrimMod_v1 -c "hltPreAK8PFTrimHT550JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 40.0 )" -r "TrimMass40" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT550_JetTrimMod_v1 -c "hltPreAK8PFTrimHT550JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 45.0 )" -r "TrimMass45" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT550_JetTrimMod_v1 -c "hltPreAK8PFTrimHT550JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 50.0 )" -r "TrimMass50" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT550_JetTrimMod_v1 -c "hltPreAK8PFTrimHT550JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 55.0 )" -r "TrimMass55" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT550_JetTrimMod_v1 -c "hltPreAK8PFTrimHT550JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 60.0 )" -r "TrimMass60" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT550_JetTrimMod_v1 -c "hltPreAK8PFTrimHT550JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 65.0 )" -r "TrimMass65" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT550_JetTrimMod_v1 -c "hltPreAK8PFTrimHT550JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 70.0 )" -r "TrimMass70" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT550_JetTrimMod_v1 -c "hltPreAK8PFTrimHT550JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 75.0 )" -r "TrimMass75" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT550_JetTrimMod_v1 -c "hltPreAK8PFTrimHT550JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 80.0 )" -r "TrimMass80" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT550_JetTrimMod_v1 -c "hltPreAK8PFTrimHT550JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 85.0 )" -r "TrimMass85" -o hlt_tmp2.py
+#### AK8PFTrimHT550_AK4CaloHT Triggers
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT550_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT550AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 0.0 )" -r "TrimMass00" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT550_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT550AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double(  5.0 )" -r "TrimMass05" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT550_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT550AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 10.0 )" -r "TrimMass10" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT550_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT550AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 15.0 )" -r "TrimMass15" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT550_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT550AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 20.0 )" -r "TrimMass20" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT550_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT550AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 25.0 )" -r "TrimMass25" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT550_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT550AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 30.0 )" -r "TrimMass30" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT550_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT550AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 35.0 )" -r "TrimMass35" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT550_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT550AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 40.0 )" -r "TrimMass40" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT550_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT550AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 45.0 )" -r "TrimMass45" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT550_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT550AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 50.0 )" -r "TrimMass50" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT550_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT550AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 55.0 )" -r "TrimMass55" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT550_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT550AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 60.0 )" -r "TrimMass60" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT550_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT550AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 65.0 )" -r "TrimMass65" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT550_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT550AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 70.0 )" -r "TrimMass70" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT550_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT550AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 75.0 )" -r "TrimMass75" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT550_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT550AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 80.0 )" -r "TrimMass80" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT550_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT550AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 85.0 )" -r "TrimMass85" -o hlt_tmp2.py
 
 
-#### AK8PFTrimHT650_JetTrimMod Triggers
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT650_JetTrimMod_v1 -c "hltPreAK8PFTrimHT650JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 0.0 )" -r "TrimMass00" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT650_JetTrimMod_v1 -c "hltPreAK8PFTrimHT650JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double(  5.0 )" -r "TrimMass05" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT650_JetTrimMod_v1 -c "hltPreAK8PFTrimHT650JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 10.0 )" -r "TrimMass10" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT650_JetTrimMod_v1 -c "hltPreAK8PFTrimHT650JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 15.0 )" -r "TrimMass15" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT650_JetTrimMod_v1 -c "hltPreAK8PFTrimHT650JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 20.0 )" -r "TrimMass20" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT650_JetTrimMod_v1 -c "hltPreAK8PFTrimHT650JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 25.0 )" -r "TrimMass25" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT650_JetTrimMod_v1 -c "hltPreAK8PFTrimHT650JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 30.0 )" -r "TrimMass30" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT650_JetTrimMod_v1 -c "hltPreAK8PFTrimHT650JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 35.0 )" -r "TrimMass35" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT650_JetTrimMod_v1 -c "hltPreAK8PFTrimHT650JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 40.0 )" -r "TrimMass40" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT650_JetTrimMod_v1 -c "hltPreAK8PFTrimHT650JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 45.0 )" -r "TrimMass45" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT650_JetTrimMod_v1 -c "hltPreAK8PFTrimHT650JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 50.0 )" -r "TrimMass50" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT650_JetTrimMod_v1 -c "hltPreAK8PFTrimHT650JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 55.0 )" -r "TrimMass55" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT650_JetTrimMod_v1 -c "hltPreAK8PFTrimHT650JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 60.0 )" -r "TrimMass60" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT650_JetTrimMod_v1 -c "hltPreAK8PFTrimHT650JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 65.0 )" -r "TrimMass65" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT650_JetTrimMod_v1 -c "hltPreAK8PFTrimHT650JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 70.0 )" -r "TrimMass70" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT650_JetTrimMod_v1 -c "hltPreAK8PFTrimHT650JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 75.0 )" -r "TrimMass75" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT650_JetTrimMod_v1 -c "hltPreAK8PFTrimHT650JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 80.0 )" -r "TrimMass80" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT650_JetTrimMod_v1 -c "hltPreAK8PFTrimHT650JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 85.0 )" -r "TrimMass85" -o hlt_tmp2.py
+#### AK8PFTrimHT650_AK4CaloHT Triggers
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT650_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT650AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 0.0 )" -r "TrimMass00" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT650_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT650AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double(  5.0 )" -r "TrimMass05" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT650_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT650AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 10.0 )" -r "TrimMass10" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT650_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT650AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 15.0 )" -r "TrimMass15" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT650_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT650AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 20.0 )" -r "TrimMass20" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT650_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT650AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 25.0 )" -r "TrimMass25" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT650_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT650AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 30.0 )" -r "TrimMass30" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT650_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT650AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 35.0 )" -r "TrimMass35" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT650_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT650AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 40.0 )" -r "TrimMass40" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT650_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT650AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 45.0 )" -r "TrimMass45" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT650_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT650AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 50.0 )" -r "TrimMass50" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT650_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT650AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 55.0 )" -r "TrimMass55" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT650_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT650AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 60.0 )" -r "TrimMass60" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT650_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT650AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 65.0 )" -r "TrimMass65" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT650_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT650AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 70.0 )" -r "TrimMass70" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT650_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT650AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 75.0 )" -r "TrimMass75" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT650_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT650AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 80.0 )" -r "TrimMass80" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT650_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT650AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 85.0 )" -r "TrimMass85" -o hlt_tmp2.py
 
 
-#### AK8PFTrimHT750_JetTrimMod Triggers
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT750_JetTrimMod_v1 -c "hltPreAK8PFTrimHT750JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 0.0 )" -r "TrimMass00" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT750_JetTrimMod_v1 -c "hltPreAK8PFTrimHT750JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double(  5.0 )" -r "TrimMass05" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT750_JetTrimMod_v1 -c "hltPreAK8PFTrimHT750JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 10.0 )" -r "TrimMass10" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT750_JetTrimMod_v1 -c "hltPreAK8PFTrimHT750JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 15.0 )" -r "TrimMass15" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT750_JetTrimMod_v1 -c "hltPreAK8PFTrimHT750JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 20.0 )" -r "TrimMass20" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT750_JetTrimMod_v1 -c "hltPreAK8PFTrimHT750JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 25.0 )" -r "TrimMass25" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT750_JetTrimMod_v1 -c "hltPreAK8PFTrimHT750JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 30.0 )" -r "TrimMass30" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT750_JetTrimMod_v1 -c "hltPreAK8PFTrimHT750JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 35.0 )" -r "TrimMass35" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT750_JetTrimMod_v1 -c "hltPreAK8PFTrimHT750JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 40.0 )" -r "TrimMass40" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT750_JetTrimMod_v1 -c "hltPreAK8PFTrimHT750JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 45.0 )" -r "TrimMass45" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT750_JetTrimMod_v1 -c "hltPreAK8PFTrimHT750JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 50.0 )" -r "TrimMass50" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT750_JetTrimMod_v1 -c "hltPreAK8PFTrimHT750JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 55.0 )" -r "TrimMass55" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT750_JetTrimMod_v1 -c "hltPreAK8PFTrimHT750JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 60.0 )" -r "TrimMass60" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT750_JetTrimMod_v1 -c "hltPreAK8PFTrimHT750JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 65.0 )" -r "TrimMass65" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT750_JetTrimMod_v1 -c "hltPreAK8PFTrimHT750JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 70.0 )" -r "TrimMass70" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT750_JetTrimMod_v1 -c "hltPreAK8PFTrimHT750JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 75.0 )" -r "TrimMass75" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT750_JetTrimMod_v1 -c "hltPreAK8PFTrimHT750JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 80.0 )" -r "TrimMass80" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT750_JetTrimMod_v1 -c "hltPreAK8PFTrimHT750JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 85.0 )" -r "TrimMass85" -o hlt_tmp2.py
+#### AK8PFTrimHT750_AK4CaloHT Triggers
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT750_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT750AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 0.0 )" -r "TrimMass00" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT750_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT750AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double(  5.0 )" -r "TrimMass05" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT750_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT750AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 10.0 )" -r "TrimMass10" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT750_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT750AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 15.0 )" -r "TrimMass15" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT750_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT750AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 20.0 )" -r "TrimMass20" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT750_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT750AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 25.0 )" -r "TrimMass25" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT750_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT750AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 30.0 )" -r "TrimMass30" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT750_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT750AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 35.0 )" -r "TrimMass35" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT750_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT750AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 40.0 )" -r "TrimMass40" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT750_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT750AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 45.0 )" -r "TrimMass45" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT750_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT750AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 50.0 )" -r "TrimMass50" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT750_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT750AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 55.0 )" -r "TrimMass55" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT750_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT750AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 60.0 )" -r "TrimMass60" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT750_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT750AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 65.0 )" -r "TrimMass65" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT750_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT750AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 70.0 )" -r "TrimMass70" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT750_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT750AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 75.0 )" -r "TrimMass75" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT750_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT750AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 80.0 )" -r "TrimMass80" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT750_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT750AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 85.0 )" -r "TrimMass85" -o hlt_tmp2.py
 
 
-#### AK8PFTrimHT850_JetTrimMod Triggers
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT850_JetTrimMod_v1 -c "hltPreAK8PFTrimHT850JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 0.0 )" -r "TrimMass00" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT850_JetTrimMod_v1 -c "hltPreAK8PFTrimHT850JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double(  5.0 )" -r "TrimMass05" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT850_JetTrimMod_v1 -c "hltPreAK8PFTrimHT850JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 10.0 )" -r "TrimMass10" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT850_JetTrimMod_v1 -c "hltPreAK8PFTrimHT850JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 15.0 )" -r "TrimMass15" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT850_JetTrimMod_v1 -c "hltPreAK8PFTrimHT850JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 20.0 )" -r "TrimMass20" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT850_JetTrimMod_v1 -c "hltPreAK8PFTrimHT850JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 25.0 )" -r "TrimMass25" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT850_JetTrimMod_v1 -c "hltPreAK8PFTrimHT850JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 30.0 )" -r "TrimMass30" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT850_JetTrimMod_v1 -c "hltPreAK8PFTrimHT850JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 35.0 )" -r "TrimMass35" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT850_JetTrimMod_v1 -c "hltPreAK8PFTrimHT850JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 40.0 )" -r "TrimMass40" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT850_JetTrimMod_v1 -c "hltPreAK8PFTrimHT850JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 45.0 )" -r "TrimMass45" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT850_JetTrimMod_v1 -c "hltPreAK8PFTrimHT850JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 50.0 )" -r "TrimMass50" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT850_JetTrimMod_v1 -c "hltPreAK8PFTrimHT850JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 55.0 )" -r "TrimMass55" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT850_JetTrimMod_v1 -c "hltPreAK8PFTrimHT850JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 60.0 )" -r "TrimMass60" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT850_JetTrimMod_v1 -c "hltPreAK8PFTrimHT850JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 65.0 )" -r "TrimMass65" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT850_JetTrimMod_v1 -c "hltPreAK8PFTrimHT850JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 70.0 )" -r "TrimMass70" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT850_JetTrimMod_v1 -c "hltPreAK8PFTrimHT850JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 75.0 )" -r "TrimMass75" -o hlt_tmp2.py
-./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT850_JetTrimMod_v1 -c "hltPreAK8PFTrimHT850JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 80.0 )" -r "TrimMass80" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT850_JetTrimMod_v1 -c "hltPreAK8PFTrimHT850JetTrimMod.offset=cms.uint32( 0 )" "hlt1AK8PFJetsJetTrimModMass00.MinMass=cms.double( 85.0 )" -r "TrimMass85" -o hlt_tmp2.py
+#### AK8PFTrimHT850_AK4CaloHT Triggers
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT850_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT850AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 0.0 )" -r "TrimMass00" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT850_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT850AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double(  5.0 )" -r "TrimMass05" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT850_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT850AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 10.0 )" -r "TrimMass10" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT850_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT850AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 15.0 )" -r "TrimMass15" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT850_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT850AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 20.0 )" -r "TrimMass20" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT850_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT850AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 25.0 )" -r "TrimMass25" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT850_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT850AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 30.0 )" -r "TrimMass30" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT850_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT850AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 35.0 )" -r "TrimMass35" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT850_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT850AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 40.0 )" -r "TrimMass40" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT850_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT850AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 45.0 )" -r "TrimMass45" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT850_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT850AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 50.0 )" -r "TrimMass50" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT850_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT850AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 55.0 )" -r "TrimMass55" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT850_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT850AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 60.0 )" -r "TrimMass60" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT850_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT850AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 65.0 )" -r "TrimMass65" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT850_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT850AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 70.0 )" -r "TrimMass70" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT850_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT850AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 75.0 )" -r "TrimMass75" -o hlt_tmp2.py
+./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFTrimHT850_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT850AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 80.0 )" -r "TrimMass80" -o hlt_tmp1.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFTrimHT850_AK4CaloHT_v1 -c "hltPreAK8PFTrimHT850AK4CaloHT.offset=cms.uint32( 0 )" "hlt1AK8PFJetsAK4CaloHTMass00.MinMass=cms.double( 85.0 )" -r "TrimMass85" -o hlt_tmp2.py
 
 
 #### AK8PFNOJECTrimHT450 Triggers

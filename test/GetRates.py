@@ -51,7 +51,7 @@ def GetRates( run, passed, xs, PU ):
 	elif 'bx25' in PU:
 		nfillb = 2662.
 		xtime = 25e-9
-		ilumi = 1.1e34
+		ilumi = 1.4e34
 	collrate = (nfillb/mfillb)/xtime
 
 	#rateList.append( collrate * (1 - math.exp(-1* (xsec*ilumi*passed[i]/run[i])/collrate)) )
@@ -179,7 +179,8 @@ def plotCaloJetRates( listRates, outName, PU ):
 def plotRatesComp( listRates, outName, PU, HT, Mass ):
 	"""docstring for plotRates"""
 
-	histo = TH2F("xbox",'box', 7, 300., 1000., 14, -7.5, 62.5 )
+	gStyle.SetPaintTextFormat("4.3f")
+	histo = TH2F("xbox",'box', 7, 650., 1000., 20, -5.0, 95.0 )
 	for i in xrange( len( HT ) ): 
 		for k in xrange( len( Mass ) ):
 			histo.Fill( HT[i], Mass[k], listRates[i][k][4] )
@@ -236,8 +237,8 @@ if __name__ == '__main__':
 	process = sys.argv[2]
 
 	ptBin = {}
-	ptBin['50to80'] = 22110000.
-	ptBin['80to120'] = 3000114.3
+	#ptBin['50to80'] = 22110000.
+	#ptBin['80to120'] = 3000114.3
 	ptBin['120to170'] = 493200.
 	ptBin['170to300'] = 120300.
 	ptBin['300to470'] = 7475.
@@ -272,8 +273,24 @@ if __name__ == '__main__':
 	AK8PFTrimHT450 = []
 	AK8PFTrimHT550 = []
 	AK8PFTrimHT650 = []
+	AK8PFTrimHT700 = []
 	AK8PFTrimHT750 = []
+	AK8PFTrimHT800 = []
 	AK8PFTrimHT850 = []
+	AK8PFTrimHT900 = []
+	AK8PFTrimHT450TrimMod = []
+	AK8PFTrimHT550TrimMod = []
+	AK8PFTrimHT650TrimMod = []
+	AK8PFTrimHT700TrimMod = []
+	AK8PFTrimHT750TrimMod = []
+	AK8PFTrimHT800TrimMod = []
+	AK8PFTrimHT850TrimMod = []
+	AK8PFTrimHT900TrimMod = []
+	AK8PFTrimHT450AK4CaloHT = []
+	AK8PFTrimHT550AK4CaloHT = []
+	AK8PFTrimHT650AK4CaloHT = []
+	AK8PFTrimHT750AK4CaloHT = []
+	AK8PFTrimHT850AK4CaloHT = []
 
 	for triggerInfo in rates:
 		if not '_Mass' in triggerInfo[0] and not '_TrimMass' in triggerInfo[0] and not '_Calo' in triggerInfo[0]:
@@ -283,21 +300,37 @@ if __name__ == '__main__':
 			if 'HLT_AK8PFTrimHT' in triggerInfo[0]: AK8PFTrimHT.append( triggerInfo )
 			if 'HLT_AK8PFNOJECTrimHT' in triggerInfo[0]: AK8PFNOJECTrimHT.append( triggerInfo )
 		elif '_TrimMass' in triggerInfo[0]:
-			if 'HLT_PFTrimHT450' in triggerInfo[0]: PFTrimHT450.append( triggerInfo )
-			if 'HLT_PFTrimHT550' in triggerInfo[0]: PFTrimHT550.append( triggerInfo )
-			if 'HLT_PFTrimHT650' in triggerInfo[0]: PFTrimHT650.append( triggerInfo )
-			if 'HLT_PFTrimHT750' in triggerInfo[0]: PFTrimHT750.append( triggerInfo )
-			if 'HLT_PFTrimHT850' in triggerInfo[0]: PFTrimHT850.append( triggerInfo )
-			if 'HLT_AK8PFTrimHT450' in triggerInfo[0]: AK8PFTrimHT450.append( triggerInfo )
-			if 'HLT_AK8PFTrimHT550' in triggerInfo[0]: AK8PFTrimHT550.append( triggerInfo )
-			if 'HLT_AK8PFTrimHT650' in triggerInfo[0]: AK8PFTrimHT650.append( triggerInfo )
-			if 'HLT_AK8PFTrimHT750' in triggerInfo[0]: AK8PFTrimHT750.append( triggerInfo )
-			if 'HLT_AK8PFTrimHT850' in triggerInfo[0]: AK8PFTrimHT850.append( triggerInfo )
-
+			if 'HLT_PFTrimHT450_TrimMass' in triggerInfo[0]: PFTrimHT450.append( triggerInfo )
+			elif 'HLT_PFTrimHT550_TrimMass' in triggerInfo[0]: PFTrimHT550.append( triggerInfo )
+			elif 'HLT_PFTrimHT650_TrimMass' in triggerInfo[0]: PFTrimHT650.append( triggerInfo )
+			elif 'HLT_PFTrimHT750_TrimMass' in triggerInfo[0]: PFTrimHT750.append( triggerInfo )
+			elif 'HLT_PFTrimHT850_TrimMass' in triggerInfo[0]: PFTrimHT850.append( triggerInfo )
+			elif 'HLT_AK8PFTrimHT450_TrimMass' in triggerInfo[0]: AK8PFTrimHT450.append( triggerInfo )
+			elif 'HLT_AK8PFTrimHT550_TrimMass' in triggerInfo[0]: AK8PFTrimHT550.append( triggerInfo )
+			elif 'HLT_AK8PFTrimHT650_TrimMass' in triggerInfo[0]: AK8PFTrimHT650.append( triggerInfo )
+			elif 'HLT_AK8PFTrimHT650_HT700_TrimMass' in triggerInfo[0]: AK8PFTrimHT700.append( triggerInfo )
+			elif 'HLT_AK8PFTrimHT750_TrimMass' in triggerInfo[0]: AK8PFTrimHT750.append( triggerInfo )
+			elif 'HLT_AK8PFTrimHT650_HT800_TrimMass' in triggerInfo[0]: AK8PFTrimHT800.append( triggerInfo )
+			elif 'HLT_AK8PFTrimHT850_TrimMass' in triggerInfo[0]: AK8PFTrimHT850.append( triggerInfo )
+			elif 'HLT_AK8PFTrimHT650_HT900_TrimMass' in triggerInfo[0]: AK8PFTrimHT900.append( triggerInfo )
+			elif 'HLT_AK8PFTrimHT450_TrimMod_TrimMass' in triggerInfo[0]: AK8PFTrimHT450TrimMod.append( triggerInfo )
+			elif 'HLT_AK8PFTrimHT550_TrimMod_TrimMass' in triggerInfo[0]: AK8PFTrimHT550TrimMod.append( triggerInfo )
+			elif 'HLT_AK8PFTrimHT650_TrimMod_TrimMass' in triggerInfo[0]: AK8PFTrimHT650TrimMod.append( triggerInfo )
+			elif 'HLT_AK8PFTrimHT650_TrimMod_HT700_TrimMass' in triggerInfo[0]: AK8PFTrimHT700TrimMod.append( triggerInfo )
+			elif 'HLT_AK8PFTrimHT750_TrimMod_TrimMass' in triggerInfo[0]: AK8PFTrimHT750TrimMod.append( triggerInfo )
+			elif 'HLT_AK8PFTrimHT650_TrimMod_HT800_TrimMass' in triggerInfo[0]: AK8PFTrimHT800TrimMod.append( triggerInfo )
+			elif 'HLT_AK8PFTrimHT850_TrimMod_TrimMass' in triggerInfo[0]: AK8PFTrimHT850TrimMod.append( triggerInfo )
+			elif 'HLT_AK8PFTrimHT650_TrimMod_HT900_TrimMass' in triggerInfo[0]: AK8PFTrimHT900TrimMod.append( triggerInfo )
+			elif 'HLT_AK8PFTrimHT450_AK4CaloHT_TrimMass' in triggerInfo[0]: AK8PFTrimHT450AK4CaloHT.append( triggerInfo )
+			elif 'HLT_AK8PFTrimHT550_AK4CaloHT_TrimMass' in triggerInfo[0]: AK8PFTrimHT550AK4CaloHT.append( triggerInfo )
+			elif 'HLT_AK8PFTrimHT650_AK4CaloHT_TrimMass' in triggerInfo[0]: AK8PFTrimHT650AK4CaloHT.append( triggerInfo )
+			elif 'HLT_AK8PFTrimHT750_AK4CaloHT_TrimMass' in triggerInfo[0]: AK8PFTrimHT750AK4CaloHT.append( triggerInfo )
+			elif 'HLT_AK8PFTrimHT850_AK4CaloHT_TrimMass' in triggerInfo[0]: AK8PFTrimHT850AK4CaloHT.append( triggerInfo )
 
 	if 'simple' in process:
 		for trigger in rates:
-			if 'AK8PFJet360Trim_Mass30' in trigger[0]: print 'AK8PFJet360Trim_Mass30', np.around(trigger[4], 2), np.around(trigger[5], 1)
+			if 'AK8PFJet360Trim_Mass30_v1' in trigger[0]: print 'AK8PFJet360Trim_Mass30', np.around(trigger[4], 2), np.around(trigger[5], 1)
+			if 'AK8PFJet360Trim_Mass30_TrimMod_v1' in trigger[0]: print 'AK8PFJet360Trim_Mass30_TrimMod', np.around(trigger[4], 2), np.around(trigger[5], 1)
 			if 'PFHT900_v1' in trigger[0]: print 'PFHT900', np.around(trigger[4], 2), np.around(trigger[5], 1)
 
 		plotRates( [ PFHT ], [ 'PFHT' ], 'PFHTtriggers', PU )
@@ -312,9 +345,15 @@ if __name__ == '__main__':
 
 	elif '2d' in process:
 
-		HT = [ 450., 550., 650., 750., 850. ]
-		Mass = [ 0., 5., 10., 15., 20., 25., 30., 35., 40., 45., 50., 55. ]
+		#HT = [ 450., 550., 650., 750., 850. ]
+		HT = [ 700., 750., 800., 850., 900. ]
+		Mass = [ 0., 5., 10., 15., 20., 25., 30., 35., 40., 45., 50., 55., 60., 65., 70., 75., 80., 85. ]
+		Mass2 = [ 0., 5., 10., 15., 20., 25., 30., 35., 40., 45., 50., 55. ]
 
-		plotRatesComp( [ AK8PFTrimHT450, AK8PFTrimHT550, AK8PFTrimHT650, AK8PFTrimHT750, AK8PFTrimHT850 ], 'AK8PFTrimHT', PU, HT, Mass )
-		plotRatesComp( [ PFTrimHT450, PFTrimHT550, PFTrimHT650, PFTrimHT750, PFTrimHT850 ], 'PFTrimHT', PU, HT, Mass )
+		#plotRatesComp( [ AK8PFTrimHT450, AK8PFTrimHT550, AK8PFTrimHT650, AK8PFTrimHT750, AK8PFTrimHT850 ], 'AK8PFTrimHT', PU, HT, Mass )
+		plotRatesComp( [ AK8PFTrimHT700, AK8PFTrimHT750, AK8PFTrimHT800, AK8PFTrimHT850, AK8PFTrimHT900 ], 'AK8PFTrimHT', PU, HT, Mass )
+		#plotRatesComp( [ AK8PFTrimHT450TrimMod, AK8PFTrimHT550TrimMod, AK8PFTrimHT650TrimMod, AK8PFTrimHT750TrimMod, AK8PFTrimHT850TrimMod ], 'AK8PFTrimHT_TrimMod', PU, HT, Mass )
+		plotRatesComp( [ AK8PFTrimHT700TrimMod, AK8PFTrimHT750TrimMod, AK8PFTrimHT800TrimMod, AK8PFTrimHT850TrimMod, AK8PFTrimHT900TrimMod ], 'AK8PFTrimHT_TrimMod', PU, HT, Mass )
+		#plotRatesComp( [ AK8PFTrimHT450AK4CaloHT, AK8PFTrimHT550AK4CaloHT, AK8PFTrimHT650AK4CaloHT, AK8PFTrimHT750AK4CaloHT, AK8PFTrimHT850AK4CaloHT ], 'AK8PFTrimHT_AK4CaloHT', PU, HT, Mass )
+		#plotRatesComp( [ PFTrimHT450, PFTrimHT550, PFTrimHT650, PFTrimHT750, PFTrimHT850 ], 'PFTrimHT', PU, HT, Mass2 )
 
