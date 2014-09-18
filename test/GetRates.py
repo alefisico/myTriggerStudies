@@ -190,6 +190,7 @@ def plotRatesComp( listRates, outName, PU, HT, Mass ):
 	histo.SetTitle("Trigger Rates for "+outName+" "+PU)
 	histo.GetXaxis().SetTitle("HT [GeV]")
 	histo.GetYaxis().SetTitle("Leading Jet Mass [GeV]")
+	histo.SetMinimum( 8 )
 
 
 	c = TCanvas( "c1", "c1", 800, 500 )

@@ -168,7 +168,7 @@ void TriggerEfficiency::analyze(const edm::Event& iEvent, const edm::EventSetup&
 
 		sort( patJetsCollection.begin(), patJetsCollection.end(), compare_JetMass);
 		histos1D_[ "HTDenom" ]->Fill( HT, scale );
-		if (HT > 900) histos1D_[ "jetMassDenom" ]->Fill( patJetsCollection[0].M(), scale );
+		histos1D_[ "jetMassDenom" ]->Fill( patJetsCollection[0].M(), scale );
 		histos2D_[ "jetMassHTDenom" ]->Fill( HT, patJetsCollection[0].M() );
 		histos2D_[ "jetMassPtDenom" ]->Fill( patJetsCollection[0].Pt(), patJetsCollection[0].M() );
 

@@ -229,55 +229,59 @@ void OverlapTriggers::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 		histos2D_[ "PtvsMassTwoAll" ]->Fill( twoJets[0].Pt(), twoJets[0].M() );
 	}
 	
-	if (triggerResults->accept(triggerBit1) || triggerResults->accept(triggerBit2)){
-		totalNumberEventsPassing+=1;
-
-		if (triggerResults->accept(triggerBit1) && triggerResults->accept(triggerBit2)){
-	       		bothTriggers+=1;
-			histos1D_[ "MassBoth" ]->Fill( oneJets[0].M() );
-			histos1D_[ "PtBoth" ]->Fill( oneJets[0].Pt() );
-			histos1D_[ "HTBoth" ]->Fill( oneHT );
-			histos2D_[ "HTvsMassBoth" ]->Fill( oneHT, oneJets[0].M() );
-			histos2D_[ "HTvsPtBoth" ]->Fill( oneHT, oneJets[0].Pt() );
-			histos2D_[ "PtvsMassBoth" ]->Fill( oneJets[0].Pt(), oneJets[0].M() );
-		} else {
-			if (triggerResults->accept(triggerBit1) ){
-		       		onlyTrigger1+=1;
-				histos1D_[ "MassOne" ]->Fill( oneJets[0].M() );
-				histos1D_[ "PtOne" ]->Fill( oneJets[0].Pt() );
-				histos1D_[ "HTOne" ]->Fill( oneHT );
-				histos2D_[ "HTvsMassOne" ]->Fill( oneHT, oneJets[0].M() );
-				histos2D_[ "HTvsPtOne" ]->Fill( oneHT, oneJets[0].Pt() );
-				histos2D_[ "PtvsMassOne" ]->Fill( oneJets[0].Pt(), oneJets[0].M() );
-
-			} else {
-		       		onlyTrigger2+=1;
-				histos1D_[ "MassTwo" ]->Fill( twoJets[0].M() );
-				histos1D_[ "PtTwo" ]->Fill( twoJets[0].Pt() );
-				histos1D_[ "HTTwo" ]->Fill( twoHT );
-				histos2D_[ "HTvsMassTwo" ]->Fill( twoHT, twoJets[0].M() );
-				histos2D_[ "HTvsPtTwo" ]->Fill( twoHT, twoJets[0].Pt() );
-				histos2D_[ "PtvsMassTwo" ]->Fill( twoJets[0].Pt(), twoJets[0].M() );
-			}
-		}
-	
-	} else {
-	       	noneTriggers+=1;
-	}
 
 	totalNumberEvents+=1;
 
 	if (triggerResults->accept(triggerBit1) || triggerResults->accept(triggerBit2) || triggerResults->accept(triggerBit3)){
 		totalNumberEventsPassingThree+=1;
 
-		if (triggerResults->accept(triggerBit1) && triggerResults->accept(triggerBit2) && triggerResults->accept(triggerBit3)) threeTriggers+=1;
-		if (triggerResults->accept(triggerBit1) && triggerResults->accept(triggerBit2) && !triggerResults->accept(triggerBit3)) only12+=1;
-		if (triggerResults->accept(triggerBit1) && !triggerResults->accept(triggerBit2) && triggerResults->accept(triggerBit3)) only13+=1;
-		if (!triggerResults->accept(triggerBit1) && triggerResults->accept(triggerBit2) && triggerResults->accept(triggerBit3)) only23+=1;
-		if (triggerResults->accept(triggerBit1) && !triggerResults->accept(triggerBit2) && !triggerResults->accept(triggerBit3)) only1+=1;
-		if (!triggerResults->accept(triggerBit1) && triggerResults->accept(triggerBit2) && !triggerResults->accept(triggerBit3)) only2+=1;
-		if (!triggerResults->accept(triggerBit1) && !triggerResults->accept(triggerBit2) && triggerResults->accept(triggerBit3)) only3+=1;
+		if (triggerResults->accept(triggerBit1) && triggerResults->accept(triggerBit2) && triggerResults->accept(triggerBit3)) 	threeTriggers+=1;
+
+		if ( !triggerResults->accept(triggerBit3) ) {
+			totalNumberEventsPassing+=1;
+
+			if (triggerResults->accept(triggerBit1) && triggerResults->accept(triggerBit2)){
+				only12+=1;
+				bothTriggers+=1;
+			//	cout << oneHT << " " << twoHT << endl;
+				histos1D_[ "MassBoth" ]->Fill( oneJets[0].M() );
+				histos1D_[ "PtBoth" ]->Fill( oneJets[0].Pt() );
+				histos1D_[ "HTBoth" ]->Fill( oneHT );
+				histos2D_[ "HTvsMassBoth" ]->Fill( oneHT, oneJets[0].M() );
+				histos2D_[ "HTvsPtBoth" ]->Fill( oneHT, oneJets[0].Pt() );
+				histos2D_[ "PtvsMassBoth" ]->Fill( oneJets[0].Pt(), oneJets[0].M() );
+			} else {
+				if (triggerResults->accept(triggerBit1) ){
+					onlyTrigger1+=1;
+					only1+=1;
+					histos1D_[ "MassOne" ]->Fill( oneJets[0].M() );
+					histos1D_[ "PtOne" ]->Fill( oneJets[0].Pt() );
+					histos1D_[ "HTOne" ]->Fill( oneHT );
+					histos2D_[ "HTvsMassOne" ]->Fill( oneHT, oneJets[0].M() );
+					histos2D_[ "HTvsPtOne" ]->Fill( oneHT, oneJets[0].Pt() );
+					histos2D_[ "PtvsMassOne" ]->Fill( oneJets[0].Pt(), oneJets[0].M() );
+
+				} else {
+					onlyTrigger2+=1;
+					only2+=1;
+					histos1D_[ "MassTwo" ]->Fill( twoJets[0].M() );
+					histos1D_[ "PtTwo" ]->Fill( twoJets[0].Pt() );
+					histos1D_[ "HTTwo" ]->Fill( twoHT );
+					histos2D_[ "HTvsMassTwo" ]->Fill( twoHT, twoJets[0].M() );
+					histos2D_[ "HTvsPtTwo" ]->Fill( twoHT, twoJets[0].Pt() );
+					histos2D_[ "PtvsMassTwo" ]->Fill( twoJets[0].Pt(), twoJets[0].M() );
+				}
+			}
 		
+		} else {
+			noneTriggers+=1;
+			if (!triggerResults->accept(triggerBit1) ) {
+				if ( triggerResults->accept(triggerBit2) && triggerResults->accept(triggerBit3)) only23+=1;
+				if ( !triggerResults->accept(triggerBit2) ) only3+=1;
+			} else {
+				if ( triggerResults->accept(triggerBit1) && triggerResults->accept(triggerBit3)) only13+=1;
+			}
+		}
 	}
 }
 
@@ -440,8 +444,8 @@ void OverlapTriggers::beginJob() {
 	histos2D_[ "PtvsMassBoth" ]->SetYTitle( "Leading Jet Mass [GeV]" );
 
 	histos2D_[ "AK4vsAK8HTOneAll" ] = fileService->make< TH2D >( "AK4vsAK8HTOneAll", labelTrigger1, 100, 0., 2000, 100, 0., 2000. );
-	histos2D_[ "AK4vsAK8HTOneAll" ]->SetXTitle( "AK4HT [GeV]" );
-	histos2D_[ "AK4vsAK8HTOneAll" ]->SetYTitle( "AK8HT [GeV]" );
+	histos2D_[ "AK4vsAK8HTOneAll" ]->SetXTitle( "AK8HT [GeV]" );
+	histos2D_[ "AK4vsAK8HTOneAll" ]->SetYTitle( "AK4HT [GeV]" );
 
 }
 
