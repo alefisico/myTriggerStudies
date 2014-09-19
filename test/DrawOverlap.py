@@ -34,6 +34,7 @@ def plot( inFile, signal, trigger, name, inFileName, xmin, xmax, PU):
 	binWidth = histos.GetBinWidth(1)
 	if 'overlap' in name: 
 		histos.GetYaxis().SetTitle( 'Percentage')
+		histos.SetMinimum( 0. )
 		if 'QCD' in signal:
 			histos.Scale( 1 / histos.Integral() )
 	else: histos.GetYaxis().SetTitle( 'Events /' + str(binWidth) )
@@ -79,30 +80,30 @@ if __name__ == '__main__':
 			[ 'overlapOverAllTriggers', '', 20, 50 ],
 			[ 'overlapTriggers', '', 20, 50 ],
 			[ 'overlapSimpleTriggers', '', 20, 50 ],
-			[ 'MassOneAll', 'NO Trigger', 20, 50 ],
-			[ 'MassOne', 'AK8PFTrimHT850TrimMass', 20, 50 ],
-			[ 'MassTwo', 'PFHT900', 20, 50 ],
-			[ 'MassBoth', 'Both', 20, 50 ],
-			[ 'PtOneAll', 'NO Trigger', 20, 50 ],
-			[ 'PtOne', 'AK8PFTrimHT850TrimMass', 20, 50 ],
-			[ 'PtTwo', 'PFHT900', 20, 50 ],
-			[ 'PtBoth', 'Both', 20, 50 ],
-			[ 'HTOneAll', 'NO Trigger', 20, 50 ],
-			[ 'HTOne', 'AK8PFTrimHT850TrimMass', 20, 50 ],
-			[ 'HTTwo', 'PFHT900', 20, 50 ],
-			[ 'HTBoth', 'Both', 20, 50 ],
-			[ 'HTvsMassOneAll', 'NO Trigger', 20, 50 ],
-			[ 'HTvsMassOne', 'AK8PFTrimHT850TrimMass', 20, 50 ],
-			[ 'HTvsMassTwo', 'PFHT900', 20, 50 ],
-			[ 'HTvsMassBoth', 'Both', 20, 50 ],
-			[ 'HTvsPtOneAll', 'NO Trigger', 20, 50 ],
-			[ 'HTvsPtOne', 'AK8PFTrimHT850TrimMass', 20, 50 ],
-			[ 'HTvsPtTwo', 'PFHT900', 20, 50 ],
-			[ 'HTvsPtBoth', 'Both', 20, 50 ],
-			[ 'PtvsMassOneAll', 'NO Trigger', 20, 50 ],
-			[ 'PtvsMassOne', 'AK8PFTrimHT850TrimMass', 20, 50 ],
-			[ 'PtvsMassTwo', 'PFHT900', 20, 50 ],
-			[ 'PtvsMassBoth', 'Both', 20, 50 ],
+#			[ 'MassOneAll', 'NO Trigger', 20, 50 ],
+#			[ 'MassOne', 'AK8PFTrimHT850TrimMass', 20, 50 ],
+#			[ 'MassTwo', 'PFHT900', 20, 50 ],
+#			[ 'MassBoth', 'Both', 20, 50 ],
+#			[ 'PtOneAll', 'NO Trigger', 20, 50 ],
+#			[ 'PtOne', 'AK8PFTrimHT850TrimMass', 20, 50 ],
+#			[ 'PtTwo', 'PFHT900', 20, 50 ],
+#			[ 'PtBoth', 'Both', 20, 50 ],
+#			[ 'HTOneAll', 'NO Trigger', 20, 50 ],
+#			[ 'HTOne', 'AK8PFTrimHT850TrimMass', 20, 50 ],
+#			[ 'HTTwo', 'PFHT900', 20, 50 ],
+#			[ 'HTBoth', 'Both', 20, 50 ],
+#			[ 'HTvsMassOneAll', 'NO Trigger', 20, 50 ],
+#			[ 'HTvsMassOne', 'AK8PFTrimHT850TrimMass', 20, 50 ],
+#			[ 'HTvsMassTwo', 'PFHT900', 20, 50 ],
+#			[ 'HTvsMassBoth', 'Both', 20, 50 ],
+#			[ 'HTvsPtOneAll', 'NO Trigger', 20, 50 ],
+#			[ 'HTvsPtOne', 'AK8PFTrimHT850TrimMass', 20, 50 ],
+#			[ 'HTvsPtTwo', 'PFHT900', 20, 50 ],
+#			[ 'HTvsPtBoth', 'Both', 20, 50 ],
+#			[ 'PtvsMassOneAll', 'NO Trigger', 20, 50 ],
+#			[ 'PtvsMassOne', 'AK8PFTrimHT850TrimMass', 20, 50 ],
+#			[ 'PtvsMassTwo', 'PFHT900', 20, 50 ],
+#			[ 'PtvsMassBoth', 'Both', 20, 50 ],
 			]
 
 	cat = [ 

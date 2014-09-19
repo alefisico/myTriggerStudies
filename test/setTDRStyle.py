@@ -116,7 +116,12 @@ def setSelectionTrigger( signal, trigger, plot ):
 	textBox5=TLatex()
 	textBox5.SetNDC()
 	textBox5.SetTextSize(0.04) 
-	textBox5.DrawLatex(0.70,0.78, plot)
+	textBox5.DrawLatex(0.70,0.78,"HT > 900 GeV")
+	
+	textBox6=TLatex()
+	textBox6.SetNDC()
+	textBox6.SetTextSize(0.04) 
+	textBox6.DrawLatex(0.70,0.73, plot)
 	
 def setTriggerRates( signal ):
 

@@ -95,12 +95,12 @@ class OverlapTriggers : public edm::EDAnalyzer {
 		int triggerBit2;
 		int triggerBit3;
 
-		int onlyTrigger1 = 0;
-		int onlyTrigger2 = 0;
-		int onlyTrigger3 = 0;
+		int solo1 = 0;
+		int solo2 = 0;
+		int both12 = 0;
+		int none12 = 0;
+
 		int threeTriggers = 0;
-		int bothTriggers = 0;
-		int noneTriggers = 0;
 		int only1 = 0;
 		int only2 = 0;
 		int only3 = 0;
@@ -232,56 +232,65 @@ void OverlapTriggers::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 
 	totalNumberEvents+=1;
 
-	if (triggerResults->accept(triggerBit1) || triggerResults->accept(triggerBit2) || triggerResults->accept(triggerBit3)){
+	Int_t index[3] = { 0, 0, 0 };
+	if (triggerResults->accept(triggerBit1)) index[0] = 1; 
+	if (triggerResults->accept(triggerBit2)) index[1] = 1; 
+	if (triggerResults->accept(triggerBit3)) index[2] = 1; 
+
+	//cout<< index[0] << " " << index[1] << " " << index[2] << endl;
+
+	if ( ( index[0] == 1 ) || ( index[1] == 1 ) || ( index[2] == 1 ) ) {
 		totalNumberEventsPassingThree+=1;
 
-		if (triggerResults->accept(triggerBit1) && triggerResults->accept(triggerBit2) && triggerResults->accept(triggerBit3)) 	threeTriggers+=1;
-
-		if ( !triggerResults->accept(triggerBit3) ) {
-			totalNumberEventsPassing+=1;
-
-			if (triggerResults->accept(triggerBit1) && triggerResults->accept(triggerBit2)){
-				only12+=1;
-				bothTriggers+=1;
-			//	cout << oneHT << " " << twoHT << endl;
-				histos1D_[ "MassBoth" ]->Fill( oneJets[0].M() );
-				histos1D_[ "PtBoth" ]->Fill( oneJets[0].Pt() );
-				histos1D_[ "HTBoth" ]->Fill( oneHT );
-				histos2D_[ "HTvsMassBoth" ]->Fill( oneHT, oneJets[0].M() );
-				histos2D_[ "HTvsPtBoth" ]->Fill( oneHT, oneJets[0].Pt() );
-				histos2D_[ "PtvsMassBoth" ]->Fill( oneJets[0].Pt(), oneJets[0].M() );
-			} else {
-				if (triggerResults->accept(triggerBit1) ){
-					onlyTrigger1+=1;
-					only1+=1;
-					histos1D_[ "MassOne" ]->Fill( oneJets[0].M() );
-					histos1D_[ "PtOne" ]->Fill( oneJets[0].Pt() );
-					histos1D_[ "HTOne" ]->Fill( oneHT );
-					histos2D_[ "HTvsMassOne" ]->Fill( oneHT, oneJets[0].M() );
-					histos2D_[ "HTvsPtOne" ]->Fill( oneHT, oneJets[0].Pt() );
-					histos2D_[ "PtvsMassOne" ]->Fill( oneJets[0].Pt(), oneJets[0].M() );
-
-				} else {
-					onlyTrigger2+=1;
-					only2+=1;
-					histos1D_[ "MassTwo" ]->Fill( twoJets[0].M() );
-					histos1D_[ "PtTwo" ]->Fill( twoJets[0].Pt() );
-					histos1D_[ "HTTwo" ]->Fill( twoHT );
-					histos2D_[ "HTvsMassTwo" ]->Fill( twoHT, twoJets[0].M() );
-					histos2D_[ "HTvsPtTwo" ]->Fill( twoHT, twoJets[0].Pt() );
-					histos2D_[ "PtvsMassTwo" ]->Fill( twoJets[0].Pt(), twoJets[0].M() );
-				}
-			}
+		if ( ( index[0] == 1 ) && ( index[1] == 1 ) && ( index[2] == 1 ) ) threeTriggers+=1;	
 		
+		if ( ( index[0] == 1 ) && ( index[1] == 1 ) && ( index[2] == 0 ) ) only12+=1;
+
+		if ( ( index[0] == 1 ) && ( index[1] == 0 ) && ( index[2] == 1 ) ) only13+=1; 
+
+		if ( ( index[0] == 1 ) && ( index[1] == 0 ) && ( index[2] == 0 ) ) only1+=1;
+
+		if ( ( index[0] == 0 ) && ( index[1] == 1 ) && ( index[2] == 1 ) ) only23+=1;
+
+		if ( ( index[0] == 0 ) && ( index[1] == 1 ) && ( index[2] == 0 ) ) only2+=1;
+
+		if ( ( index[0] == 0 ) && ( index[1] == 0 ) && ( index[2] == 1 ) ) only3+=1;
+	}
+	
+	if ( ( index[0] == 1 ) || ( index[1] == 1 ) ) {
+		totalNumberEventsPassing+=1;
+
+		if ( ( index[0] == 1 ) && ( index[1] == 1 ) ) {
+			both12+=1;
+		//	cout << oneHT << " " << twoHT << endl;
+			histos1D_[ "MassBoth" ]->Fill( oneJets[0].M() );
+			histos1D_[ "PtBoth" ]->Fill( oneJets[0].Pt() );
+			histos1D_[ "HTBoth" ]->Fill( oneHT );
+			histos2D_[ "HTvsMassBoth" ]->Fill( oneHT, oneJets[0].M() );
+			histos2D_[ "HTvsPtBoth" ]->Fill( oneHT, oneJets[0].Pt() );
+			histos2D_[ "PtvsMassBoth" ]->Fill( oneJets[0].Pt(), oneJets[0].M() );
 		} else {
-			noneTriggers+=1;
-			if (!triggerResults->accept(triggerBit1) ) {
-				if ( triggerResults->accept(triggerBit2) && triggerResults->accept(triggerBit3)) only23+=1;
-				if ( !triggerResults->accept(triggerBit2) ) only3+=1;
+			if ( index[0] == 1 ) {
+				solo1+=1;
+				histos1D_[ "MassOne" ]->Fill( oneJets[0].M() );
+				histos1D_[ "PtOne" ]->Fill( oneJets[0].Pt() );
+				histos1D_[ "HTOne" ]->Fill( oneHT );
+				histos2D_[ "HTvsMassOne" ]->Fill( oneHT, oneJets[0].M() );
+				histos2D_[ "HTvsPtOne" ]->Fill( oneHT, oneJets[0].Pt() );
+				histos2D_[ "PtvsMassOne" ]->Fill( oneJets[0].Pt(), oneJets[0].M() );
+
 			} else {
-				if ( triggerResults->accept(triggerBit1) && triggerResults->accept(triggerBit3)) only13+=1;
+				solo2+=1;
+				histos1D_[ "MassTwo" ]->Fill( twoJets[0].M() );
+				histos1D_[ "PtTwo" ]->Fill( twoJets[0].Pt() );
+				histos1D_[ "HTTwo" ]->Fill( twoHT );
+				histos2D_[ "HTvsMassTwo" ]->Fill( twoHT, twoJets[0].M() );
+				histos2D_[ "HTvsPtTwo" ]->Fill( twoHT, twoJets[0].Pt() );
+				histos2D_[ "PtvsMassTwo" ]->Fill( twoJets[0].Pt(), twoJets[0].M() );
 			}
 		}
+	} else {
+		none12+=1;
 	}
 }
 
@@ -452,24 +461,25 @@ void OverlapTriggers::beginJob() {
 // ------------ method called once each job just after ending the event loop  ------------
 void OverlapTriggers::endJob() {
 
-	std::cout<< onlyTrigger1 << " " << onlyTrigger2 << " " << bothTriggers << " " << noneTriggers << std::endl;
-    histos1D_[ "overlapOverAll" ]->SetBinContent( 1, onlyTrigger1/totalNumberEvents );
-    histos1D_[ "overlapOverAll" ]->SetBinContent( 2, onlyTrigger2/totalNumberEvents );
-    histos1D_[ "overlapOverAll" ]->SetBinContent( 3, bothTriggers/totalNumberEvents );
-    histos1D_[ "overlapOverAll" ]->SetBinContent( 4, noneTriggers/totalNumberEvents );
+	std::cout<< only1 << " " << only2 << " " << only3 << " " << only12 << " " << only13 << " " << only23 << " " << threeTriggers << " "  << totalNumberEventsPassingThree << " " << totalNumberEvents << std::endl;
+	std::cout<< solo1 << " " << solo2 << " " << both12 << " " << none12 << " " << totalNumberEventsPassing << std::endl;
+    histos1D_[ "overlapOverAll" ]->SetBinContent( 1, solo1/totalNumberEvents );
+    histos1D_[ "overlapOverAll" ]->SetBinContent( 2, solo2/totalNumberEvents );
+    histos1D_[ "overlapOverAll" ]->SetBinContent( 3, both12/totalNumberEvents );
+    histos1D_[ "overlapOverAll" ]->SetBinContent( 4, none12/totalNumberEvents );
 
-    histos1D_[ "overlap" ]->SetBinContent( 1, onlyTrigger1/totalNumberEventsPassing );
-    histos1D_[ "overlap" ]->SetBinContent( 2, onlyTrigger2/totalNumberEventsPassing );
-    histos1D_[ "overlap" ]->SetBinContent( 3, bothTriggers/totalNumberEventsPassing );
+    histos1D_[ "overlap" ]->SetBinContent( 1, solo1/totalNumberEventsPassing );
+    histos1D_[ "overlap" ]->SetBinContent( 2, solo2/totalNumberEventsPassing );
+    histos1D_[ "overlap" ]->SetBinContent( 3, both12/totalNumberEventsPassing );
 
-    histos1D_[ "overlapOverAllSimple" ]->SetBinContent( 1, onlyTrigger1 );
-    histos1D_[ "overlapOverAllSimple" ]->SetBinContent( 2, onlyTrigger2 );
-    histos1D_[ "overlapOverAllSimple" ]->SetBinContent( 3, bothTriggers );
-    histos1D_[ "overlapOverAllSimple" ]->SetBinContent( 4, noneTriggers );
+    histos1D_[ "overlapOverAllSimple" ]->SetBinContent( 1, solo1 );
+    histos1D_[ "overlapOverAllSimple" ]->SetBinContent( 2, solo2 );
+    histos1D_[ "overlapOverAllSimple" ]->SetBinContent( 3, both12 );
+    histos1D_[ "overlapOverAllSimple" ]->SetBinContent( 4, none12 );
 
-    histos1D_[ "overlapSimple" ]->SetBinContent( 1, onlyTrigger1 );
-    histos1D_[ "overlapSimple" ]->SetBinContent( 2, onlyTrigger2 );
-    histos1D_[ "overlapSimple" ]->SetBinContent( 3, bothTriggers );
+    histos1D_[ "overlapSimple" ]->SetBinContent( 1, solo1 );
+    histos1D_[ "overlapSimple" ]->SetBinContent( 2, solo2 );
+    histos1D_[ "overlapSimple" ]->SetBinContent( 3, both12 );
 
     histos2D_[ "overlapThree" ]->SetBinContent( 1, 1, only1/totalNumberEventsPassingThree );
     histos2D_[ "overlapThree" ]->SetBinContent( 2, 2, only2/totalNumberEventsPassingThree );

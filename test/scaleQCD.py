@@ -7,7 +7,7 @@ Description: simple script to scale QCD Files
 '''
 
 from ROOT import TFile, TH1, TH2, TMath, gROOT, gPad, TTree
-import sys
+import sys, os
 #from ROOT import *
 
 gROOT.Reset()
@@ -33,8 +33,12 @@ listDir = []
 def scaleQCD( inFileName, treeName ):
 	"""docstring for scaleQCD"""
 
+	if os.path.exists(inFileName+'_Scaled.root'): 
+		os.remove(inFileName+'_Scaled.root')
+		outfile = TFile( inFileName+'_Scaled.root', "RECREATE")
+	else: outfile = TFile( inFileName+'_Scaled.root', "RECREATE")
+	
 	infile = TFile( inFileName+'.root', "READ")
-	outfile = TFile( inFileName+'_Scaled.root', "RECREATE")
 
 	allEvents = infile.Get( 'AK8PFTrimHT850TrimMass50vsPFHT900/overlapOverAllSimpleTriggers' )
 	numEvents = allEvents.GetEntries()
@@ -57,8 +61,8 @@ def scaleQCD( inFileName, treeName ):
 			name = q.GetName()
 			h = infile.Get( j+'/'+name)
 			hOut = h.Clone()
-			if not isinstance(h,TH2): hOut.Scale( scale )
-			#if not isinstance(h,TH2) and not "overlap" in name : hOut.Scale( scale )
+			#if not isinstance(h,TH2): hOut.Scale( scale )
+			if not isinstance(h,TH2) and not "overlap" in name : hOut.Scale( scale )
 			hOut.Write()
 		outfile.cd('/')
 	
@@ -78,4 +82,5 @@ if __name__ == '__main__':
 			]
 	
 	for pt in ptBins:
+		print pt
 		scaleQCD( 'overlapStudies_QCD_Pt-'+pt+'_Tune4C_PU20bx25', 'triggerPlotterHT/JetVariables' )

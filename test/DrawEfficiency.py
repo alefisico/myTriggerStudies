@@ -40,8 +40,8 @@ def plot( inFile, signal, trigger, name, xmin, xmax, PU):
 		
 		if 'Efficiency' in plot:
 
-			histos[ name+'Passing'].Rebin( 2 )
-			histos[ name+'Denom'].Rebin( 2 )
+			#histos[ name+'Passing'].Rebin( 2 )
+			#histos[ name+'Denom'].Rebin( 2 )
 			effHisto = TGraphAsymmErrors( histos[ name+'Passing'], histos[ name+'Denom' ], "B" )
 			effHisto.GetYaxis().SetTitle( 'Efficiency / '+str(binWidth) )
 			effHisto.GetXaxis().SetTitle( name + ' [GeV]' )
@@ -123,7 +123,7 @@ if __name__ == '__main__':
 #			['PFHT750', 'jetMass', 0, 100 ],
 #			['PFHT850', 'HT', 20, 50 ],
 #			['PFHT850', 'jetMass', 0, 100 ],
-			['PFHT900', 'HT', 30, 65 ],
+#			['PFHT900', 'HT', 30, 65 ],
 #			['PFHT900', 'jetMass', 0, 100 ],
 #			['PFHT950', 'HT', 20, 50 ],
 #			['PFHT950', 'jetMass', 0, 100 ],
@@ -527,12 +527,12 @@ if __name__ == '__main__':
 #			['AK8PFTrimHT850TrimMass45', 'HT', 20, 50 ],
 #			['AK8PFTrimHT850TrimMass45', 'jetMass', 0, 100 ],
 #			['AK8PFTrimHT850TrimMass45', 'jetMassHT', 0, 100 ],
-			['AK8PFTrimHT850TrimMass50', 'HT', 20, 50 ],
-			['AK8PFTrimHT850TrimMass50', 'jetMass', 0, 100 ],
-			['AK8PFTrimHT850TrimMass50', 'jetMassHT', 0, 100 ],
-			['AK8PFTrimHT850TrimMass50TrimMod', 'HT', 20, 50 ],
+#			['AK8PFTrimHT850TrimMass50', 'HT', 20, 50 ],
+#			['AK8PFTrimHT850TrimMass50', 'jetMass', 0, 100 ],
+#			['AK8PFTrimHT850TrimMass50', 'jetMassHT', 0, 100 ],
+#			['AK8PFTrimHT850TrimMass50TrimMod', 'HT', 20, 50 ],
 			['AK8PFTrimHT850TrimMass50TrimMod', 'jetMass', 0, 100 ],
-			['AK8PFTrimHT850TrimMass50TrimMod', 'jetMassHT', 0, 100 ],
+#			['AK8PFTrimHT850TrimMass50TrimMod', 'jetMassHT', 0, 100 ],
 		#	['AK8PFTrimHT850TrimMass40AK4CaloHT', 'HT', 20, 50 ],
 		#	['AK8PFTrimHT850TrimMass40AK4CaloHT', 'jetMass', 0, 100 ],
 		#	['AK8PFTrimHT850TrimMass40AK4CaloHT', 'jetMassHT', 0, 100 ],

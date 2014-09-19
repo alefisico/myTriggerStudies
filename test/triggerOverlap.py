@@ -36,11 +36,241 @@ process.AK8PFTrimHT850TrimMass50vsPFHT900 = cms.EDAnalyzer("OverlapTriggers",
 		threeHLTPFJets = cms.InputTag( "hltAK8PFJetsTrim" ),
 		)
 
+process.AK8PFTrimHT700TrimMass50TrimModvsPFHT900 = cms.EDAnalyzer("OverlapTriggers",
+		trigger2 = cms.string( "HLT_PFHT900_v1" ),
+		twoHLTHT = cms.InputTag( "hltPFHT" ),
+		twoHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
+		trigger1 = cms.string( "HLT_AK8PFTrimHT650_TrimMod_HT700_TrimMass50_v1" ),
+		oneHLTHT = cms.InputTag( "hltAK8PFHT" ),
+		oneHLTPFJets = cms.InputTag( "hltAK8PFJetsTrimMod" ),
+		trigger3 = cms.string( "HLT_AK8PFJet360Trim_Mass30_TrimMod_v1" ),
+		threeHLTHT = cms.InputTag( "hltPFHT" ),
+		threeHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
+		)
+
+process.AK8PFTrimHT750TrimMass50TrimModvsPFHT900 = cms.EDAnalyzer("OverlapTriggers",
+		trigger2 = cms.string( "HLT_PFHT900_v1" ),
+		twoHLTHT = cms.InputTag( "hltPFHT" ),
+		twoHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
+		trigger1 = cms.string( "HLT_AK8PFTrimHT750_TrimMod_TrimMass50_v1" ),
+		oneHLTHT = cms.InputTag( "hltAK8PFHT" ),
+		oneHLTPFJets = cms.InputTag( "hltAK8PFJetsTrimMod" ),
+		trigger3 = cms.string( "HLT_AK8PFJet360Trim_Mass30_TrimMod_v1" ),
+		threeHLTHT = cms.InputTag( "hltPFHT" ),
+		threeHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
+		)
+
+process.AK8PFTrimHT800TrimMass50TrimModvsPFHT900 = cms.EDAnalyzer("OverlapTriggers",
+		trigger2 = cms.string( "HLT_PFHT900_v1" ),
+		twoHLTHT = cms.InputTag( "hltPFHT" ),
+		twoHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
+		trigger1 = cms.string( "HLT_AK8PFTrimHT650_TrimMod_HT800_TrimMass50_v1" ),
+		oneHLTHT = cms.InputTag( "hltAK8PFHT" ),
+		oneHLTPFJets = cms.InputTag( "hltAK8PFJetsTrimMod" ),
+		trigger3 = cms.string( "HLT_AK8PFJet360Trim_Mass30_TrimMod_v1" ),
+		threeHLTHT = cms.InputTag( "hltPFHT" ),
+		threeHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
+		)
+
 process.AK8PFTrimHT850TrimMass50TrimModvsPFHT900 = cms.EDAnalyzer("OverlapTriggers",
 		trigger2 = cms.string( "HLT_PFHT900_v1" ),
 		twoHLTHT = cms.InputTag( "hltPFHT" ),
 		twoHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
 		trigger1 = cms.string( "HLT_AK8PFTrimHT850_TrimMod_TrimMass50_v1" ),
+		oneHLTHT = cms.InputTag( "hltAK8PFHT" ),
+		oneHLTPFJets = cms.InputTag( "hltAK8PFJetsTrimMod" ),
+		trigger3 = cms.string( "HLT_AK8PFJet360Trim_Mass30_TrimMod_v1" ),
+		threeHLTHT = cms.InputTag( "hltPFHT" ),
+		threeHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
+		)
+
+
+process.AK8PFTrimHT700TrimMass40TrimModvsPFHT900 = cms.EDAnalyzer("OverlapTriggers",
+		trigger2 = cms.string( "HLT_PFHT900_v1" ),
+		twoHLTHT = cms.InputTag( "hltPFHT" ),
+		twoHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
+		trigger1 = cms.string( "HLT_AK8PFTrimHT650_TrimMod_HT700_TrimMass40_v1" ),
+		oneHLTHT = cms.InputTag( "hltAK8PFHT" ),
+		oneHLTPFJets = cms.InputTag( "hltAK8PFJetsTrimMod" ),
+		trigger3 = cms.string( "HLT_AK8PFJet360Trim_Mass30_TrimMod_v1" ),
+		threeHLTHT = cms.InputTag( "hltPFHT" ),
+		threeHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
+		)
+
+
+process.AK8PFTrimHT700TrimMass30TrimModvsPFHT900 = cms.EDAnalyzer("OverlapTriggers",
+		trigger2 = cms.string( "HLT_PFHT900_v1" ),
+		twoHLTHT = cms.InputTag( "hltPFHT" ),
+		twoHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
+		trigger1 = cms.string( "HLT_AK8PFTrimHT650_TrimMod_HT700_TrimMass30_v1" ),
+		oneHLTHT = cms.InputTag( "hltAK8PFHT" ),
+		oneHLTPFJets = cms.InputTag( "hltAK8PFJetsTrimMod" ),
+		trigger3 = cms.string( "HLT_AK8PFJet360Trim_Mass30_TrimMod_v1" ),
+		threeHLTHT = cms.InputTag( "hltPFHT" ),
+		threeHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
+		)
+
+process.AK8PFTrimHT750TrimMass30TrimModvsPFHT900 = cms.EDAnalyzer("OverlapTriggers",
+		trigger2 = cms.string( "HLT_PFHT900_v1" ),
+		twoHLTHT = cms.InputTag( "hltPFHT" ),
+		twoHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
+		trigger1 = cms.string( "HLT_AK8PFTrimHT750_TrimMod_TrimMass30_v1" ),
+		oneHLTHT = cms.InputTag( "hltAK8PFHT" ),
+		oneHLTPFJets = cms.InputTag( "hltAK8PFJetsTrimMod" ),
+		trigger3 = cms.string( "HLT_AK8PFJet360Trim_Mass30_TrimMod_v1" ),
+		threeHLTHT = cms.InputTag( "hltPFHT" ),
+		threeHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
+		)
+
+process.AK8PFTrimHT800TrimMass30TrimModvsPFHT900 = cms.EDAnalyzer("OverlapTriggers",
+		trigger2 = cms.string( "HLT_PFHT900_v1" ),
+		twoHLTHT = cms.InputTag( "hltPFHT" ),
+		twoHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
+		trigger1 = cms.string( "HLT_AK8PFTrimHT650_TrimMod_HT800_TrimMass30_v1" ),
+		oneHLTHT = cms.InputTag( "hltAK8PFHT" ),
+		oneHLTPFJets = cms.InputTag( "hltAK8PFJetsTrimMod" ),
+		trigger3 = cms.string( "HLT_AK8PFJet360Trim_Mass30_TrimMod_v1" ),
+		threeHLTHT = cms.InputTag( "hltPFHT" ),
+		threeHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
+		)
+
+process.AK8PFTrimHT850TrimMass30TrimModvsPFHT900 = cms.EDAnalyzer("OverlapTriggers",
+		trigger2 = cms.string( "HLT_PFHT900_v1" ),
+		twoHLTHT = cms.InputTag( "hltPFHT" ),
+		twoHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
+		trigger1 = cms.string( "HLT_AK8PFTrimHT850_TrimMod_TrimMass30_v1" ),
+		oneHLTHT = cms.InputTag( "hltAK8PFHT" ),
+		oneHLTPFJets = cms.InputTag( "hltAK8PFJetsTrimMod" ),
+		trigger3 = cms.string( "HLT_AK8PFJet360Trim_Mass30_TrimMod_v1" ),
+		threeHLTHT = cms.InputTag( "hltPFHT" ),
+		threeHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
+		)
+process.AK8PFTrimHT750TrimMass40TrimModvsPFHT900 = cms.EDAnalyzer("OverlapTriggers",
+		trigger2 = cms.string( "HLT_PFHT900_v1" ),
+		twoHLTHT = cms.InputTag( "hltPFHT" ),
+		twoHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
+		trigger1 = cms.string( "HLT_AK8PFTrimHT750_TrimMod_TrimMass40_v1" ),
+		oneHLTHT = cms.InputTag( "hltAK8PFHT" ),
+		oneHLTPFJets = cms.InputTag( "hltAK8PFJetsTrimMod" ),
+		trigger3 = cms.string( "HLT_AK8PFJet360Trim_Mass30_TrimMod_v1" ),
+		threeHLTHT = cms.InputTag( "hltPFHT" ),
+		threeHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
+		)
+
+process.AK8PFTrimHT800TrimMass40TrimModvsPFHT900 = cms.EDAnalyzer("OverlapTriggers",
+		trigger2 = cms.string( "HLT_PFHT900_v1" ),
+		twoHLTHT = cms.InputTag( "hltPFHT" ),
+		twoHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
+		trigger1 = cms.string( "HLT_AK8PFTrimHT650_TrimMod_HT800_TrimMass40_v1" ),
+		oneHLTHT = cms.InputTag( "hltAK8PFHT" ),
+		oneHLTPFJets = cms.InputTag( "hltAK8PFJetsTrimMod" ),
+		trigger3 = cms.string( "HLT_AK8PFJet360Trim_Mass30_TrimMod_v1" ),
+		threeHLTHT = cms.InputTag( "hltPFHT" ),
+		threeHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
+		)
+
+process.AK8PFTrimHT850TrimMass40TrimModvsPFHT900 = cms.EDAnalyzer("OverlapTriggers",
+		trigger2 = cms.string( "HLT_PFHT900_v1" ),
+		twoHLTHT = cms.InputTag( "hltPFHT" ),
+		twoHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
+		trigger1 = cms.string( "HLT_AK8PFTrimHT850_TrimMod_TrimMass40_v1" ),
+		oneHLTHT = cms.InputTag( "hltAK8PFHT" ),
+		oneHLTPFJets = cms.InputTag( "hltAK8PFJetsTrimMod" ),
+		trigger3 = cms.string( "HLT_AK8PFJet360Trim_Mass30_TrimMod_v1" ),
+		threeHLTHT = cms.InputTag( "hltPFHT" ),
+		threeHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
+		)
+
+
+process.AK8PFTrimHT700TrimMass20TrimModvsPFHT900 = cms.EDAnalyzer("OverlapTriggers",
+		trigger2 = cms.string( "HLT_PFHT900_v1" ),
+		twoHLTHT = cms.InputTag( "hltPFHT" ),
+		twoHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
+		trigger1 = cms.string( "HLT_AK8PFTrimHT650_TrimMod_HT700_TrimMass20_v1" ),
+		oneHLTHT = cms.InputTag( "hltAK8PFHT" ),
+		oneHLTPFJets = cms.InputTag( "hltAK8PFJetsTrimMod" ),
+		trigger3 = cms.string( "HLT_AK8PFJet360Trim_Mass30_TrimMod_v1" ),
+		threeHLTHT = cms.InputTag( "hltPFHT" ),
+		threeHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
+		)
+
+process.AK8PFTrimHT750TrimMass20TrimModvsPFHT900 = cms.EDAnalyzer("OverlapTriggers",
+		trigger2 = cms.string( "HLT_PFHT900_v1" ),
+		twoHLTHT = cms.InputTag( "hltPFHT" ),
+		twoHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
+		trigger1 = cms.string( "HLT_AK8PFTrimHT750_TrimMod_TrimMass20_v1" ),
+		oneHLTHT = cms.InputTag( "hltAK8PFHT" ),
+		oneHLTPFJets = cms.InputTag( "hltAK8PFJetsTrimMod" ),
+		trigger3 = cms.string( "HLT_AK8PFJet360Trim_Mass30_TrimMod_v1" ),
+		threeHLTHT = cms.InputTag( "hltPFHT" ),
+		threeHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
+		)
+
+process.AK8PFTrimHT800TrimMass20TrimModvsPFHT900 = cms.EDAnalyzer("OverlapTriggers",
+		trigger2 = cms.string( "HLT_PFHT900_v1" ),
+		twoHLTHT = cms.InputTag( "hltPFHT" ),
+		twoHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
+		trigger1 = cms.string( "HLT_AK8PFTrimHT650_TrimMod_HT800_TrimMass20_v1" ),
+		oneHLTHT = cms.InputTag( "hltAK8PFHT" ),
+		oneHLTPFJets = cms.InputTag( "hltAK8PFJetsTrimMod" ),
+		trigger3 = cms.string( "HLT_AK8PFJet360Trim_Mass30_TrimMod_v1" ),
+		threeHLTHT = cms.InputTag( "hltPFHT" ),
+		threeHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
+		)
+
+process.AK8PFTrimHT850TrimMass20TrimModvsPFHT900 = cms.EDAnalyzer("OverlapTriggers",
+		trigger2 = cms.string( "HLT_PFHT900_v1" ),
+		twoHLTHT = cms.InputTag( "hltPFHT" ),
+		twoHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
+		trigger1 = cms.string( "HLT_AK8PFTrimHT850_TrimMod_TrimMass20_v1" ),
+		oneHLTHT = cms.InputTag( "hltAK8PFHT" ),
+		oneHLTPFJets = cms.InputTag( "hltAK8PFJetsTrimMod" ),
+		trigger3 = cms.string( "HLT_AK8PFJet360Trim_Mass30_TrimMod_v1" ),
+		threeHLTHT = cms.InputTag( "hltPFHT" ),
+		threeHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
+		)
+
+process.AK8PFTrimHT700TrimMass10TrimModvsPFHT900 = cms.EDAnalyzer("OverlapTriggers",
+		trigger2 = cms.string( "HLT_PFHT900_v1" ),
+		twoHLTHT = cms.InputTag( "hltPFHT" ),
+		twoHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
+		trigger1 = cms.string( "HLT_AK8PFTrimHT650_TrimMod_HT700_TrimMass10_v1" ),
+		oneHLTHT = cms.InputTag( "hltAK8PFHT" ),
+		oneHLTPFJets = cms.InputTag( "hltAK8PFJetsTrimMod" ),
+		trigger3 = cms.string( "HLT_AK8PFJet360Trim_Mass30_TrimMod_v1" ),
+		threeHLTHT = cms.InputTag( "hltPFHT" ),
+		threeHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
+		)
+
+process.AK8PFTrimHT750TrimMass10TrimModvsPFHT900 = cms.EDAnalyzer("OverlapTriggers",
+		trigger2 = cms.string( "HLT_PFHT900_v1" ),
+		twoHLTHT = cms.InputTag( "hltPFHT" ),
+		twoHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
+		trigger1 = cms.string( "HLT_AK8PFTrimHT750_TrimMod_TrimMass10_v1" ),
+		oneHLTHT = cms.InputTag( "hltAK8PFHT" ),
+		oneHLTPFJets = cms.InputTag( "hltAK8PFJetsTrimMod" ),
+		trigger3 = cms.string( "HLT_AK8PFJet360Trim_Mass30_TrimMod_v1" ),
+		threeHLTHT = cms.InputTag( "hltPFHT" ),
+		threeHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
+		)
+
+process.AK8PFTrimHT800TrimMass10TrimModvsPFHT900 = cms.EDAnalyzer("OverlapTriggers",
+		trigger2 = cms.string( "HLT_PFHT900_v1" ),
+		twoHLTHT = cms.InputTag( "hltPFHT" ),
+		twoHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
+		trigger1 = cms.string( "HLT_AK8PFTrimHT650_TrimMod_HT800_TrimMass10_v1" ),
+		oneHLTHT = cms.InputTag( "hltAK8PFHT" ),
+		oneHLTPFJets = cms.InputTag( "hltAK8PFJetsTrimMod" ),
+		trigger3 = cms.string( "HLT_AK8PFJet360Trim_Mass30_TrimMod_v1" ),
+		threeHLTHT = cms.InputTag( "hltPFHT" ),
+		threeHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
+		)
+
+process.AK8PFTrimHT850TrimMass10TrimModvsPFHT900 = cms.EDAnalyzer("OverlapTriggers",
+		trigger2 = cms.string( "HLT_PFHT900_v1" ),
+		twoHLTHT = cms.InputTag( "hltPFHT" ),
+		twoHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
+		trigger1 = cms.string( "HLT_AK8PFTrimHT850_TrimMod_TrimMass10_v1" ),
 		oneHLTHT = cms.InputTag( "hltAK8PFHT" ),
 		oneHLTPFJets = cms.InputTag( "hltAK8PFJetsTrimMod" ),
 		trigger3 = cms.string( "HLT_AK8PFJet360Trim_Mass30_TrimMod_v1" ),
@@ -59,6 +289,7 @@ process.AK8PFTrimHT850TrimMass50TrimModvsAK8PFTrimHT850TrimMass50 = cms.EDAnalyz
 		threeHLTHT = cms.InputTag( "hltPFHT" ),
 		threeHLTPFJets = cms.InputTag( "hltAK4PFJets" ),
 		)
+
 
 #process.AK8PFTrimHT850TrimMass50AK4CaloHTvsPFHT900 = cms.EDAnalyzer("OverlapTriggers",
 #		trigger2 = cms.string( "HLT_PFHT900_v1" ),
@@ -106,6 +337,25 @@ process.AK8PFTrimHT850TrimMass50TrimModvsAK8PFJet360TrimMass30TrimMod = cms.EDAn
 #############   Path       ###########################
 process.p = cms.Path(
 	process.AK8PFTrimHT850TrimMass50vsPFHT900 *
+	process.AK8PFTrimHT700TrimMass10TrimModvsPFHT900 *
+	process.AK8PFTrimHT750TrimMass10TrimModvsPFHT900 *
+	process.AK8PFTrimHT800TrimMass10TrimModvsPFHT900 *
+	process.AK8PFTrimHT850TrimMass10TrimModvsPFHT900 *
+	process.AK8PFTrimHT700TrimMass20TrimModvsPFHT900 *
+	process.AK8PFTrimHT750TrimMass20TrimModvsPFHT900 *
+	process.AK8PFTrimHT800TrimMass20TrimModvsPFHT900 *
+	process.AK8PFTrimHT850TrimMass20TrimModvsPFHT900 *
+	process.AK8PFTrimHT700TrimMass30TrimModvsPFHT900 *
+	process.AK8PFTrimHT750TrimMass30TrimModvsPFHT900 *
+	process.AK8PFTrimHT800TrimMass30TrimModvsPFHT900 *
+	process.AK8PFTrimHT850TrimMass30TrimModvsPFHT900 *
+	process.AK8PFTrimHT700TrimMass40TrimModvsPFHT900 *
+	process.AK8PFTrimHT750TrimMass40TrimModvsPFHT900 *
+	process.AK8PFTrimHT800TrimMass40TrimModvsPFHT900 *
+	process.AK8PFTrimHT850TrimMass40TrimModvsPFHT900 *
+	process.AK8PFTrimHT700TrimMass50TrimModvsPFHT900 *
+	process.AK8PFTrimHT750TrimMass50TrimModvsPFHT900 *
+	process.AK8PFTrimHT800TrimMass50TrimModvsPFHT900 *
 	process.AK8PFTrimHT850TrimMass50TrimModvsPFHT900 *
 #	process.AK8PFTrimHT850TrimMass50AK4CaloHTvsPFHT900 *
 	process.AK8PFTrimHT850TrimMass50vsAK8PFJet360TrimMass30TrimMod *
