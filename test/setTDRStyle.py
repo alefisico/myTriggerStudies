@@ -2,6 +2,54 @@
 from ROOT import *
 import ROOT as rt
 
+def setOverlap( signal ):
+
+	textBox=TLatex()
+	textBox.SetNDC()
+	textBox.SetTextSize(0.05) 
+	textBox.SetTextColor(kBlue)
+	textBox.DrawText(0.13,0.95,"CMS Preliminary Simulation")
+	#textBox.DrawText(0.16,0.95,"CMS Preliminary")
+
+	textBox1=TLatex()
+	textBox1.SetNDC()
+	textBox1.SetTextSize(0.04) 
+	textBox1.DrawText(0.15,0.88, signal)
+	
+def setOverlapHistos( signal, trigger ):
+
+	textBox=TLatex()
+	textBox.SetNDC()
+	textBox.SetTextSize(0.05) 
+	textBox.SetTextColor(kBlue)
+	textBox.DrawText(0.13,0.95,"CMS Preliminary Simulation")
+	#textBox.DrawText(0.16,0.95,"CMS Preliminary")
+
+	textBox1=TLatex()
+	textBox1.SetNDC()
+	textBox1.SetTextSize(0.04) 
+	textBox1.DrawText(0.15,0.88, signal)
+	
+	textBox2=TLatex()
+	textBox2.SetNDC()
+	textBox2.SetTextSize(0.04) 
+	textBox2.DrawLatex(0.60,0.95, trigger )
+
+	textBox3=TLatex()
+	textBox3.SetNDC()
+	textBox3.SetTextSize(0.04) 
+	textBox3.DrawLatex(0.70,0.88,"jet pt > 40 GeV")
+		
+	textBox4=TLatex()
+	textBox4.SetNDC()
+	textBox4.SetTextSize(0.04) 
+	textBox4.DrawLatex(0.70,0.83,"|jet #eta| < 3.0")
+	
+	#textBox5=TLatex()
+	#textBox5.SetNDC()
+	#textBox5.SetTextSize(0.04) 
+	#textBox5.DrawLatex(0.70,0.35,"Number of Jets #geq 0 ")
+	
 def setEfficiencyTrigger( signal, trigger ):
 
 	textBox=TLatex()
@@ -68,7 +116,12 @@ def setSelectionTrigger( signal, trigger, plot ):
 	textBox5=TLatex()
 	textBox5.SetNDC()
 	textBox5.SetTextSize(0.04) 
-	textBox5.DrawLatex(0.70,0.78, plot)
+	textBox5.DrawLatex(0.70,0.78,"HT > 900 GeV")
+	
+	textBox6=TLatex()
+	textBox6.SetNDC()
+	textBox6.SetTextSize(0.04) 
+	textBox6.DrawLatex(0.70,0.73, plot)
 	
 def setTriggerRates( signal ):
 
@@ -172,7 +225,7 @@ def setSelectionTitleCuts( signal ):
 	else:
 		textBox8.DrawLatex(0.70,0.35,"Scale to 19.5 fb^{-1}")
 	
-def setSelectionTrigger2D( signal, trigger ):
+def setSelectionTrigger2D( signal, trigger, plot ):
 
 	textBox=TLatex()
 	textBox.SetNDC()
@@ -184,22 +237,22 @@ def setSelectionTrigger2D( signal, trigger ):
 	textBox1=TLatex()
 	textBox1.SetNDC()
 	textBox1.SetTextSize(0.04) 
-	textBox1.DrawText(0.15,0.85, signal)
+	textBox1.DrawText(0.15,0.15, signal)
 	
 	textBox5=TLatex()
 	textBox5.SetNDC()
 	textBox5.SetTextSize(0.04) 
-	textBox5.DrawLatex(0.15,0.80, trigger )
+	textBox5.DrawLatex(0.55,0.95, trigger )
 	
 	textBox3=TLatex()
 	textBox3.SetNDC()
 	textBox3.SetTextSize(0.04) 
-	textBox3.DrawLatex(0.15,0.75,"jet p_{T} > 40 GeV ")
+	textBox3.DrawLatex(0.70,0.20,"jet p_{T} > 40 GeV ")
 		
 	textBox4=TLatex()
 	textBox4.SetNDC()
 	textBox4.SetTextSize(0.04) 
-	textBox4.DrawLatex(0.15,0.70,"|jet #eta| < 3.0")
+	textBox4.DrawLatex(0.70,0.15,"|jet #eta| < 3.0")
 	
 	
 def setSelectionTitle( signal ):

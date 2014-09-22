@@ -3,7 +3,7 @@ input_Dir=$PWD
 PU=$1
 
 
-ptBins=( '50to80' '80to120' '120to170' '170to300' '300to470' '470to600' '600to800' '800to1000' )
+ptBins=( '80to120' '120to170' '170to300' '300to470' '470to600' '600to800' '800to1000' )
 
 for bin in ${ptBins[@]};
 do
