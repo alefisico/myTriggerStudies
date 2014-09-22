@@ -574,6 +574,16 @@ GlobalTag = cms.ESSource( "PoolDBESSource",
       tag = cms.string( "JetCorrectorParametersCollection_HLT_trk1B_V1_AK4PF" ),
       connect = cms.untracked.string( "frontier://FrontierPrep/CMS_COND_PHYSICSTOOLS" ),
       label = cms.untracked.string( "AK4PFHLT" )
+    ),
+    cms.PSet(  record = cms.string( "JetCorrectionsRecord" ),
+	tag = cms.string( "JetCorrectorParametersCollection_HLT_BX25_V1_AK8CaloHLT" ),
+	connect = cms.untracked.string( "frontier://FrontierPrep/CMS_COND_PHYSICSTOOLS" ),
+	label = cms.untracked.string( "AK8CaloHLT" )
+    ),
+    cms.PSet(  record = cms.string( "JetCorrectionsRecord" ),
+	tag = cms.string( "JetCorrectorParametersCollection_HLT_BX25_V1_AK8PFHLT" ),
+	connect = cms.untracked.string( "frontier://FrontierPrep/CMS_COND_PHYSICSTOOLS" ),
+	label = cms.untracked.string( "AK8PFHLT" )
     )
   ),
   DBParameters = cms.PSet( 
@@ -609,10 +619,22 @@ hltESPAK4CaloCorrection = cms.ESProducer( "JetCorrectionESChain",
     'hltESPAK4CaloAbsoluteCorrectionESProducer' ),
   appendToDataLabel = cms.string( "" )
 )
+hltESPAK8CaloCorrection = cms.ESProducer( "JetCorrectionESChain",
+  correctors = cms.vstring( 'hltESPAK8CaloFastJetCorrectionESProducer',
+    'hltESPAK8CaloRelativeCorrectionESProducer',
+    'hltESPAK8CaloAbsoluteCorrectionESProducer' ),
+  appendToDataLabel = cms.string( "" )
+)
 hltESPAK4PFCorrection = cms.ESProducer( "JetCorrectionESChain",
   correctors = cms.vstring( 'hltESPAK4PFFastJetCorrectionESProducer',
     'hltESPAK4PFRelativeCorrectionESProducer',
     'hltESPAK4PFAbsoluteCorrectionESProducer' ),
+  appendToDataLabel = cms.string( "" )
+)
+hltESPAK8PFCorrection = cms.ESProducer( "JetCorrectionESChain",
+  correctors = cms.vstring( 'hltESPAK8PFFastJetCorrectionESProducer',
+    'hltESPAK8PFRelativeCorrectionESProducer',
+    'hltESPAK8PFAbsoluteCorrectionESProducer' ),
   appendToDataLabel = cms.string( "" )
 )
 hltESPAK4CaloFastJetCorrectionESProducer = cms.ESProducer( "L1FastjetCorrectionESProducer",
@@ -621,10 +643,22 @@ hltESPAK4CaloFastJetCorrectionESProducer = cms.ESProducer( "L1FastjetCorrectionE
   algorithm = cms.string( "AK4CaloHLT" ),
   level = cms.string( "L1FastJet" )
 )
+hltESPAK8CaloFastJetCorrectionESProducer = cms.ESProducer( "L1FastjetCorrectionESProducer",
+  appendToDataLabel = cms.string( "" ),
+  srcRho = cms.InputTag( "hltFixedGridRhoFastjetAllCalo" ),
+  algorithm = cms.string( "AK8CaloHLT" ),
+  level = cms.string( "L1FastJet" )
+)
 hltESPAK4PFFastJetCorrectionESProducer = cms.ESProducer( "L1FastjetCorrectionESProducer",
   appendToDataLabel = cms.string( "" ),
   srcRho = cms.InputTag( "hltFixedGridRhoFastjetAll" ),
   algorithm = cms.string( "AK4PFHLT" ),
+  level = cms.string( "L1FastJet" )
+)
+hltESPAK8PFFastJetCorrectionESProducer = cms.ESProducer( "L1FastjetCorrectionESProducer",
+  appendToDataLabel = cms.string( "" ),
+  srcRho = cms.InputTag( "hltFixedGridRhoFastjetAll" ),
+  algorithm = cms.string( "AK8PFHLT" ),
   level = cms.string( "L1FastJet" )
 )
 hltESPAK4PFRelativeCorrectionESProducer = cms.ESProducer( "LXXXCorrectionESProducer",
@@ -632,9 +666,19 @@ hltESPAK4PFRelativeCorrectionESProducer = cms.ESProducer( "LXXXCorrectionESProdu
   algorithm = cms.string( "AK4PFHLT" ),
   level = cms.string( "L2Relative" )
 )
+hltESPAK8PFRelativeCorrectionESProducer = cms.ESProducer( "LXXXCorrectionESProducer",
+  appendToDataLabel = cms.string( "" ),
+  algorithm = cms.string( "AK8PFHLT" ),
+  level = cms.string( "L2Relative" )
+)
 hltESPAK4CaloRelativeCorrectionESProducer = cms.ESProducer( "LXXXCorrectionESProducer",
   appendToDataLabel = cms.string( "" ),
   algorithm = cms.string( "AK4CaloHLT" ),
+  level = cms.string( "L2Relative" )
+)
+hltESPAK8CaloRelativeCorrectionESProducer = cms.ESProducer( "LXXXCorrectionESProducer",
+  appendToDataLabel = cms.string( "" ),
+  algorithm = cms.string( "AK8CaloHLT" ),
   level = cms.string( "L2Relative" )
 )
 hltESPAK4CaloAbsoluteCorrectionESProducer = cms.ESProducer( "LXXXCorrectionESProducer",
@@ -642,9 +686,19 @@ hltESPAK4CaloAbsoluteCorrectionESProducer = cms.ESProducer( "LXXXCorrectionESPro
   algorithm = cms.string( "AK4CaloHLT" ),
   level = cms.string( "L3Absolute" )
 )
+hltESPAK8CaloAbsoluteCorrectionESProducer = cms.ESProducer( "LXXXCorrectionESProducer",
+  appendToDataLabel = cms.string( "" ),
+  algorithm = cms.string( "AK8CaloHLT" ),
+  level = cms.string( "L3Absolute" )
+)
 hltESPAK4PFAbsoluteCorrectionESProducer = cms.ESProducer( "LXXXCorrectionESProducer",
   appendToDataLabel = cms.string( "" ),
   algorithm = cms.string( "AK4PFHLT" ),
+  level = cms.string( "L3Absolute" )
+)
+hltESPAK8PFAbsoluteCorrectionESProducer = cms.ESProducer( "LXXXCorrectionESProducer",
+  appendToDataLabel = cms.string( "" ),
+  algorithm = cms.string( "AK8PFHLT" ),
   level = cms.string( "L3Absolute" )
 )
 MaterialPropagatorParabolicMF = cms.ESProducer( "PropagatorWithMaterialESProducer",
