@@ -13,7 +13,7 @@ process.maxEvents = cms.untracked.PSet(
 )
 #############   Define the source file ###############
 #process.load('QCD_Pt-'+ptBin+'_Tune4C_13TeV_pythia8_PU20bx25_allAK8_Trk1B_30k_ProdFiles_cfi')
-process.load(NAME+'_13TeV_pythia8_'+PU+'_30k_FiltFiles_cfi')
+process.load(NAME+'_13TeV_pythia8_'+PU+'_v718_FiltFiles_cfi')
 #process.source = cms.Source("PoolSource", fileNames = cms.untracked.vstring('/store/user/algomez/FiltFiles/RPVSt100tojj_13TeV_pythia8_PU20bx25_allAK8_100k_Filt.root'))
 
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")

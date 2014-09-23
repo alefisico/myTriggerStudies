@@ -8,13 +8,13 @@ def setOverlap( signal ):
 	textBox.SetNDC()
 	textBox.SetTextSize(0.05) 
 	textBox.SetTextColor(kBlue)
-	textBox.DrawText(0.13,0.95,"CMS Preliminary Simulation")
+	textBox.DrawText(0.05,0.95,"CMS Preliminary Simulation")
 	#textBox.DrawText(0.16,0.95,"CMS Preliminary")
 
 	textBox1=TLatex()
 	textBox1.SetNDC()
 	textBox1.SetTextSize(0.04) 
-	textBox1.DrawText(0.15,0.88, signal)
+	textBox1.DrawText(0.50,0.95, signal)
 	
 def setOverlapHistos( signal, trigger ):
 
