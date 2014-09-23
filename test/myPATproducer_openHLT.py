@@ -10,7 +10,6 @@ else:
 	myPATGT = 'PLS170_V6AN1'
 
 
-
 process = cms.Process("HLT3")
 
 process.source = cms.Source("PoolSource",
@@ -20,7 +19,7 @@ process.source = cms.Source("PoolSource",
         '/store/mc/Fall13dr/QCD_Pt-470to600_Tune4C_13TeV_pythia8/GEN-SIM-RAW/castor_tsg_PU40bx25_POSTLS162_V2-v1/00000/F23D7538-359E-E311-B32A-002618943945.root'),
     fileNames = cms.untracked.vstring('/store/mc/Fall13dr/QCD_Pt-470to600_Tune4C_13TeV_pythia8/AODSIM/castor_tsg_PU40bx25_POSTLS162_V2-v1/00000/0023EEAF-14AE-E311-B5D7-002618943886.root')
 )
-parentProcess8736411387841 = process
+parentProcess8756275785685 = process
 import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("PAT")
@@ -1114,7 +1113,6 @@ process.GlobalTag = cms.ESSource("PoolDBESSource",
         connectionRetrialPeriod = cms.untracked.int32(10)
     ),
     BlobStreamerName = cms.untracked.string('TBufferBlobStreamingService'),
-    toGet = cms.VPSet(),
     toGet = cms.VPSet(cms.PSet(
         record = cms.string('JetCorrectionsRecord'),
         tag = cms.string('JetCorrectorParametersCollection_CSA14_V1_MC_AK4PFchs'),
@@ -1504,7 +1502,7 @@ process.options = cms.untracked.PSet(
 )
 
 childProcess = process
-process = parentProcess8736411387841
+process = parentProcess8756275785685
 process.subProcess = cms.SubProcess( process = childProcess, SelectEvents = cms.untracked.PSet(
     SelectEvents = cms.vstring('*')
 ), outputCommands = cms.untracked.vstring('keep *'))
@@ -20655,7 +20653,7 @@ process.ecalLocalRecoRECO = cms.PSet(
 )
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(100)
+    input = cms.untracked.int32(10)
 )
 
 process.options = cms.untracked.PSet(

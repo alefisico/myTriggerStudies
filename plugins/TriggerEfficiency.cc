@@ -80,7 +80,8 @@ class TriggerEfficiency : public edm::EDAnalyzer {
 		//edm::InputTag hltJets;
 		edm::InputTag patJets;
 		std::string triggerPath;
-		double scale;
+		double minHT;
+		double minMass;
 
 		HLTConfigProvider hltConfig;
 		int triggerBit;
@@ -92,7 +93,8 @@ TriggerEfficiency::TriggerEfficiency(const edm::ParameterSet& iConfig){
 	//hltJets			= iConfig.getParameter<edm::InputTag> ( "hltJets" );   			// Obtain inputs
 	patJets			= iConfig.getParameter<edm::InputTag> ( "patJets" );   			// Obtain inputs
 	triggerPath		= iConfig.getParameter<std::string> ( "triggerPath" );   			// Obtain inputs
-	scale			= iConfig.getParameter<double> ( "sf" );   			// Obtain inputs
+	minHT			= iConfig.getParameter<double> ( "minHT" );   			// Obtain inputs
+	minMass			= iConfig.getParameter<double> ( "minMass" );   			// Obtain inputs
 }
 
 
@@ -164,19 +166,19 @@ void TriggerEfficiency::analyze(const edm::Event& iEvent, const edm::EventSetup&
 	}
 	sort( patJetsCollection.begin(), patJetsCollection.end(), compare_JetMass);
 
-	if( HT > 0 ) {
+	if( HT > minHT && patJetsCollection[0].M() > minMass  ) {
 
 		sort( patJetsCollection.begin(), patJetsCollection.end(), compare_JetMass);
-		histos1D_[ "HTDenom" ]->Fill( HT, scale );
-		histos1D_[ "jetMassDenom" ]->Fill( patJetsCollection[0].M(), scale );
+		histos1D_[ "HTDenom" ]->Fill( HT );
+		histos1D_[ "jetMassDenom" ]->Fill( patJetsCollection[0].M() );
 		histos2D_[ "jetMassHTDenom" ]->Fill( HT, patJetsCollection[0].M() );
 		histos2D_[ "jetMassPtDenom" ]->Fill( patJetsCollection[0].Pt(), patJetsCollection[0].M() );
 
 		if (triggerResults->accept(triggerBit)){
 
-			histos1D_[ "HTPassing" ]->Fill( HT, scale );
-			histos1D_[ "jetMassPassing" ]->Fill( patJetsCollection[0].M(), scale );
-			if (HT > 900) histos2D_[ "jetMassHTPassing" ]->Fill( HT, patJetsCollection[0].M() );
+			histos1D_[ "HTPassing" ]->Fill( HT );
+			histos1D_[ "jetMassPassing" ]->Fill( patJetsCollection[0].M() );
+			histos2D_[ "jetMassHTPassing" ]->Fill( HT, patJetsCollection[0].M() );
 			histos2D_[ "jetMassPtPassing" ]->Fill( patJetsCollection[0].Pt(), patJetsCollection[0].M() );
 		}
 	}
