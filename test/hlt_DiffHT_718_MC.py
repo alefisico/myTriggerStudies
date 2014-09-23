@@ -5,7 +5,8 @@ import FWCore.ParameterSet.Config as cms
 process = cms.Process( "TEST" )
 
 #process.load('setup_cff')
-process.load('setupDefault_cff')
+process.load('setupAll_cff')
+#process.load('setupDefault_cff')
 process.HLTConfigVersion = cms.PSet(
   tableName = cms.string('/users/algomez/HTBoostedTriggers/V22')
 )
