@@ -2,9 +2,6 @@ import FWCore.ParameterSet.Config as cms
 import sys
 
 NAME = sys.argv[1]
-if 'bx25' in NAME: myGT = 'PRE_LS171_V5A::All'
-else: myGT = 'PRE_LS171_V6A::All'
-
 
 process = cms.Process("HLT3PB")
 
@@ -13,6 +10,312 @@ process.source = cms.Source("PoolSource",
     secondaryFileNames = cms.untracked.vstring(),
     fileNames = cms.untracked.vstring('file:test_Prod.root')
 )
+process.caloStage1Digis = cms.EDProducer("l1t::Stage1Layer2Producer",
+    egRelativeJetIsolationEndcapCut = cms.double(0.5),
+    egRelativeJetIsolationBarrelCut = cms.double(0.3),
+    CaloEmCands = cms.InputTag("rctUpgradeFormatDigis"),
+    CaloRegions = cms.InputTag("rctUpgradeFormatDigis"),
+    tauRelativeJetIsolationCut = cms.double(0.15),
+    FirmwareVersion = cms.uint32(2)
+)
+
+
+process.caloStage1FinalDigis = cms.EDProducer("l1t::PhysicalEtAdder",
+    InputCollection = cms.InputTag("caloStage1Digis")
+)
+
+
+process.caloStage1LegacyFormatDigis = cms.EDProducer("l1t::L1TCaloUpgradeToGCTConverter",
+    InputCollection = cms.InputTag("caloStage1FinalDigis")
+)
+
+
+process.castorDigis = cms.EDProducer("CastorRawToDigi",
+    ExpectedOrbitMessageTime = cms.int32(-1),
+    CastorFirstFED = cms.int32(690),
+    FilterDataQuality = cms.bool(True),
+    silent = cms.untracked.bool(False),
+    lastSample = cms.int32(9),
+    InputLabel = cms.InputTag("rawDataCollector"),
+    ComplainEmptyData = cms.untracked.bool(False),
+    FEDs = cms.untracked.vint32(690, 691, 692),
+    CastorCtdc = cms.bool(False),
+    UnpackTTP = cms.bool(True),
+    UseNominalOrbitMessageTime = cms.bool(True),
+    ExceptionEmptyData = cms.untracked.bool(False),
+    firstSample = cms.int32(0)
+)
+
+
+process.csctfDigis = cms.EDProducer("CSCTFUnpacker",
+    mappingFile = cms.string(''),
+    producer = cms.InputTag("rawDataCollector"),
+    MaxBX = cms.int32(9),
+    slot2sector = cms.vint32(0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0),
+    swapME1strips = cms.bool(False),
+    MinBX = cms.int32(3)
+)
+
+
+process.csctfReEmulDigis = cms.EDProducer("CSCTFCandidateProducer",
+    CSCTrackProducer = cms.untracked.InputTag("csctfReEmulTrackDigis"),
+    MuonSorter = cms.PSet(
+        MaxBX = cms.int32(9),
+        MinBX = cms.int32(3)
+    )
+)
+
+
+process.csctfReEmulTrackDigis = cms.EDProducer("CSCTFTrackProducer",
+    isTMB07 = cms.bool(True),
+    useDT = cms.bool(True),
+    SectorReceiverInput = cms.untracked.InputTag("simCscTriggerPrimitiveDigis","MPCSORTED"),
+    DtDirectProd = cms.untracked.InputTag("csctfunpacker","DT"),
+    readDtDirect = cms.bool(False),
+    DTproducer = cms.untracked.InputTag("dttfDigis"),
+    SectorProcessor = cms.PSet(
+        EtaWindows = cms.vuint32(4, 4, 6, 6, 6, 
+            6, 6),
+        maxdphi13_accp = cms.uint32(64),
+        SRLUT = cms.PSet(
+            UseMiniLUTs = cms.untracked.bool(True),
+            ReadLUTs = cms.untracked.bool(False),
+            LUTPath = cms.untracked.string('./'),
+            Binary = cms.untracked.bool(False)
+        ),
+        mindphip_halo = cms.uint32(128),
+        AllowALCTonly = cms.bool(False),
+        PTLUT = cms.PSet(
+            LowQualityFlag = cms.untracked.uint32(4),
+            ReadPtLUT = cms.bool(False),
+            PtMethod = cms.untracked.uint32(34)
+        ),
+        QualityEnableME1b = cms.uint32(65535),
+        QualityEnableME1c = cms.uint32(65535),
+        QualityEnableME1a = cms.uint32(65535),
+        QualityEnableME1f = cms.uint32(65535),
+        QualityEnableME1d = cms.uint32(65535),
+        QualityEnableME1e = cms.uint32(65535),
+        QualityEnableME3a = cms.uint32(65535),
+        QualityEnableME3b = cms.uint32(65535),
+        QualityEnableME3c = cms.uint32(65535),
+        maxdphi112_accp = cms.uint32(64),
+        rescaleSinglesPhi = cms.bool(True),
+        mindeta112_accp = cms.uint32(14),
+        maxdeta113_accp = cms.uint32(38),
+        maxdeta13_accp = cms.uint32(27),
+        maxdphi113_accp = cms.uint32(64),
+        EtaMin = cms.vuint32(0, 0, 0, 0, 0, 
+            0, 0, 0),
+        mindeta12_accp = cms.uint32(12),
+        firmwareSP = cms.uint32(20140515),
+        mindeta113_accp = cms.uint32(21),
+        MinBX = cms.int32(3),
+        trigger_on_ME1a = cms.bool(False),
+        mbbPhiOff = cms.uint32(1982),
+        mbaPhiOff = cms.uint32(0),
+        EtaMax = cms.vuint32(127, 127, 127, 127, 127, 
+            24, 24, 127),
+        CoreLatency = cms.uint32(7),
+        PreTrigger = cms.uint32(2),
+        mindetap = cms.uint32(7),
+        trigger_on_MB1d = cms.bool(False),
+        maxdeta112_accp = cms.uint32(29),
+        mindeta13_accp = cms.uint32(13),
+        run_core = cms.bool(True),
+        firmwareFA = cms.uint32(20091026),
+        trigger_on_MB1a = cms.bool(False),
+        firmwareDD = cms.uint32(20091026),
+        QualityEnableME2c = cms.uint32(65535),
+        QualityEnableME2b = cms.uint32(65535),
+        QualityEnableME2a = cms.uint32(65535),
+        trigger_on_ME4 = cms.bool(False),
+        initializeFromPSet = cms.bool(True),
+        maxdeta12_accp = cms.uint32(17),
+        QualityEnableME4a = cms.uint32(65535),
+        maxdphi12_accp = cms.uint32(64),
+        straightp = cms.uint32(19),
+        gangedME1a = cms.untracked.bool(False),
+        trigger_on_ME1b = cms.bool(False),
+        AllowCLCTonly = cms.bool(False),
+        QualityEnableME4b = cms.uint32(65535),
+        widePhi = cms.uint32(0),
+        mindetap_halo = cms.uint32(8),
+        MaxBX = cms.int32(9),
+        curvedp = cms.uint32(15),
+        singlesTrackOutput = cms.uint32(1),
+        isCoreVerbose = cms.bool(False),
+        mindphip = cms.uint32(180),
+        QualityEnableME4c = cms.uint32(65535),
+        kill_fiber = cms.uint32(0),
+        firmwareVM = cms.uint32(20091026),
+        BXAdepth = cms.uint32(2),
+        trigger_on_ME3 = cms.bool(False),
+        trigger_on_ME2 = cms.bool(False)
+    )
+)
+
+
+process.dtTriggerPrimitiveDigis = cms.EDProducer("DTTrigProd",
+    lutDumpFlag = cms.untracked.bool(False),
+    debug = cms.untracked.bool(False),
+    lutBtic = cms.untracked.int32(31),
+    digiTag = cms.InputTag("muonDTDigis"),
+    DTTFSectorNumbering = cms.bool(True)
+)
+
+
+process.dttfDigis = cms.EDProducer("DTTFFEDReader",
+    verbose = cms.untracked.bool(False),
+    DTTF_FED_Source = cms.InputTag("rawDataCollector")
+)
+
+
+process.dttfReEmulDigis = cms.EDProducer("DTTrackFinder",
+    Open_LUTs = cms.untracked.bool(False),
+    Extrapolation_nbits_PhiB = cms.untracked.int32(8),
+    BX_max = cms.untracked.int32(7),
+    BX_min = cms.untracked.int32(-9),
+    EtaTrackFinder = cms.untracked.bool(True),
+    DTDigi_Source = cms.InputTag("dttfDigis"),
+    CSCStub_Source = cms.InputTag("csctfReEmulTrackDigis"),
+    PT_Assignment_nbits_PhiB = cms.untracked.int32(10),
+    PT_Assignment_nbits_Phi = cms.untracked.int32(12),
+    Overlap = cms.untracked.bool(True),
+    Extrapolation_Filter = cms.untracked.int32(1),
+    Extrapolation_nbits_Phi = cms.untracked.int32(8),
+    Extrapolation_21 = cms.untracked.bool(False),
+    PHI_Assignment_nbits_PhiB = cms.untracked.int32(10),
+    Debug = cms.untracked.int32(0),
+    OutOfTime_Filter = cms.untracked.bool(False),
+    PHI_Assignment_nbits_Phi = cms.untracked.int32(10),
+    CSC_Eta_Cancellation = cms.untracked.bool(False),
+    OutOfTime_Filter_Window = cms.untracked.int32(1)
+)
+
+
+process.ecalDigis = cms.EDProducer("EcalRawToDigi",
+    tccUnpacking = cms.bool(True),
+    FedLabel = cms.InputTag("listfeds"),
+    orderedDCCIdList = cms.vint32(1, 2, 3, 4, 5, 
+        6, 7, 8, 9, 10, 
+        11, 12, 13, 14, 15, 
+        16, 17, 18, 19, 20, 
+        21, 22, 23, 24, 25, 
+        26, 27, 28, 29, 30, 
+        31, 32, 33, 34, 35, 
+        36, 37, 38, 39, 40, 
+        41, 42, 43, 44, 45, 
+        46, 47, 48, 49, 50, 
+        51, 52, 53, 54),
+    srpUnpacking = cms.bool(True),
+    syncCheck = cms.bool(True),
+    silentMode = cms.untracked.bool(True),
+    InputLabel = cms.InputTag("rawDataCollector"),
+    orderedFedList = cms.vint32(601, 602, 603, 604, 605, 
+        606, 607, 608, 609, 610, 
+        611, 612, 613, 614, 615, 
+        616, 617, 618, 619, 620, 
+        621, 622, 623, 624, 625, 
+        626, 627, 628, 629, 630, 
+        631, 632, 633, 634, 635, 
+        636, 637, 638, 639, 640, 
+        641, 642, 643, 644, 645, 
+        646, 647, 648, 649, 650, 
+        651, 652, 653, 654),
+    eventPut = cms.bool(True),
+    numbTriggerTSamples = cms.int32(1),
+    numbXtalTSamples = cms.int32(10),
+    feIdCheck = cms.bool(True),
+    FEDs = cms.vint32(601, 602, 603, 604, 605, 
+        606, 607, 608, 609, 610, 
+        611, 612, 613, 614, 615, 
+        616, 617, 618, 619, 620, 
+        621, 622, 623, 624, 625, 
+        626, 627, 628, 629, 630, 
+        631, 632, 633, 634, 635, 
+        636, 637, 638, 639, 640, 
+        641, 642, 643, 644, 645, 
+        646, 647, 648, 649, 650, 
+        651, 652, 653, 654),
+    DoRegional = cms.bool(False),
+    feUnpacking = cms.bool(True),
+    forceToKeepFRData = cms.bool(False),
+    headerUnpacking = cms.bool(True),
+    memUnpacking = cms.bool(True)
+)
+
+
+process.ecalPreshowerDigis = cms.EDProducer("ESRawToDigi",
+    sourceTag = cms.InputTag("rawDataCollector"),
+    debugMode = cms.untracked.bool(False),
+    InstanceES = cms.string(''),
+    LookupTable = cms.FileInPath('EventFilter/ESDigiToRaw/data/ES_lookup_table.dat'),
+    ESdigiCollection = cms.string('')
+)
+
+
+process.gctDigis = cms.EDProducer("GctRawToDigi",
+    unpackSharedRegions = cms.bool(False),
+    numberOfGctSamplesToUnpack = cms.uint32(1),
+    verbose = cms.untracked.bool(False),
+    numberOfRctSamplesToUnpack = cms.uint32(1),
+    inputLabel = cms.InputTag("rawDataCollector"),
+    unpackerVersion = cms.uint32(0),
+    gctFedId = cms.untracked.int32(745),
+    hltMode = cms.bool(False)
+)
+
+
+process.gmtReEmulDigis = cms.EDProducer("L1MuGlobalMuonTrigger",
+    BX_min_readout = cms.int32(-2),
+    BX_min = cms.int32(-4),
+    CSCCandidates = cms.InputTag("csctfReEmulDigis","CSC"),
+    BX_max = cms.int32(4),
+    BX_max_readout = cms.int32(2),
+    RPCfCandidates = cms.InputTag("rpcTriggerReEmulDigis","RPCf"),
+    Debug = cms.untracked.int32(0),
+    RPCbCandidates = cms.InputTag("rpcTriggerReEmulDigis","RPCb"),
+    DTCandidates = cms.InputTag("dttfReEmulDigis","DT"),
+    WriteLUTsAndRegs = cms.untracked.bool(False),
+    SendMipIso = cms.untracked.bool(False),
+    MipIsoData = cms.InputTag("none")
+)
+
+
+process.gtDigis = cms.EDProducer("L1GlobalTriggerRawToDigi",
+    DaqGtFedId = cms.untracked.int32(813),
+    DaqGtInputTag = cms.InputTag("rawDataCollector"),
+    UnpackBxInEvent = cms.int32(-1),
+    ActiveBoardsMask = cms.uint32(65535)
+)
+
+
+process.gtEvmDigis = cms.EDProducer("L1GlobalTriggerEvmRawToDigi",
+    EvmGtFedId = cms.untracked.int32(812),
+    EvmGtInputTag = cms.InputTag("rawDataCollector"),
+    UnpackBxInEvent = cms.int32(-1),
+    ActiveBoardsMask = cms.uint32(65535),
+    BstLengthBytes = cms.int32(-1)
+)
+
+
+process.hcalDigis = cms.EDProducer("HcalRawToDigi",
+    UnpackZDC = cms.untracked.bool(True),
+    FilterDataQuality = cms.bool(True),
+    InputLabel = cms.InputTag("rawDataCollector"),
+    ComplainEmptyData = cms.untracked.bool(False),
+    UnpackCalib = cms.untracked.bool(True),
+    UnpackTTP = cms.untracked.bool(True),
+    lastSample = cms.int32(9),
+    firstSample = cms.int32(0)
+)
+
+
 process.hltAK4CaloJets = cms.EDProducer("FastjetJetProducer",
     Active_Area_Repeats = cms.int32(5),
     useMassDropTagger = cms.bool(False),
@@ -677,7 +980,7 @@ process.hltAK8PFJetsTrim = cms.EDProducer("FastjetJetProducer",
 )
 
 
-process.hltAK8PFJetsTrimMod = cms.EDProducer("FastjetJetProducer",
+process.hltAK8PFJetsTrimR0p1Pt0p03 = cms.EDProducer("FastjetJetProducer",
     Active_Area_Repeats = cms.int32(5),
     useMassDropTagger = cms.bool(False),
     doAreaFastjet = cms.bool(False),
@@ -739,7 +1042,69 @@ process.hltAK8PFJetsTrimMod = cms.EDProducer("FastjetJetProducer",
 )
 
 
-process.hltAK8PFJetsTrimModTest = cms.EDProducer("FastjetJetProducer",
+process.hltAK8PFJetsTrimR0p1Pt0p05 = cms.EDProducer("FastjetJetProducer",
+    Active_Area_Repeats = cms.int32(5),
+    useMassDropTagger = cms.bool(False),
+    doAreaFastjet = cms.bool(False),
+    muMin = cms.double(-1.0),
+    Ghost_EtaMax = cms.double(6.0),
+    maxBadHcalCells = cms.uint32(9999999),
+    doAreaDiskApprox = cms.bool(True),
+    subtractorName = cms.string(''),
+    maxRecoveredEcalCells = cms.uint32(9999999),
+    jetType = cms.string('PFJet'),
+    radiusPU = cms.double(0.8),
+    subjetPtMin = cms.double(-1.0),
+    MinVtxNdof = cms.int32(0),
+    minSeed = cms.uint32(0),
+    voronoiRfact = cms.double(-9.0),
+    doRhoFastjet = cms.bool(False),
+    jetAlgorithm = cms.string('AntiKt'),
+    muMax = cms.double(-1.0),
+    nSigmaPU = cms.double(1.0),
+    GhostArea = cms.double(0.01),
+    Rho_EtaMax = cms.double(4.4),
+    MaxVtxZ = cms.double(15.0),
+    maxBadEcalCells = cms.uint32(9999999),
+    yMin = cms.double(-1.0),
+    useFiltering = cms.bool(False),
+    useDeterministicSeed = cms.bool(True),
+    doPVCorrection = cms.bool(False),
+    rFilt = cms.double(0.1),
+    yMax = cms.double(-1.0),
+    zcut = cms.double(-1.0),
+    useTrimming = cms.bool(True),
+    maxRecoveredHcalCells = cms.uint32(9999999),
+    rParam = cms.double(0.8),
+    UseOnlyVertexTracks = cms.bool(False),
+    UseOnlyOnePV = cms.bool(False),
+    nFilt = cms.int32(-1),
+    usePruning = cms.bool(False),
+    maxDepth = cms.int32(-1),
+    yCut = cms.double(-1.0),
+    DzTrVtxMax = cms.double(0.0),
+    dRMin = cms.double(-1.0),
+    maxProblematicHcalCells = cms.uint32(9999999),
+    rcut_factor = cms.double(-1.0),
+    doOutputJets = cms.bool(True),
+    src = cms.InputTag("hltParticleFlow"),
+    sumRecHits = cms.bool(False),
+    jetPtMin = cms.double(0.0),
+    puPtMin = cms.double(10.0),
+    srcPVs = cms.InputTag("hltPixelVertices"),
+    inputEtMin = cms.double(0.0),
+    trimPtFracMin = cms.double(0.05),
+    muCut = cms.double(-1.0),
+    dRMax = cms.double(-1.0),
+    DxyTrVtxMax = cms.double(0.0),
+    maxProblematicEcalCells = cms.uint32(9999999),
+    useCMSBoostedTauSeedingAlgorithm = cms.bool(False),
+    doPUOffsetCorr = cms.bool(False),
+    inputEMin = cms.double(0.0)
+)
+
+
+process.hltAK8PFJetsTrimR0p2Pt0p06 = cms.EDProducer("FastjetJetProducer",
     Active_Area_Repeats = cms.int32(5),
     useMassDropTagger = cms.bool(False),
     doAreaFastjet = cms.bool(False),
@@ -909,7 +1274,7 @@ process.hltCsc2DRecHits = cms.EDProducer("CSCRecHitDProducer",
     UseParabolaFit = cms.bool(False),
     XTasymmetry_ME13 = cms.double(0.0),
     XTasymmetry_ME12 = cms.double(0.0),
-    wireDigiTag = cms.InputTag("simMuonCSCDigis","MuonCSCWireDigi"),
+    wireDigiTag = cms.InputTag("hltMuonCSCDigis","MuonCSCWireDigi"),
     ConstSyst_ME12 = cms.double(0.0),
     ConstSyst_ME13 = cms.double(0.0),
     ConstSyst_ME32 = cms.double(0.0),
@@ -919,7 +1284,7 @@ process.hltCsc2DRecHits = cms.EDProducer("CSCRecHitDProducer",
     NoiseLevel_ME1b = cms.double(8.0),
     CSCWireClusterDeltaT = cms.int32(1),
     CSCUseStaticPedestals = cms.bool(False),
-    stripDigiTag = cms.InputTag("simMuonCSCDigis","MuonCSCStripDigi"),
+    stripDigiTag = cms.InputTag("hltMuonCSCDigis","MuonCSCStripDigi"),
     CSCstripWireDeltaTime = cms.int32(8),
     NoiseLevel_ME21 = cms.double(9.0),
     NoiseLevel_ME22 = cms.double(9.0),
@@ -1440,6 +1805,111 @@ process.hltHcalDigis = cms.EDProducer("HcalRawToDigi",
 )
 
 
+process.hltHcalNoiseInfoProducer = cms.EDProducer("HcalNoiseInfoProducer",
+    pMaxHPDEMF = cms.double(0.02),
+    lMaxHighEHitTime = cms.double(9999.0),
+    pMinHighEHitTime = cms.double(-4.0),
+    lMaxLowEHitTime = cms.double(9999.0),
+    TS4TS5EnergyThreshold = cms.double(50.0),
+    digiCollName = cms.string('hltHcalDigis'),
+    lMinHPDHits = cms.int32(17),
+    tMinRBXHits = cms.int32(50),
+    TS4TS5UpperThreshold = cms.vdouble(70.0, 90.0, 100.0, 400.0, 4000.0),
+    minEZeros = cms.double(10.0),
+    pMinRBXHits = cms.int32(20),
+    tMinHPDHits = cms.int32(16),
+    minRecHitE = cms.double(1.5),
+    hlMaxRBXEMF = cms.double(0.01),
+    pMinEEMF = cms.double(10.0),
+    lMinRatio = cms.double(0.7),
+    HcalRecHitFlagsToBeExcluded = cms.vint32(11, 12, 13, 14, 15),
+    pMinEZeros = cms.double(5.0),
+    tMaxLowEHitTime = cms.double(9999.0),
+    pMaxLowEHitTime = cms.double(6.0),
+    minHighHitE = cms.double(25.0),
+    lMinZeros = cms.int32(10),
+    lMinRBXHits = cms.int32(999),
+    fillRecHits = cms.bool(True),
+    pMaxRatio = cms.double(0.85),
+    hlMaxHPDEMF = cms.double(-9999.0),
+    maxCaloTowerIEta = cms.int32(20),
+    minLowHitE = cms.double(10.0),
+    calibdigiHFthreshold = cms.double(-999.0),
+    minEEMF = cms.double(50.0),
+    pMinRatio = cms.double(0.75),
+    HcalAcceptSeverityLevel = cms.uint32(9),
+    pMaxRBXEMF = cms.double(0.02),
+    pMinE = cms.double(40.0),
+    tMaxRatio = cms.double(0.92),
+    maxTrackEta = cms.double(2.0),
+    tMinHighEHitTime = cms.double(-7.0),
+    tMinZeros = cms.int32(8),
+    lMaxRatio = cms.double(0.96),
+    fillDigis = cms.bool(True),
+    lMinHighEHitTime = cms.double(-9999.0),
+    calibdigiHFtimeslices = cms.vint32(0, 1, 2, 3, 4, 
+        5, 6, 7, 8, 9),
+    calibdigiHBHEthreshold = cms.double(15.0),
+    pMinERatio = cms.double(25.0),
+    fillTracks = cms.bool(False),
+    trackCollName = cms.string('generalTracks'),
+    pMinZeros = cms.int32(4),
+    minTrackPt = cms.double(1.0),
+    tMinRatio = cms.double(0.73),
+    tMaxHighEHitTime = cms.double(6.0),
+    pMinLowEHitTime = cms.double(-6.0),
+    pMinHPDHits = cms.int32(10),
+    lMinLowEHitTime = cms.double(-9999.0),
+    caloTowerCollName = cms.string('hltTowerMakerForAll'),
+    tMinHPDNoOtherHits = cms.int32(9),
+    recHitCollName = cms.string('hltHbhereco'),
+    minERatio = cms.double(50.0),
+    tMinLowEHitTime = cms.double(-9999.0),
+    TS4TS5UpperCut = cms.vdouble(999.0, 999.0, 999.0, 999.0, 999.0),
+    TS4TS5LowerCut = cms.vdouble(-1.0, -0.95, -0.9, -0.9, -0.9, 
+        -0.9, -0.9),
+    lMinHPDNoOtherHits = cms.int32(10),
+    maxProblemRBXs = cms.int32(20),
+    TS4TS5LowerThreshold = cms.vdouble(100.0, 120.0, 150.0, 200.0, 300.0, 
+        400.0, 500.0),
+    fillCaloTowers = cms.bool(True),
+    pMinHPDNoOtherHits = cms.int32(7),
+    calibdigiHBHEtimeslices = cms.vint32(3, 4, 5, 6),
+    pMaxHighEHitTime = cms.double(5.0)
+)
+
+
+process.hltHcalTowerNoiseCleaner = cms.EDProducer("HLTHcalTowerNoiseCleaner",
+    TS4TS5EnergyThreshold = cms.double(50.0),
+    needEMFCoincidence = cms.bool(True),
+    HcalNoiseRBXCollection = cms.InputTag("hltHcalNoiseInfoProducer"),
+    minHPDNoOtherHits = cms.int32(10),
+    minRBXEnergy = cms.double(50.0),
+    CaloTowerCollection = cms.InputTag("hltTowerMakerForAll"),
+    maxTowerNoiseEnergyFraction = cms.double(0.5),
+    severity = cms.int32(1),
+    minHighHitE = cms.double(25.0),
+    numRBXsToConsider = cms.int32(2),
+    minRatio = cms.double(-999.0),
+    maxHighEHitTime = cms.double(9999.0),
+    maxRBXEMF = cms.double(0.02),
+    minHPDHits = cms.int32(17),
+    TS4TS5UpperThreshold = cms.vdouble(70.0, 90.0, 100.0, 400.0, 4000.0),
+    minZeros = cms.int32(10),
+    minLowHitE = cms.double(10.0),
+    TS4TS5UpperCut = cms.vdouble(999.0, 999.0, 999.0, 999.0, 999.0),
+    minHighEHitTime = cms.double(-9999.0),
+    maxRatio = cms.double(999.0),
+    TS4TS5LowerCut = cms.vdouble(-1.0, -0.95, -0.9, -0.9, -0.9, 
+        -0.9, -0.9),
+    minRecHitE = cms.double(1.5),
+    TS4TS5LowerThreshold = cms.vdouble(100.0, 120.0, 150.0, 200.0, 300.0, 
+        400.0, 500.0),
+    minRBXHits = cms.int32(999),
+    maxNumRBXs = cms.int32(2)
+)
+
+
 process.hltHfreco = cms.EDProducer("HcalHitReconstructor",
     digiTimeFromDB = cms.bool(True),
     mcOOTCorrectionName = cms.string(''),
@@ -1659,8 +2129,8 @@ process.hltIter0PFlowCkfTrackCandidates = cms.EDProducer("CkfTrackCandidateMaker
     src = cms.InputTag("hltIter0PFLowPixelSeedsFromPixelTracks"),
     maxSeedsBeforeCleaning = cms.uint32(1000),
     SimpleMagneticField = cms.string('ParabolicMf'),
-    RedundantSeedCleaner = cms.string('CachingSeedCleanerBySharedInput'),
     TrajectoryCleaner = cms.string('hltESPTrajectoryCleanerBySharedHits'),
+    RedundantSeedCleaner = cms.string('CachingSeedCleanerBySharedInput'),
     MeasurementTrackerEvent = cms.InputTag("hltSiStripClusters"),
     cleanTrajectoryAfterInOut = cms.bool(False),
     useHitsSplitting = cms.bool(False),
@@ -1797,8 +2267,8 @@ process.hltIter1PFlowCkfTrackCandidates = cms.EDProducer("CkfTrackCandidateMaker
     src = cms.InputTag("hltIter1PFlowPixelSeeds"),
     maxSeedsBeforeCleaning = cms.uint32(1000),
     SimpleMagneticField = cms.string('ParabolicMf'),
-    RedundantSeedCleaner = cms.string('CachingSeedCleanerBySharedInput'),
     TrajectoryCleaner = cms.string('hltESPTrajectoryCleanerBySharedHits'),
+    RedundantSeedCleaner = cms.string('CachingSeedCleanerBySharedInput'),
     MeasurementTrackerEvent = cms.InputTag("hltIter1MaskedMeasurementTrackerEvent"),
     cleanTrajectoryAfterInOut = cms.bool(False),
     useHitsSplitting = cms.bool(False),
@@ -2104,8 +2574,8 @@ process.hltIter2PFlowCkfTrackCandidates = cms.EDProducer("CkfTrackCandidateMaker
     src = cms.InputTag("hltIter2PFlowPixelSeeds"),
     maxSeedsBeforeCleaning = cms.uint32(1000),
     SimpleMagneticField = cms.string('ParabolicMf'),
-    RedundantSeedCleaner = cms.string('CachingSeedCleanerBySharedInput'),
     TrajectoryCleaner = cms.string('hltESPTrajectoryCleanerBySharedHits'),
+    RedundantSeedCleaner = cms.string('CachingSeedCleanerBySharedInput'),
     MeasurementTrackerEvent = cms.InputTag("hltIter2MaskedMeasurementTrackerEvent"),
     cleanTrajectoryAfterInOut = cms.bool(False),
     useHitsSplitting = cms.bool(False),
@@ -2303,12 +2773,12 @@ process.hltL1GtObjectMap = cms.EDProducer("L1GlobalTrigger",
     RecordLength = cms.vint32(3, 0),
     TechnicalTriggersUnmasked = cms.bool(False),
     ProduceL1GtEvmRecord = cms.bool(False),
-    GmtInputTag = cms.InputTag("hltGtDigis"),
+    GmtInputTag = cms.InputTag("gmtReEmulDigis"),
     TechnicalTriggersVetoUnmasked = cms.bool(True),
     AlternativeNrBxBoardEvm = cms.uint32(0),
     TechnicalTriggersInputTags = cms.VInputTag("simBscDigis"),
     CastorInputTag = cms.InputTag("castorL1Digis"),
-    GctInputTag = cms.InputTag("hltGctDigis"),
+    GctInputTag = cms.InputTag("caloStage1LegacyFormatDigis"),
     AlternativeNrBxBoardDaq = cms.uint32(0),
     WritePsbL1GtDaqRecord = cms.bool(False),
     BstLengthBytes = cms.int32(-1)
@@ -2317,21 +2787,21 @@ process.hltL1GtObjectMap = cms.EDProducer("L1GlobalTrigger",
 
 process.hltL1extraParticles = cms.EDProducer("L1ExtraParticlesProd",
     centralBxOnly = cms.bool(True),
-    muonSource = cms.InputTag("hltGtDigis"),
-    etTotalSource = cms.InputTag("hltGctDigis"),
-    etHadSource = cms.InputTag("hltGctDigis"),
-    centralJetSource = cms.InputTag("hltGctDigis","cenJets"),
-    etMissSource = cms.InputTag("hltGctDigis"),
-    hfRingEtSumsSource = cms.InputTag("hltGctDigis"),
+    muonSource = cms.InputTag("gmtReEmulDigis"),
+    etTotalSource = cms.InputTag("caloStage1LegacyFormatDigis"),
+    etHadSource = cms.InputTag("caloStage1LegacyFormatDigis"),
+    centralJetSource = cms.InputTag("caloStage1LegacyFormatDigis","cenJets"),
+    etMissSource = cms.InputTag("caloStage1LegacyFormatDigis"),
+    hfRingEtSumsSource = cms.InputTag("caloStage1LegacyFormatDigis"),
     produceMuonParticles = cms.bool(True),
-    forwardJetSource = cms.InputTag("hltGctDigis","forJets"),
+    forwardJetSource = cms.InputTag("caloStage1LegacyFormatDigis","forJets"),
     ignoreHtMiss = cms.bool(False),
-    htMissSource = cms.InputTag("hltGctDigis"),
+    htMissSource = cms.InputTag("caloStage1LegacyFormatDigis"),
     produceCaloParticles = cms.bool(True),
-    tauJetSource = cms.InputTag("hltGctDigis","tauJets"),
-    isolatedEmSource = cms.InputTag("hltGctDigis","isoEm"),
-    nonIsolatedEmSource = cms.InputTag("hltGctDigis","nonIsoEm"),
-    hfRingBitCountsSource = cms.InputTag("hltGctDigis")
+    tauJetSource = cms.InputTag("caloStage1LegacyFormatDigis","tauJets"),
+    isolatedEmSource = cms.InputTag("caloStage1LegacyFormatDigis","isoEm"),
+    nonIsolatedEmSource = cms.InputTag("caloStage1LegacyFormatDigis","nonIsoEm"),
+    hfRingBitCountsSource = cms.InputTag("caloStage1LegacyFormatDigis")
 )
 
 
@@ -2351,7 +2821,7 @@ process.hltL2MuonSeeds = cms.EDProducer("L2MuonSeedGenerator",
         UseMuonNavigation = cms.untracked.bool(True)
     ),
     L1MinQuality = cms.uint32(1),
-    GMTReadoutCollection = cms.InputTag("hltGtDigis"),
+    GMTReadoutCollection = cms.InputTag("gmtReEmulDigis"),
     UseUnassociatedL1 = cms.bool(False),
     UseOfflineSeed = cms.untracked.bool(True),
     Propagator = cms.string('SteppingHelixPropagatorAny')
@@ -2496,8 +2966,7 @@ process.hltL2OfflineMuonSeeds = cms.EDProducer("MuonSeedGenerator",
     SME_22_0_scale = cms.vdouble(-3.457901, 0.0),
     DT_24_1_scale = cms.vdouble(-7.490909, 0.0),
     OL_1232_0_scale = cms.vdouble(-5.964634, 0.0),
-    SMB_32 = cms.vdouble(0.67, -0.327, 0.0, 0.22, 0.0, 
-        0.0),
+    DT_23_1_scale = cms.vdouble(-5.320346, 0.0),
     SME_13_0_scale = cms.vdouble(0.104905, 0.0),
     SMB_22_0_scale = cms.vdouble(1.346681, 0.0),
     DT_24_2_scale = cms.vdouble(-6.63094, 0.0),
@@ -2507,7 +2976,7 @@ process.hltL2OfflineMuonSeeds = cms.EDProducer("MuonSeedGenerator",
         0.0),
     SME_31 = cms.vdouble(-1.594, 1.482, -0.317, 0.487, 0.097, 
         0.0),
-    CSC_13_2_scale = cms.vdouble(-6.077936, 0.0),
+    SMB_32_0_scale = cms.vdouble(-3.054156, 0.0),
     crackEtas = cms.vdouble(0.2, 1.6, 1.7),
     SME_11_0_scale = cms.vdouble(1.325085, 0.0),
     SMB_20_0_scale = cms.vdouble(1.486168, 0.0),
@@ -2519,17 +2988,20 @@ process.hltL2OfflineMuonSeeds = cms.EDProducer("MuonSeedGenerator",
     DT_24 = cms.vdouble(0.176, 0.014, -0.051, 0.051, 0.003, 
         0.0),
     SMB_12_0_scale = cms.vdouble(2.283221, 0.0),
+    deltaPhiSearchWindow = cms.double(0.25),
     CSC_23_1_scale = cms.vdouble(-19.084285, 0.0),
     SME_42 = cms.vdouble(-0.003, 0.005, 0.005, 0.608, 0.076, 
         0.0),
     SME_41 = cms.vdouble(-0.003, 0.005, 0.005, 0.608, 0.076, 
         0.0),
+    deltaEtaSearchWindow = cms.double(0.2),
     CSC_12_2_scale = cms.vdouble(-1.63622, 0.0),
     DT_34_1_scale = cms.vdouble(-13.783765, 0.0),
     CSC_34_1_scale = cms.vdouble(-11.520507, 0.0),
     OL_2213_0_scale = cms.vdouble(-7.239789, 0.0),
-    SMB_32_0_scale = cms.vdouble(-3.054156, 0.0),
+    CSC_13_2_scale = cms.vdouble(-6.077936, 0.0),
     CSC_12_3_scale = cms.vdouble(-1.63622, 0.0),
+    deltaEtaCrackSearchWindow = cms.double(0.25),
     SME_21_0_scale = cms.vdouble(-0.040862, 0.0),
     OL_1232 = cms.vdouble(0.184, 0.0, 0.0, 0.066, 0.0, 
         0.0),
@@ -2552,7 +3024,8 @@ process.hltL2OfflineMuonSeeds = cms.EDProducer("MuonSeedGenerator",
         0.0),
     CSC_01 = cms.vdouble(0.166, 0.0, 0.0, 0.031, 0.0, 
         0.0),
-    DT_23_1_scale = cms.vdouble(-5.320346, 0.0),
+    SMB_32 = cms.vdouble(0.67, -0.327, 0.0, 0.22, 0.0, 
+        0.0),
     SMB_30 = cms.vdouble(0.505, -0.022, 0.0, 0.215, 0.0, 
         0.0),
     SMB_31 = cms.vdouble(0.549, -0.145, 0.0, 0.207, 0.0, 
@@ -2567,12 +3040,12 @@ process.hltL2OfflineMuonSeeds = cms.EDProducer("MuonSeedGenerator",
     DT_14_1_scale = cms.vdouble(-5.644816, 0.0),
     beamSpotTag = cms.InputTag("hltOnlineBeamSpot"),
     SMB_11_0_scale = cms.vdouble(2.56363, 0.0),
-    CSC_13 = cms.vdouble(0.901, -1.302, 0.533, 0.045, 0.005, 
-        0.0),
+    EnableCSCMeasurement = cms.bool(True),
     CSC_14 = cms.vdouble(0.606, -0.181, -0.002, 0.111, -0.003, 
         0.0),
     OL_2222_0_scale = cms.vdouble(-7.667231, 0.0),
-    EnableCSCMeasurement = cms.bool(True),
+    CSC_13 = cms.vdouble(0.901, -1.302, 0.533, 0.045, 0.005, 
+        0.0),
     CSC_12 = cms.vdouble(-0.161, 0.254, -0.047, 0.042, -0.007, 
         0.0)
 )
@@ -3053,8 +3526,8 @@ process.hltL3TrackCandidateFromL2 = cms.EDProducer("L3TrackCandCombiner",
 process.hltL3TrackCandidateFromL2IOHit = cms.EDProducer("CkfTrajectoryMaker",
     src = cms.InputTag("hltL3TrajSeedIOHit"),
     reverseTrajectories = cms.bool(False),
-    RedundantSeedCleaner = cms.string('CachingSeedCleanerBySharedInput'),
     TrajectoryCleaner = cms.string('hltESPTrajectoryCleanerBySharedHits'),
+    RedundantSeedCleaner = cms.string('CachingSeedCleanerBySharedInput'),
     MeasurementTrackerEvent = cms.InputTag("hltSiStripClusters"),
     cleanTrajectoryAfterInOut = cms.bool(False),
     useHitsSplitting = cms.bool(False),
@@ -3077,8 +3550,8 @@ process.hltL3TrackCandidateFromL2IOHit = cms.EDProducer("CkfTrajectoryMaker",
 process.hltL3TrackCandidateFromL2OIHit = cms.EDProducer("CkfTrajectoryMaker",
     src = cms.InputTag("hltL3TrajSeedOIHit"),
     reverseTrajectories = cms.bool(True),
-    RedundantSeedCleaner = cms.string('CachingSeedCleanerBySharedInput'),
     TrajectoryCleaner = cms.string('hltESPTrajectoryCleanerBySharedHits'),
+    RedundantSeedCleaner = cms.string('CachingSeedCleanerBySharedInput'),
     MeasurementTrackerEvent = cms.InputTag("hltSiStripClusters"),
     cleanTrajectoryAfterInOut = cms.bool(False),
     useHitsSplitting = cms.bool(False),
@@ -3101,8 +3574,8 @@ process.hltL3TrackCandidateFromL2OIHit = cms.EDProducer("CkfTrajectoryMaker",
 process.hltL3TrackCandidateFromL2OIState = cms.EDProducer("CkfTrajectoryMaker",
     src = cms.InputTag("hltL3TrajSeedOIState"),
     reverseTrajectories = cms.bool(True),
-    RedundantSeedCleaner = cms.string('CachingSeedCleanerBySharedInput'),
     TrajectoryCleaner = cms.string('hltESPTrajectoryCleanerBySharedHits'),
+    RedundantSeedCleaner = cms.string('CachingSeedCleanerBySharedInput'),
     MeasurementTrackerEvent = cms.InputTag("hltSiStripClusters"),
     cleanTrajectoryAfterInOut = cms.bool(False),
     useHitsSplitting = cms.bool(False),
@@ -3512,6 +3985,34 @@ process.hltLightPFTracks = cms.EDProducer("LightPFTrackProducer",
 )
 
 
+process.hltMet = cms.EDProducer("CaloMETProducer",
+    alias = cms.string('RawCaloMET'),
+    calculateSignificance = cms.bool(False),
+    globalThreshold = cms.double(0.3),
+    noHF = cms.bool(False),
+    src = cms.InputTag("hltTowerMakerForAll")
+)
+
+
+process.hltMetClean = cms.EDProducer("CaloMETProducer",
+    alias = cms.string('RawCaloMET'),
+    calculateSignificance = cms.bool(False),
+    globalThreshold = cms.double(0.3),
+    noHF = cms.bool(False),
+    src = cms.InputTag("hltHcalTowerNoiseCleaner")
+)
+
+
+process.hltMetCleanUsingJetID = cms.EDProducer("HLTMETCleanerUsingJetID",
+    minPt = cms.double(20.0),
+    usePt = cms.bool(False),
+    jetsLabel = cms.InputTag("hltAK4CaloJets"),
+    maxEta = cms.double(5.0),
+    goodJetsLabel = cms.InputTag("hltAK4CaloJetsIDPassed"),
+    metLabel = cms.InputTag("hltMet")
+)
+
+
 process.hltMixedLayerPairs = cms.EDProducer("SeedingLayersEDProducer",
     layerList = cms.vstring('BPix1+BPix2', 
         'BPix1+BPix3', 
@@ -3915,6 +4416,17 @@ process.hltPFHT = cms.EDProducer("HLTHtMhtProducer",
     excludePFMuons = cms.bool(False),
     pfCandidatesLabel = cms.InputTag("hltParticleFlow"),
     minNJetHt = cms.int32(0)
+)
+
+
+process.hltPFMETProducer = cms.EDProducer("HLTMhtProducer",
+    usePt = cms.bool(True),
+    minPtJet = cms.double(0.0),
+    jetsLabel = cms.InputTag("hltAK4PFJets"),
+    minNJet = cms.int32(0),
+    maxEtaJet = cms.double(999.0),
+    excludePFMuons = cms.bool(False),
+    pfCandidatesLabel = cms.InputTag("hltParticleFlow")
 )
 
 
@@ -4919,6 +5431,138 @@ process.hltSiStripRawToClustersFacility = cms.EDProducer("SiStripClusterizerFrom
 )
 
 
+process.hltStoppedHSCPIterativeCone4CaloJets = cms.EDProducer("FastjetJetProducer",
+    Active_Area_Repeats = cms.int32(5),
+    useMassDropTagger = cms.bool(False),
+    doAreaFastjet = cms.bool(False),
+    muMin = cms.double(-1.0),
+    Ghost_EtaMax = cms.double(6.0),
+    maxBadHcalCells = cms.uint32(9999999),
+    doAreaDiskApprox = cms.bool(False),
+    subtractorName = cms.string(''),
+    maxRecoveredEcalCells = cms.uint32(9999999),
+    jetType = cms.string('CaloJet'),
+    radiusPU = cms.double(0.4),
+    subjetPtMin = cms.double(-1.0),
+    MinVtxNdof = cms.int32(5),
+    minSeed = cms.uint32(0),
+    voronoiRfact = cms.double(-9.0),
+    doRhoFastjet = cms.bool(False),
+    jetAlgorithm = cms.string('IterativeCone'),
+    muMax = cms.double(-1.0),
+    nSigmaPU = cms.double(1.0),
+    GhostArea = cms.double(0.01),
+    Rho_EtaMax = cms.double(4.4),
+    MaxVtxZ = cms.double(15.0),
+    maxBadEcalCells = cms.uint32(9999999),
+    yMin = cms.double(-1.0),
+    useFiltering = cms.bool(False),
+    useDeterministicSeed = cms.bool(True),
+    doPVCorrection = cms.bool(False),
+    rFilt = cms.double(-1.0),
+    yMax = cms.double(-1.0),
+    zcut = cms.double(-1.0),
+    useTrimming = cms.bool(False),
+    maxRecoveredHcalCells = cms.uint32(9999999),
+    rParam = cms.double(0.4),
+    UseOnlyVertexTracks = cms.bool(False),
+    UseOnlyOnePV = cms.bool(False),
+    nFilt = cms.int32(-1),
+    usePruning = cms.bool(False),
+    maxDepth = cms.int32(-1),
+    yCut = cms.double(-1.0),
+    DzTrVtxMax = cms.double(0.0),
+    dRMin = cms.double(-1.0),
+    maxProblematicHcalCells = cms.uint32(9999999),
+    rcut_factor = cms.double(-1.0),
+    doOutputJets = cms.bool(True),
+    src = cms.InputTag("hltStoppedHSCPTowerMakerForAll"),
+    sumRecHits = cms.bool(False),
+    jetPtMin = cms.double(1.0),
+    puPtMin = cms.double(10.0),
+    srcPVs = cms.InputTag("offlinePrimaryVertices"),
+    inputEtMin = cms.double(0.3),
+    trimPtFracMin = cms.double(-1.0),
+    muCut = cms.double(-1.0),
+    dRMax = cms.double(-1.0),
+    DxyTrVtxMax = cms.double(0.0),
+    maxProblematicEcalCells = cms.uint32(9999999),
+    useCMSBoostedTauSeedingAlgorithm = cms.bool(False),
+    doPUOffsetCorr = cms.bool(False),
+    inputEMin = cms.double(0.0)
+)
+
+
+process.hltStoppedHSCPTowerMakerForAll = cms.EDProducer("CaloTowersCreator",
+    EBSumThreshold = cms.double(0.2),
+    MomHBDepth = cms.double(0.2),
+    EBWeight = cms.double(1.0),
+    hfInput = cms.InputTag(""),
+    AllowMissingInputs = cms.bool(True),
+    UseSymEBTreshold = cms.bool(False),
+    MomEEDepth = cms.double(0.0),
+    EESumThreshold = cms.double(0.45),
+    HBGrid = cms.vdouble(),
+    HcalAcceptSeverityLevelForRejectedHit = cms.uint32(9999),
+    HBThreshold = cms.double(0.7),
+    EcalSeveritiesToBeUsedInBadTowers = cms.vstring(),
+    UseEcalRecoveredHits = cms.bool(False),
+    MomConstrMethod = cms.int32(1),
+    MomHEDepth = cms.double(0.4),
+    HcalThreshold = cms.double(-1000.0),
+    HF2Weights = cms.vdouble(),
+    HOWeights = cms.vdouble(),
+    EEGrid = cms.vdouble(),
+    HEDWeight = cms.double(1.0),
+    EEWeights = cms.vdouble(),
+    EEWeight = cms.double(1.0),
+    UseHO = cms.bool(False),
+    HBWeights = cms.vdouble(),
+    HESWeight = cms.double(1.0),
+    HF1Weight = cms.double(1.0),
+    HF2Grid = cms.vdouble(),
+    HEDWeights = cms.vdouble(),
+    HEDGrid = cms.vdouble(),
+    HOThresholdPlus1 = cms.double(3.5),
+    HF1Grid = cms.vdouble(),
+    EBWeights = cms.vdouble(),
+    HOWeight = cms.double(1e-99),
+    EBThreshold = cms.double(0.07),
+    hbheInput = cms.InputTag("hltHbhereco"),
+    HF2Weight = cms.double(1.0),
+    HF2Threshold = cms.double(0.85),
+    HcalAcceptSeverityLevel = cms.uint32(9),
+    EEThreshold = cms.double(0.3),
+    HESThreshold = cms.double(0.8),
+    HOThresholdPlus2 = cms.double(3.5),
+    HF1Weights = cms.vdouble(),
+    hoInput = cms.InputTag(""),
+    HF1Threshold = cms.double(0.5),
+    HOThresholdMinus1 = cms.double(3.5),
+    HESGrid = cms.vdouble(),
+    UseRejectedRecoveredEcalHits = cms.bool(False),
+    UseEtEETreshold = cms.bool(False),
+    EcalRecHitSeveritiesToBeExcluded = cms.vstring('kTime', 
+        'kWeird', 
+        'kBad'),
+    HESWeights = cms.vdouble(),
+    UseSymEETreshold = cms.bool(False),
+    HEDThreshold = cms.double(0.8),
+    UseEtEBTreshold = cms.bool(False),
+    EcutTower = cms.double(-1000.0),
+    UseRejectedHitsOnly = cms.bool(False),
+    UseHcalRecoveredHits = cms.bool(False),
+    HOThresholdMinus2 = cms.double(3.5),
+    HOThreshold0 = cms.double(3.5),
+    ecalInputs = cms.VInputTag(),
+    UseRejectedRecoveredHcalHits = cms.bool(False),
+    MomEBDepth = cms.double(0.3),
+    HBWeight = cms.double(1.0),
+    HOGrid = cms.vdouble(),
+    EBGrid = cms.vdouble()
+)
+
+
 process.hltTowerMakerForAll = cms.EDProducer("CaloTowersCreator",
     EBSumThreshold = cms.double(0.2),
     MomHBDepth = cms.double(0.2),
@@ -5083,6 +5727,570 @@ process.hltTrimmedPixelVertices = cms.EDProducer("PixelVertexCollectionTrimmer",
     PVcomparer = cms.PSet(
         refToPSet_ = cms.string('HLTPSetPvClusterComparerForIT')
     )
+)
+
+
+process.l1ExtraLayer2 = cms.EDProducer("L1ExtraParticlesProd",
+    tauJetSource = cms.InputTag("caloStage1LegacyFormatDigis","tauJets"),
+    nonIsolatedEmSource = cms.InputTag("caloStage1LegacyFormatDigis","nonIsoEm"),
+    etTotalSource = cms.InputTag("caloStage1LegacyFormatDigis"),
+    etHadSource = cms.InputTag("caloStage1LegacyFormatDigis"),
+    centralJetSource = cms.InputTag("caloStage1LegacyFormatDigis","cenJets"),
+    etMissSource = cms.InputTag("caloStage1LegacyFormatDigis"),
+    hfRingEtSumsSource = cms.InputTag("caloStage1LegacyFormatDigis"),
+    produceMuonParticles = cms.bool(True),
+    forwardJetSource = cms.InputTag("caloStage1LegacyFormatDigis","forJets"),
+    ignoreHtMiss = cms.bool(False),
+    htMissSource = cms.InputTag("caloStage1LegacyFormatDigis"),
+    produceCaloParticles = cms.bool(True),
+    muonSource = cms.InputTag("gtDigis"),
+    isolatedEmSource = cms.InputTag("caloStage1LegacyFormatDigis","isoEm"),
+    centralBxOnly = cms.bool(True),
+    hfRingBitCountsSource = cms.InputTag("caloStage1LegacyFormatDigis")
+)
+
+
+process.muonCSCDigis = cms.EDProducer("CSCDCCUnpacker",
+    PrintEventNumber = cms.untracked.bool(False),
+    UseExaminer = cms.bool(True),
+    Debug = cms.untracked.bool(False),
+    ErrorMask = cms.uint32(0),
+    InputObjects = cms.InputTag("rawDataCollector"),
+    UseFormatStatus = cms.bool(True),
+    ExaminerMask = cms.uint32(535557110),
+    UnpackStatusDigis = cms.bool(False),
+    VisualFEDInspect = cms.untracked.bool(False),
+    FormatedEventDump = cms.untracked.bool(False),
+    UseSelectiveUnpacking = cms.bool(True),
+    VisualFEDShort = cms.untracked.bool(False)
+)
+
+
+process.muonDTDigis = cms.EDProducer("DTUnpackingModule",
+    useStandardFEDid = cms.bool(True),
+    inputLabel = cms.InputTag("rawDataCollector"),
+    dataType = cms.string('DDU'),
+    fedbyType = cms.bool(False),
+    readOutParameters = cms.PSet(
+        debug = cms.untracked.bool(False),
+        rosParameters = cms.PSet(
+            writeSC = cms.untracked.bool(True),
+            readingDDU = cms.untracked.bool(True),
+            performDataIntegrityMonitor = cms.untracked.bool(False),
+            readDDUIDfromDDU = cms.untracked.bool(True),
+            debug = cms.untracked.bool(False),
+            localDAQ = cms.untracked.bool(False)
+        ),
+        performDataIntegrityMonitor = cms.untracked.bool(False),
+        localDAQ = cms.untracked.bool(False)
+    ),
+    dqmOnly = cms.bool(False)
+)
+
+
+process.muonRPCDigis = cms.EDProducer("RPCUnpackingModule",
+    InputLabel = cms.InputTag("rawDataCollector"),
+    doSynchro = cms.bool(True)
+)
+
+
+process.rctUpgradeFormatDigis = cms.EDProducer("l1t::L1TCaloRCTToUpgradeConverter",
+    regionTag = cms.InputTag("simRctDigis"),
+    emTag = cms.InputTag("simRctDigis")
+)
+
+
+process.rpcTriggerDigis = cms.EDProducer("RPCTrigger",
+    RPCTriggerDebug = cms.untracked.int32(0),
+    label = cms.string('muonRPCDigis')
+)
+
+
+process.rpcTriggerReEmulDigis = cms.EDProducer("RPCTrigger",
+    label = cms.string('muonRPCDigis'),
+    RPCTriggerDebug = cms.untracked.int32(0)
+)
+
+
+process.scalersRawToDigi = cms.EDProducer("ScalersRawToDigi",
+    scalersInputTag = cms.InputTag("rawDataCollector")
+)
+
+
+process.siPixelDigis = cms.EDProducer("SiPixelRawToDigi",
+    UseQualityInfo = cms.bool(False),
+    CheckPixelOrder = cms.bool(False),
+    IncludeErrors = cms.bool(True),
+    InputLabel = cms.InputTag("rawDataCollector"),
+    ErrorList = cms.vint32(29),
+    Regions = cms.PSet(
+
+    ),
+    Timing = cms.untracked.bool(False),
+    UserErrorList = cms.vint32(40)
+)
+
+
+process.siStripDigis = cms.EDProducer("SiStripRawToDigiModule",
+    UseDaqRegister = cms.bool(False),
+    ProductLabel = cms.InputTag("rawDataCollector"),
+    DoAPVEmulatorCheck = cms.bool(False),
+    UnpackCommonModeValues = cms.bool(False),
+    AppendedBytes = cms.int32(0),
+    UseFedKey = cms.bool(False),
+    ErrorThreshold = cms.uint32(7174),
+    TriggerFedId = cms.int32(0),
+    MarkModulesOnMissingFeds = cms.bool(True),
+    UnpackBadChannels = cms.bool(False),
+    DoAllCorruptBufferChecks = cms.bool(False)
+)
+
+
+process.simBscDigis = cms.EDProducer("BSCTrigger",
+    theHits = cms.InputTag("mix","g4SimHitsBSCHits"),
+    bitNumbers = cms.vuint32(32, 33, 34, 35, 36, 
+        37, 38, 39, 40, 41, 
+        42, 43),
+    resolution = cms.double(3.0),
+    bitNames = cms.vstring('L1Tech_BSC_minBias_inner_threshold1', 
+        'L1Tech_BSC_minBias_inner_threshold2', 
+        'L1Tech_BSC_minBias_OR', 
+        'L1Tech_BSC_HighMultiplicity', 
+        'L1Tech_BSC_halo_beam2_inner', 
+        'L1Tech_BSC_halo_beam2_outer', 
+        'L1Tech_BSC_halo_beam1_inner', 
+        'L1Tech_BSC_halo_beam1_outer', 
+        'L1Tech_BSC_minBias_threshold1', 
+        'L1Tech_BSC_minBias_threshold2', 
+        'L1Tech_BSC_splash_beam1', 
+        'L1Tech_BSC_splash_beam2'),
+    coincidence = cms.double(72.85)
+)
+
+
+process.simCscTriggerPrimitiveDigis = cms.EDProducer("CSCTriggerPrimitivesProducer",
+    tmbSLHC = cms.PSet(
+        mpcBlockMe1a = cms.uint32(0),
+        tmbCrossBxAlgorithm = cms.untracked.uint32(1),
+        alctTrigEnable = cms.uint32(0),
+        tmbDropUsedClcts = cms.untracked.bool(False),
+        verbosity = cms.untracked.int32(0),
+        matchEarliestClctME11Only = cms.untracked.bool(False),
+        tmbL1aWindowSize = cms.uint32(7),
+        tmbReadoutEarliest2 = cms.untracked.bool(False),
+        clctTrigEnable = cms.uint32(0),
+        tmbDropUsedAlcts = cms.untracked.bool(False),
+        clctToAlct = cms.untracked.bool(False),
+        matchTrigWindowSize = cms.uint32(3),
+        tmbEarlyTbins = cms.untracked.int32(4),
+        matchEarliestAlctME11Only = cms.untracked.bool(False),
+        maxME11LCTs = cms.untracked.uint32(2),
+        matchTrigEnable = cms.uint32(1)
+    ),
+    CSCComparatorDigiProducer = cms.InputTag("simMuonCSCDigis","MuonCSCComparatorDigi"),
+    clctParamMTCC = cms.PSet(
+        clctDriftDelay = cms.uint32(2),
+        clctMinSeparation = cms.uint32(10),
+        clctPidThreshPretrig = cms.uint32(2),
+        clctFifoTbins = cms.uint32(12),
+        verbosity = cms.untracked.int32(0),
+        clctNplanesHitPretrig = cms.uint32(4),
+        clctHitPersist = cms.uint32(6),
+        clctFifoPretrig = cms.uint32(7),
+        clctNplanesHitPattern = cms.uint32(1)
+    ),
+    MaxBX = cms.int32(9),
+    debugParameters = cms.untracked.bool(True),
+    mpcSLHC = cms.PSet(
+        mpcMaxStubs = cms.untracked.uint32(3)
+    ),
+    alctSLHC = cms.PSet(
+        alctAccelMode = cms.uint32(0),
+        alctGhostCancellationSideQuality = cms.untracked.bool(True),
+        alctTrigMode = cms.uint32(2),
+        verbosity = cms.untracked.int32(0),
+        alctDriftDelay = cms.uint32(2),
+        alctNplanesHitAccelPretrig = cms.uint32(3),
+        alctNarrowMaskForR1 = cms.untracked.bool(True),
+        alctL1aWindowWidth = cms.uint32(7),
+        alctNplanesHitPattern = cms.uint32(4),
+        alctNplanesHitAccelPattern = cms.uint32(4),
+        alctHitPersist = cms.untracked.uint32(6),
+        alctGhostCancellationBxDepth = cms.untracked.int32(1),
+        alctFifoTbins = cms.uint32(16),
+        alctNplanesHitPretrig = cms.uint32(3),
+        alctEarlyTbins = cms.untracked.int32(4),
+        alctUseCorrectedBx = cms.untracked.bool(True),
+        alctPretrigDeadtime = cms.untracked.uint32(0),
+        alctFifoPretrig = cms.uint32(10)
+    ),
+    alctParamMTCC = cms.PSet(
+        alctAccelMode = cms.uint32(0),
+        alctTrigMode = cms.uint32(2),
+        verbosity = cms.untracked.int32(0),
+        alctL1aWindowWidth = cms.uint32(3),
+        alctNplanesHitAccelPretrig = cms.uint32(2),
+        alctDriftDelay = cms.uint32(3),
+        alctNplanesHitPattern = cms.uint32(4),
+        alctNplanesHitAccelPattern = cms.uint32(4),
+        alctFifoTbins = cms.uint32(16),
+        alctNplanesHitPretrig = cms.uint32(2),
+        alctFifoPretrig = cms.uint32(10)
+    ),
+    clctParamOldMC = cms.PSet(
+        clctDriftDelay = cms.uint32(2),
+        clctMinSeparation = cms.uint32(10),
+        clctPidThreshPretrig = cms.uint32(2),
+        clctFifoTbins = cms.uint32(12),
+        verbosity = cms.untracked.int32(0),
+        clctNplanesHitPretrig = cms.uint32(2),
+        clctHitPersist = cms.uint32(6),
+        clctFifoPretrig = cms.uint32(7),
+        clctNplanesHitPattern = cms.uint32(4)
+    ),
+    alctParamOldMC = cms.PSet(
+        alctAccelMode = cms.uint32(1),
+        alctTrigMode = cms.uint32(3),
+        verbosity = cms.untracked.int32(0),
+        alctL1aWindowWidth = cms.uint32(5),
+        alctNplanesHitAccelPretrig = cms.uint32(2),
+        alctDriftDelay = cms.uint32(3),
+        alctNplanesHitPattern = cms.uint32(4),
+        alctNplanesHitAccelPattern = cms.uint32(4),
+        alctFifoTbins = cms.uint32(16),
+        alctNplanesHitPretrig = cms.uint32(2),
+        alctFifoPretrig = cms.uint32(10)
+    ),
+    checkBadChambers_ = cms.untracked.bool(False),
+    MinBX = cms.int32(3),
+    tmbParam = cms.PSet(
+        alctTrigEnable = cms.uint32(0),
+        verbosity = cms.untracked.int32(0),
+        tmbDropUsedAlcts = cms.untracked.bool(True),
+        tmbEarlyTbins = cms.untracked.int32(4),
+        clctTrigEnable = cms.uint32(0),
+        tmbL1aWindowSize = cms.uint32(7),
+        matchTrigWindowSize = cms.uint32(3),
+        tmbReadoutEarliest2 = cms.untracked.bool(True),
+        mpcBlockMe1a = cms.uint32(0),
+        matchTrigEnable = cms.uint32(1)
+    ),
+    commonParam = cms.PSet(
+        gangedME1a = cms.untracked.bool(False),
+        isTMB07 = cms.bool(True),
+        isMTCC = cms.bool(False),
+        isSLHC = cms.untracked.bool(True),
+        smartME1aME1b = cms.untracked.bool(True),
+        disableME1a = cms.untracked.bool(False),
+        disableME42 = cms.untracked.bool(False)
+    ),
+    CSCWireDigiProducer = cms.InputTag("simMuonCSCDigis","MuonCSCWireDigi"),
+    alctParam07 = cms.PSet(
+        alctAccelMode = cms.uint32(0),
+        alctGhostCancellationSideQuality = cms.untracked.bool(True),
+        alctTrigMode = cms.uint32(2),
+        verbosity = cms.untracked.int32(0),
+        alctDriftDelay = cms.uint32(2),
+        alctNplanesHitAccelPretrig = cms.uint32(3),
+        alctNarrowMaskForR1 = cms.untracked.bool(True),
+        alctL1aWindowWidth = cms.uint32(7),
+        alctNplanesHitPattern = cms.uint32(4),
+        alctNplanesHitAccelPattern = cms.uint32(4),
+        alctHitPersist = cms.untracked.uint32(6),
+        alctGhostCancellationBxDepth = cms.untracked.int32(1),
+        alctFifoTbins = cms.uint32(16),
+        alctNplanesHitPretrig = cms.uint32(3),
+        alctEarlyTbins = cms.untracked.int32(4),
+        alctPretrigDeadtime = cms.untracked.uint32(4),
+        alctFifoPretrig = cms.uint32(10)
+    ),
+    clctSLHC = cms.PSet(
+        clctPretriggerTriggerZone = cms.untracked.uint32(5),
+        clctMinSeparation = cms.uint32(5),
+        clctPidThreshPretrig = cms.uint32(4),
+        clctDriftDelay = cms.uint32(2),
+        clctFifoTbins = cms.uint32(12),
+        verbosity = cms.untracked.int32(0),
+        useDynamicStateMachineZone = cms.untracked.bool(True),
+        clctNplanesHitPretrig = cms.uint32(3),
+        clctHitPersist = cms.uint32(4),
+        clctStartBxShift = cms.untracked.int32(0),
+        clctStateMachineZone = cms.untracked.uint32(8),
+        useDeadTimeZoning = cms.untracked.bool(True),
+        clctFifoPretrig = cms.uint32(7),
+        clctNplanesHitPattern = cms.uint32(4),
+        clctUseCorrectedBx = cms.untracked.bool(True)
+    ),
+    clctParam07 = cms.PSet(
+        clctDriftDelay = cms.uint32(2),
+        clctMinSeparation = cms.uint32(5),
+        clctPidThreshPretrig = cms.uint32(4),
+        clctFifoTbins = cms.uint32(12),
+        verbosity = cms.untracked.int32(0),
+        clctNplanesHitPretrig = cms.uint32(3),
+        clctHitPersist = cms.uint32(4),
+        clctStartBxShift = cms.untracked.int32(0),
+        clctFifoPretrig = cms.uint32(7),
+        clctNplanesHitPattern = cms.uint32(4)
+    )
+)
+
+
+process.simCsctfDigis = cms.EDProducer("CSCTFCandidateProducer",
+    CSCTrackProducer = cms.untracked.InputTag("simCsctfTrackDigis"),
+    MuonSorter = cms.PSet(
+        MaxBX = cms.int32(9),
+        MinBX = cms.int32(3)
+    )
+)
+
+
+process.simCsctfTrackDigis = cms.EDProducer("CSCTFTrackProducer",
+    isTMB07 = cms.bool(True),
+    useDT = cms.bool(True),
+    SectorReceiverInput = cms.untracked.InputTag("simCscTriggerPrimitiveDigis","MPCSORTED"),
+    DtDirectProd = cms.untracked.InputTag("csctfunpacker","DT"),
+    readDtDirect = cms.bool(False),
+    DTproducer = cms.untracked.InputTag("simDtTriggerPrimitiveDigis"),
+    SectorProcessor = cms.PSet(
+        EtaWindows = cms.vuint32(4, 4, 6, 6, 6, 
+            6, 6),
+        maxdphi13_accp = cms.uint32(64),
+        SRLUT = cms.PSet(
+            UseMiniLUTs = cms.untracked.bool(True),
+            ReadLUTs = cms.untracked.bool(False),
+            LUTPath = cms.untracked.string('./'),
+            Binary = cms.untracked.bool(False)
+        ),
+        mindphip_halo = cms.uint32(128),
+        AllowALCTonly = cms.bool(False),
+        PTLUT = cms.PSet(
+            LowQualityFlag = cms.untracked.uint32(4),
+            ReadPtLUT = cms.bool(False),
+            PtMethod = cms.untracked.uint32(34)
+        ),
+        QualityEnableME1b = cms.uint32(65535),
+        QualityEnableME1c = cms.uint32(65535),
+        QualityEnableME1a = cms.uint32(65535),
+        QualityEnableME1f = cms.uint32(65535),
+        QualityEnableME1d = cms.uint32(65535),
+        QualityEnableME1e = cms.uint32(65535),
+        QualityEnableME3a = cms.uint32(65535),
+        QualityEnableME3b = cms.uint32(65535),
+        QualityEnableME3c = cms.uint32(65535),
+        maxdphi112_accp = cms.uint32(64),
+        rescaleSinglesPhi = cms.bool(True),
+        mindeta112_accp = cms.uint32(14),
+        maxdeta113_accp = cms.uint32(38),
+        maxdeta13_accp = cms.uint32(27),
+        maxdphi113_accp = cms.uint32(64),
+        EtaMin = cms.vuint32(0, 0, 0, 0, 0, 
+            0, 0, 0),
+        mindeta12_accp = cms.uint32(12),
+        firmwareSP = cms.uint32(20140515),
+        mindeta113_accp = cms.uint32(21),
+        MinBX = cms.int32(3),
+        trigger_on_ME1a = cms.bool(False),
+        mbbPhiOff = cms.uint32(1982),
+        mbaPhiOff = cms.uint32(0),
+        EtaMax = cms.vuint32(127, 127, 127, 127, 127, 
+            24, 24, 127),
+        CoreLatency = cms.uint32(7),
+        PreTrigger = cms.uint32(2),
+        mindetap = cms.uint32(7),
+        trigger_on_MB1d = cms.bool(False),
+        maxdeta112_accp = cms.uint32(29),
+        mindeta13_accp = cms.uint32(13),
+        run_core = cms.bool(True),
+        firmwareFA = cms.uint32(20091026),
+        trigger_on_MB1a = cms.bool(False),
+        firmwareDD = cms.uint32(20091026),
+        QualityEnableME2c = cms.uint32(65535),
+        QualityEnableME2b = cms.uint32(65535),
+        QualityEnableME2a = cms.uint32(65535),
+        trigger_on_ME4 = cms.bool(False),
+        initializeFromPSet = cms.bool(True),
+        maxdeta12_accp = cms.uint32(17),
+        QualityEnableME4a = cms.uint32(65535),
+        maxdphi12_accp = cms.uint32(64),
+        straightp = cms.uint32(19),
+        gangedME1a = cms.untracked.bool(False),
+        trigger_on_ME1b = cms.bool(False),
+        AllowCLCTonly = cms.bool(False),
+        QualityEnableME4b = cms.uint32(65535),
+        widePhi = cms.uint32(0),
+        mindetap_halo = cms.uint32(8),
+        MaxBX = cms.int32(9),
+        curvedp = cms.uint32(15),
+        singlesTrackOutput = cms.uint32(1),
+        isCoreVerbose = cms.bool(False),
+        mindphip = cms.uint32(180),
+        QualityEnableME4c = cms.uint32(65535),
+        kill_fiber = cms.uint32(0),
+        firmwareVM = cms.uint32(20091026),
+        BXAdepth = cms.uint32(2),
+        trigger_on_ME3 = cms.bool(False),
+        trigger_on_ME2 = cms.bool(False)
+    )
+)
+
+
+process.simDtTriggerPrimitiveDigis = cms.EDProducer("DTTrigProd",
+    lutDumpFlag = cms.untracked.bool(False),
+    debug = cms.untracked.bool(False),
+    lutBtic = cms.untracked.int32(31),
+    digiTag = cms.InputTag("simMuonDTDigis"),
+    DTTFSectorNumbering = cms.bool(True)
+)
+
+
+process.simDttfDigis = cms.EDProducer("DTTrackFinder",
+    Open_LUTs = cms.untracked.bool(False),
+    Extrapolation_nbits_PhiB = cms.untracked.int32(8),
+    BX_max = cms.untracked.int32(7),
+    BX_min = cms.untracked.int32(-9),
+    EtaTrackFinder = cms.untracked.bool(True),
+    DTDigi_Source = cms.InputTag("simDtTriggerPrimitiveDigis"),
+    CSCStub_Source = cms.InputTag("simCsctfTrackDigis"),
+    PT_Assignment_nbits_PhiB = cms.untracked.int32(10),
+    PT_Assignment_nbits_Phi = cms.untracked.int32(12),
+    Overlap = cms.untracked.bool(True),
+    Extrapolation_Filter = cms.untracked.int32(1),
+    Extrapolation_nbits_Phi = cms.untracked.int32(8),
+    Extrapolation_21 = cms.untracked.bool(False),
+    PHI_Assignment_nbits_PhiB = cms.untracked.int32(10),
+    Debug = cms.untracked.int32(0),
+    OutOfTime_Filter = cms.untracked.bool(False),
+    PHI_Assignment_nbits_Phi = cms.untracked.int32(10),
+    CSC_Eta_Cancellation = cms.untracked.bool(False),
+    OutOfTime_Filter_Window = cms.untracked.int32(1)
+)
+
+
+process.simEcalTriggerPrimitiveDigis = cms.EDProducer("EcalTrigPrimProducer",
+    BarrelOnly = cms.bool(False),
+    InstanceEB = cms.string(''),
+    InstanceEE = cms.string(''),
+    binOfMaximum = cms.int32(6),
+    Famos = cms.bool(False),
+    TcpOutput = cms.bool(False),
+    Debug = cms.bool(False),
+    Label = cms.string('simEcalUnsuppressedDigis')
+)
+
+
+process.simGctDigis = cms.EDProducer("L1GctEmulator",
+    useImprovedTauAlgorithm = cms.bool(True),
+    ignoreRCTTauVetoBitsForIsolation = cms.bool(False),
+    postSamples = cms.uint32(1),
+    preSamples = cms.uint32(1),
+    inputLabel = cms.InputTag("simRctDigis"),
+    writeInternalData = cms.bool(False),
+    jetFinderType = cms.string('hardwareJetFinder'),
+    hardwareTest = cms.bool(False)
+)
+
+
+process.simGmtDigis = cms.EDProducer("L1MuGlobalMuonTrigger",
+    BX_min_readout = cms.int32(-2),
+    BX_min = cms.int32(-4),
+    CSCCandidates = cms.InputTag("simCsctfDigis","CSC"),
+    BX_max = cms.int32(4),
+    BX_max_readout = cms.int32(2),
+    RPCfCandidates = cms.InputTag("simRpcTriggerDigis","RPCf"),
+    Debug = cms.untracked.int32(0),
+    RPCbCandidates = cms.InputTag("simRpcTriggerDigis","RPCb"),
+    DTCandidates = cms.InputTag("simDttfDigis","DT"),
+    WriteLUTsAndRegs = cms.untracked.bool(False),
+    SendMipIso = cms.untracked.bool(False),
+    MipIsoData = cms.InputTag("simRctDigis")
+)
+
+
+process.simGtDigis = cms.EDProducer("L1GlobalTrigger",
+    TechnicalTriggersUnprescaled = cms.bool(False),
+    ProduceL1GtObjectMapRecord = cms.bool(True),
+    AlgorithmTriggersUnmasked = cms.bool(False),
+    EmulateBxInEvent = cms.int32(3),
+    AlgorithmTriggersUnprescaled = cms.bool(False),
+    ProduceL1GtDaqRecord = cms.bool(True),
+    ReadTechnicalTriggerRecords = cms.bool(True),
+    RecordLength = cms.vint32(3, 0),
+    TechnicalTriggersUnmasked = cms.bool(False),
+    ProduceL1GtEvmRecord = cms.bool(True),
+    GmtInputTag = cms.InputTag("gmtReEmulDigis"),
+    TechnicalTriggersVetoUnmasked = cms.bool(False),
+    AlternativeNrBxBoardEvm = cms.uint32(0),
+    TechnicalTriggersInputTags = cms.VInputTag(),
+    CastorInputTag = cms.InputTag("castorL1Digis"),
+    GctInputTag = cms.InputTag("caloStage1LegacyFormatDigis"),
+    AlternativeNrBxBoardDaq = cms.uint32(0),
+    WritePsbL1GtDaqRecord = cms.bool(True),
+    BstLengthBytes = cms.int32(-1)
+)
+
+
+process.simHcalTechTrigDigis = cms.EDProducer("HcalTTPTriggerRecord",
+    ttpBitNames = cms.vstring('L1Tech_HCAL_HF_MM_or_PP_or_PM.v0', 
+        'L1Tech_HCAL_HF_coincidence_PM.v1', 
+        'L1Tech_HCAL_HF_MMP_or_MPP.v0'),
+    ttpDigiCollection = cms.InputTag("simHcalTTPDigis"),
+    ttpBits = cms.vuint32(8, 9, 10)
+)
+
+
+process.simHcalTriggerPrimitiveDigis = cms.EDProducer("HcalTrigPrimDigiProducer",
+    latency = cms.int32(1),
+    MinSignalThreshold = cms.uint32(0),
+    ZS_threshold = cms.uint32(1),
+    PMTNoiseThreshold = cms.uint32(0),
+    InputTagFEDRaw = cms.InputTag("rawDataCollector"),
+    inputLabel = cms.VInputTag(cms.InputTag("hcalDigis"), cms.InputTag("hcalDigis")),
+    numberOfPresamples = cms.int32(2),
+    PeakFinderAlgorithm = cms.int32(2),
+    numberOfSamples = cms.int32(4),
+    weights = cms.vdouble(1.0, 1.0),
+    RunZS = cms.bool(False),
+    FG_threshold = cms.uint32(12),
+    FrontEndFormatError = cms.bool(False),
+    peakFilter = cms.bool(True)
+)
+
+
+process.simRctDigis = cms.EDProducer("L1RCTProducer",
+    queryIntervalInLS = cms.uint32(100),
+    hcalDigis = cms.VInputTag(cms.InputTag("simHcalTriggerPrimitiveDigis")),
+    ecalDigis = cms.VInputTag(cms.InputTag("ecalDigis","EcalTriggerPrimitives")),
+    getFedsFromOmds = cms.bool(False),
+    queryDelayInLS = cms.uint32(10),
+    useEcal = cms.bool(True),
+    useHcal = cms.bool(True),
+    BunchCrossings = cms.vint32(0)
+)
+
+
+process.simRpcTechTrigDigis = cms.EDProducer("RPCTechnicalTrigger",
+    BitNumbers = cms.vuint32(24, 25, 26, 27, 28, 
+        29, 30),
+    RPCDigiLabel = cms.InputTag("simMuonRPCDigis"),
+    Verbosity = cms.untracked.int32(0),
+    UseEventSetup = cms.untracked.int32(0),
+    ConfigFile = cms.string('hardware-pseudoconfig.txt'),
+    RPCSimLinkInstance = cms.InputTag("RPCDigiSimLink"),
+    BitNames = cms.vstring('L1Tech_RPC_TTU_barrel_Cosmics/v0', 
+        'L1Tech_RPC_TTU_pointing_Cosmics/v0', 
+        'L1Tech_RPC_TTU_RBplus2_Cosmics/v0', 
+        'L1Tech_RPC_TTU_RBplus1_Cosmics/v0', 
+        'L1Tech_RPC_TTU_RB0_Cosmics/v0', 
+        'L1Tech_RPC_TTU_RBminus1_Cosmics/v0', 
+        'L1Tech_RPC_TTU_RBminus2_Cosmics/v0'),
+    UseRPCSimLink = cms.untracked.int32(0)
+)
+
+
+process.simRpcTriggerDigis = cms.EDProducer("RPCTrigger",
+    label = cms.string('simMuonRPCDigis'),
+    RPCTriggerDebug = cms.untracked.int32(0)
 )
 
 
@@ -5326,457 +6534,685 @@ process.hlt1AK8PFJetsTrimMass00Fa2fa750f091c30c0e34f9c276982cc2 = cms.EDFilter("
 )
 
 
-process.hlt1AK8PFJetsTrimModMass00 = cms.EDFilter("HLT1PFJet",
+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00 = cms.EDFilter("HLT1PFJet",
     saveTags = cms.bool(False),
     MinPt = cms.double(40.0),
     MinN = cms.int32(1),
     MaxEta = cms.double(3.0),
     MinMass = cms.double(0.0),
-    inputTag = cms.InputTag("hltAK8PFJetsTrimMod"),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p1Pt0p03"),
     MinE = cms.double(-1.0),
     triggerType = cms.int32(85)
 )
 
 
-process.hlt1AK8PFJetsTrimModMass000863f4f4b91802c0aa8abddaebb6dba6 = cms.EDFilter("HLT1PFJet",
+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass000863f4f4b91802c0aa8abddaebb6dba6 = cms.EDFilter("HLT1PFJet",
     saveTags = cms.bool(False),
     MinPt = cms.double(40.0),
     MinN = cms.int32(1),
     MaxEta = cms.double(3.0),
     MinMass = cms.double(20.0),
-    inputTag = cms.InputTag("hltAK8PFJetsTrimMod"),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p1Pt0p03"),
     MinE = cms.double(-1.0),
     triggerType = cms.int32(85)
 )
 
 
-process.hlt1AK8PFJetsTrimModMass000c4eac09b01e10d488287685a733aa40 = cms.EDFilter("HLT1PFJet",
+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass000c4eac09b01e10d488287685a733aa40 = cms.EDFilter("HLT1PFJet",
     saveTags = cms.bool(False),
     MinPt = cms.double(40.0),
     MinN = cms.int32(1),
     MaxEta = cms.double(3.0),
     MinMass = cms.double(70.0),
-    inputTag = cms.InputTag("hltAK8PFJetsTrimMod"),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p1Pt0p03"),
     MinE = cms.double(-1.0),
     triggerType = cms.int32(85)
 )
 
 
-process.hlt1AK8PFJetsTrimModMass000e7a491373928669523b88ca23f599d7 = cms.EDFilter("HLT1PFJet",
+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass000e7a491373928669523b88ca23f599d7 = cms.EDFilter("HLT1PFJet",
     saveTags = cms.bool(False),
     MinPt = cms.double(40.0),
     MinN = cms.int32(1),
     MaxEta = cms.double(3.0),
     MinMass = cms.double(85.0),
-    inputTag = cms.InputTag("hltAK8PFJetsTrimMod"),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p1Pt0p03"),
     MinE = cms.double(-1.0),
     triggerType = cms.int32(85)
 )
 
 
-process.hlt1AK8PFJetsTrimModMass001872fd050bb05eba241b47cfcb3e4393 = cms.EDFilter("HLT1PFJet",
+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass001872fd050bb05eba241b47cfcb3e4393 = cms.EDFilter("HLT1PFJet",
     saveTags = cms.bool(False),
     MinPt = cms.double(40.0),
     MinN = cms.int32(1),
     MaxEta = cms.double(3.0),
     MinMass = cms.double(35.0),
-    inputTag = cms.InputTag("hltAK8PFJetsTrimMod"),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p1Pt0p03"),
     MinE = cms.double(-1.0),
     triggerType = cms.int32(85)
 )
 
 
-process.hlt1AK8PFJetsTrimModMass003285dee02ccc2f0fba010b5822aa24ce = cms.EDFilter("HLT1PFJet",
+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass003285dee02ccc2f0fba010b5822aa24ce = cms.EDFilter("HLT1PFJet",
     saveTags = cms.bool(False),
     MinPt = cms.double(40.0),
     MinN = cms.int32(1),
     MaxEta = cms.double(3.0),
     MinMass = cms.double(55.0),
-    inputTag = cms.InputTag("hltAK8PFJetsTrimMod"),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p1Pt0p03"),
     MinE = cms.double(-1.0),
     triggerType = cms.int32(85)
 )
 
 
-process.hlt1AK8PFJetsTrimModMass005ecbeec25cd4d1df38c16f99a1c0afea = cms.EDFilter("HLT1PFJet",
+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass005ecbeec25cd4d1df38c16f99a1c0afea = cms.EDFilter("HLT1PFJet",
     saveTags = cms.bool(False),
     MinPt = cms.double(40.0),
     MinN = cms.int32(1),
     MaxEta = cms.double(3.0),
     MinMass = cms.double(60.0),
-    inputTag = cms.InputTag("hltAK8PFJetsTrimMod"),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p1Pt0p03"),
     MinE = cms.double(-1.0),
     triggerType = cms.int32(85)
 )
 
 
-process.hlt1AK8PFJetsTrimModMass0068c0f93285e6a4487befbde993801eaa = cms.EDFilter("HLT1PFJet",
+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass0068c0f93285e6a4487befbde993801eaa = cms.EDFilter("HLT1PFJet",
     saveTags = cms.bool(False),
     MinPt = cms.double(40.0),
     MinN = cms.int32(1),
     MaxEta = cms.double(3.0),
     MinMass = cms.double(75.0),
-    inputTag = cms.InputTag("hltAK8PFJetsTrimMod"),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p1Pt0p03"),
     MinE = cms.double(-1.0),
     triggerType = cms.int32(85)
 )
 
 
-process.hlt1AK8PFJetsTrimModMass00690db50c99b2d30f93f17bdad09b137f = cms.EDFilter("HLT1PFJet",
+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00690db50c99b2d30f93f17bdad09b137f = cms.EDFilter("HLT1PFJet",
     saveTags = cms.bool(False),
     MinPt = cms.double(40.0),
     MinN = cms.int32(1),
     MaxEta = cms.double(3.0),
     MinMass = cms.double(0.0),
-    inputTag = cms.InputTag("hltAK8PFJetsTrimMod"),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p1Pt0p03"),
     MinE = cms.double(-1.0),
     triggerType = cms.int32(85)
 )
 
 
-process.hlt1AK8PFJetsTrimModMass007f7e6d272b13267a7022a4c9bd294891 = cms.EDFilter("HLT1PFJet",
+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass007f7e6d272b13267a7022a4c9bd294891 = cms.EDFilter("HLT1PFJet",
     saveTags = cms.bool(False),
     MinPt = cms.double(40.0),
     MinN = cms.int32(1),
     MaxEta = cms.double(3.0),
     MinMass = cms.double(30.0),
-    inputTag = cms.InputTag("hltAK8PFJetsTrimMod"),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p1Pt0p03"),
     MinE = cms.double(-1.0),
     triggerType = cms.int32(85)
 )
 
 
-process.hlt1AK8PFJetsTrimModMass00C2d5638d4ab8c47c106439f61fe5da10 = cms.EDFilter("HLT1PFJet",
+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00C2d5638d4ab8c47c106439f61fe5da10 = cms.EDFilter("HLT1PFJet",
     saveTags = cms.bool(False),
     MinPt = cms.double(40.0),
     MinN = cms.int32(1),
     MaxEta = cms.double(3.0),
     MinMass = cms.double(50.0),
-    inputTag = cms.InputTag("hltAK8PFJetsTrimMod"),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p1Pt0p03"),
     MinE = cms.double(-1.0),
     triggerType = cms.int32(85)
 )
 
 
-process.hlt1AK8PFJetsTrimModMass00C6b44566021b542f0a80552e537b408b = cms.EDFilter("HLT1PFJet",
+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00C6b44566021b542f0a80552e537b408b = cms.EDFilter("HLT1PFJet",
     saveTags = cms.bool(False),
     MinPt = cms.double(40.0),
     MinN = cms.int32(1),
     MaxEta = cms.double(3.0),
     MinMass = cms.double(65.0),
-    inputTag = cms.InputTag("hltAK8PFJetsTrimMod"),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p1Pt0p03"),
     MinE = cms.double(-1.0),
     triggerType = cms.int32(85)
 )
 
 
-process.hlt1AK8PFJetsTrimModMass00Cdc0379ecc8f02206272d67d4a80937c = cms.EDFilter("HLT1PFJet",
+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00Cdc0379ecc8f02206272d67d4a80937c = cms.EDFilter("HLT1PFJet",
     saveTags = cms.bool(False),
     MinPt = cms.double(40.0),
     MinN = cms.int32(1),
     MaxEta = cms.double(3.0),
     MinMass = cms.double(80.0),
-    inputTag = cms.InputTag("hltAK8PFJetsTrimMod"),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p1Pt0p03"),
     MinE = cms.double(-1.0),
     triggerType = cms.int32(85)
 )
 
 
-process.hlt1AK8PFJetsTrimModMass00D76494201fbea4ed57016cdeb6d16c1c = cms.EDFilter("HLT1PFJet",
+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00D76494201fbea4ed57016cdeb6d16c1c = cms.EDFilter("HLT1PFJet",
     saveTags = cms.bool(False),
     MinPt = cms.double(40.0),
     MinN = cms.int32(1),
     MaxEta = cms.double(3.0),
     MinMass = cms.double(15.0),
-    inputTag = cms.InputTag("hltAK8PFJetsTrimMod"),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p1Pt0p03"),
     MinE = cms.double(-1.0),
     triggerType = cms.int32(85)
 )
 
 
-process.hlt1AK8PFJetsTrimModMass00E0199c0c2f8f6fc7eee4c42e4708898c = cms.EDFilter("HLT1PFJet",
+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00E0199c0c2f8f6fc7eee4c42e4708898c = cms.EDFilter("HLT1PFJet",
     saveTags = cms.bool(False),
     MinPt = cms.double(40.0),
     MinN = cms.int32(1),
     MaxEta = cms.double(3.0),
     MinMass = cms.double(25.0),
-    inputTag = cms.InputTag("hltAK8PFJetsTrimMod"),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p1Pt0p03"),
     MinE = cms.double(-1.0),
     triggerType = cms.int32(85)
 )
 
 
-process.hlt1AK8PFJetsTrimModMass00E1f79057a3334fe8136ec0862f8c6645 = cms.EDFilter("HLT1PFJet",
+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00E1f79057a3334fe8136ec0862f8c6645 = cms.EDFilter("HLT1PFJet",
     saveTags = cms.bool(False),
     MinPt = cms.double(40.0),
     MinN = cms.int32(1),
     MaxEta = cms.double(3.0),
     MinMass = cms.double(5.0),
-    inputTag = cms.InputTag("hltAK8PFJetsTrimMod"),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p1Pt0p03"),
     MinE = cms.double(-1.0),
     triggerType = cms.int32(85)
 )
 
 
-process.hlt1AK8PFJetsTrimModMass00Ebc65b02f78e215a6c80377563e1082f = cms.EDFilter("HLT1PFJet",
+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00Ebc65b02f78e215a6c80377563e1082f = cms.EDFilter("HLT1PFJet",
     saveTags = cms.bool(False),
     MinPt = cms.double(40.0),
     MinN = cms.int32(1),
     MaxEta = cms.double(3.0),
     MinMass = cms.double(40.0),
-    inputTag = cms.InputTag("hltAK8PFJetsTrimMod"),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p1Pt0p03"),
     MinE = cms.double(-1.0),
     triggerType = cms.int32(85)
 )
 
 
-process.hlt1AK8PFJetsTrimModMass00F02887f505e29957c00acc6a7b31a076 = cms.EDFilter("HLT1PFJet",
+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00F02887f505e29957c00acc6a7b31a076 = cms.EDFilter("HLT1PFJet",
     saveTags = cms.bool(False),
     MinPt = cms.double(40.0),
     MinN = cms.int32(1),
     MaxEta = cms.double(3.0),
     MinMass = cms.double(45.0),
-    inputTag = cms.InputTag("hltAK8PFJetsTrimMod"),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p1Pt0p03"),
     MinE = cms.double(-1.0),
     triggerType = cms.int32(85)
 )
 
 
-process.hlt1AK8PFJetsTrimModMass00Fa2fa750f091c30c0e34f9c276982cc2 = cms.EDFilter("HLT1PFJet",
+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00Fa2fa750f091c30c0e34f9c276982cc2 = cms.EDFilter("HLT1PFJet",
     saveTags = cms.bool(False),
     MinPt = cms.double(40.0),
     MinN = cms.int32(1),
     MaxEta = cms.double(3.0),
     MinMass = cms.double(10.0),
-    inputTag = cms.InputTag("hltAK8PFJetsTrimMod"),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p1Pt0p03"),
     MinE = cms.double(-1.0),
     triggerType = cms.int32(85)
 )
 
 
-process.hlt1AK8PFJetsTrimModTestMass00 = cms.EDFilter("HLT1PFJet",
+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00 = cms.EDFilter("HLT1PFJet",
     saveTags = cms.bool(False),
     MinPt = cms.double(40.0),
     MinN = cms.int32(1),
     MaxEta = cms.double(3.0),
     MinMass = cms.double(0.0),
-    inputTag = cms.InputTag("hltAK8PFJetsTrimModTest"),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p1Pt0p05"),
     MinE = cms.double(-1.0),
     triggerType = cms.int32(85)
 )
 
 
-process.hlt1AK8PFJetsTrimModTestMass000863f4f4b91802c0aa8abddaebb6dba6 = cms.EDFilter("HLT1PFJet",
+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass000863f4f4b91802c0aa8abddaebb6dba6 = cms.EDFilter("HLT1PFJet",
     saveTags = cms.bool(False),
     MinPt = cms.double(40.0),
     MinN = cms.int32(1),
     MaxEta = cms.double(3.0),
     MinMass = cms.double(20.0),
-    inputTag = cms.InputTag("hltAK8PFJetsTrimModTest"),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p1Pt0p05"),
     MinE = cms.double(-1.0),
     triggerType = cms.int32(85)
 )
 
 
-process.hlt1AK8PFJetsTrimModTestMass000c4eac09b01e10d488287685a733aa40 = cms.EDFilter("HLT1PFJet",
+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass000c4eac09b01e10d488287685a733aa40 = cms.EDFilter("HLT1PFJet",
     saveTags = cms.bool(False),
     MinPt = cms.double(40.0),
     MinN = cms.int32(1),
     MaxEta = cms.double(3.0),
     MinMass = cms.double(70.0),
-    inputTag = cms.InputTag("hltAK8PFJetsTrimModTest"),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p1Pt0p05"),
     MinE = cms.double(-1.0),
     triggerType = cms.int32(85)
 )
 
 
-process.hlt1AK8PFJetsTrimModTestMass000e7a491373928669523b88ca23f599d7 = cms.EDFilter("HLT1PFJet",
+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass000e7a491373928669523b88ca23f599d7 = cms.EDFilter("HLT1PFJet",
     saveTags = cms.bool(False),
     MinPt = cms.double(40.0),
     MinN = cms.int32(1),
     MaxEta = cms.double(3.0),
     MinMass = cms.double(85.0),
-    inputTag = cms.InputTag("hltAK8PFJetsTrimModTest"),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p1Pt0p05"),
     MinE = cms.double(-1.0),
     triggerType = cms.int32(85)
 )
 
 
-process.hlt1AK8PFJetsTrimModTestMass001872fd050bb05eba241b47cfcb3e4393 = cms.EDFilter("HLT1PFJet",
+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass001872fd050bb05eba241b47cfcb3e4393 = cms.EDFilter("HLT1PFJet",
     saveTags = cms.bool(False),
     MinPt = cms.double(40.0),
     MinN = cms.int32(1),
     MaxEta = cms.double(3.0),
     MinMass = cms.double(35.0),
-    inputTag = cms.InputTag("hltAK8PFJetsTrimModTest"),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p1Pt0p05"),
     MinE = cms.double(-1.0),
     triggerType = cms.int32(85)
 )
 
 
-process.hlt1AK8PFJetsTrimModTestMass003285dee02ccc2f0fba010b5822aa24ce = cms.EDFilter("HLT1PFJet",
+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass003285dee02ccc2f0fba010b5822aa24ce = cms.EDFilter("HLT1PFJet",
     saveTags = cms.bool(False),
     MinPt = cms.double(40.0),
     MinN = cms.int32(1),
     MaxEta = cms.double(3.0),
     MinMass = cms.double(55.0),
-    inputTag = cms.InputTag("hltAK8PFJetsTrimModTest"),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p1Pt0p05"),
     MinE = cms.double(-1.0),
     triggerType = cms.int32(85)
 )
 
 
-process.hlt1AK8PFJetsTrimModTestMass005ecbeec25cd4d1df38c16f99a1c0afea = cms.EDFilter("HLT1PFJet",
+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass005ecbeec25cd4d1df38c16f99a1c0afea = cms.EDFilter("HLT1PFJet",
     saveTags = cms.bool(False),
     MinPt = cms.double(40.0),
     MinN = cms.int32(1),
     MaxEta = cms.double(3.0),
     MinMass = cms.double(60.0),
-    inputTag = cms.InputTag("hltAK8PFJetsTrimModTest"),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p1Pt0p05"),
     MinE = cms.double(-1.0),
     triggerType = cms.int32(85)
 )
 
 
-process.hlt1AK8PFJetsTrimModTestMass0068c0f93285e6a4487befbde993801eaa = cms.EDFilter("HLT1PFJet",
+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass0068c0f93285e6a4487befbde993801eaa = cms.EDFilter("HLT1PFJet",
     saveTags = cms.bool(False),
     MinPt = cms.double(40.0),
     MinN = cms.int32(1),
     MaxEta = cms.double(3.0),
     MinMass = cms.double(75.0),
-    inputTag = cms.InputTag("hltAK8PFJetsTrimModTest"),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p1Pt0p05"),
     MinE = cms.double(-1.0),
     triggerType = cms.int32(85)
 )
 
 
-process.hlt1AK8PFJetsTrimModTestMass00690db50c99b2d30f93f17bdad09b137f = cms.EDFilter("HLT1PFJet",
+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00690db50c99b2d30f93f17bdad09b137f = cms.EDFilter("HLT1PFJet",
     saveTags = cms.bool(False),
     MinPt = cms.double(40.0),
     MinN = cms.int32(1),
     MaxEta = cms.double(3.0),
     MinMass = cms.double(0.0),
-    inputTag = cms.InputTag("hltAK8PFJetsTrimModTest"),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p1Pt0p05"),
     MinE = cms.double(-1.0),
     triggerType = cms.int32(85)
 )
 
 
-process.hlt1AK8PFJetsTrimModTestMass007f7e6d272b13267a7022a4c9bd294891 = cms.EDFilter("HLT1PFJet",
+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass007f7e6d272b13267a7022a4c9bd294891 = cms.EDFilter("HLT1PFJet",
     saveTags = cms.bool(False),
     MinPt = cms.double(40.0),
     MinN = cms.int32(1),
     MaxEta = cms.double(3.0),
     MinMass = cms.double(30.0),
-    inputTag = cms.InputTag("hltAK8PFJetsTrimModTest"),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p1Pt0p05"),
     MinE = cms.double(-1.0),
     triggerType = cms.int32(85)
 )
 
 
-process.hlt1AK8PFJetsTrimModTestMass00C2d5638d4ab8c47c106439f61fe5da10 = cms.EDFilter("HLT1PFJet",
+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00C2d5638d4ab8c47c106439f61fe5da10 = cms.EDFilter("HLT1PFJet",
     saveTags = cms.bool(False),
     MinPt = cms.double(40.0),
     MinN = cms.int32(1),
     MaxEta = cms.double(3.0),
     MinMass = cms.double(50.0),
-    inputTag = cms.InputTag("hltAK8PFJetsTrimModTest"),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p1Pt0p05"),
     MinE = cms.double(-1.0),
     triggerType = cms.int32(85)
 )
 
 
-process.hlt1AK8PFJetsTrimModTestMass00C6b44566021b542f0a80552e537b408b = cms.EDFilter("HLT1PFJet",
+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00C6b44566021b542f0a80552e537b408b = cms.EDFilter("HLT1PFJet",
     saveTags = cms.bool(False),
     MinPt = cms.double(40.0),
     MinN = cms.int32(1),
     MaxEta = cms.double(3.0),
     MinMass = cms.double(65.0),
-    inputTag = cms.InputTag("hltAK8PFJetsTrimModTest"),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p1Pt0p05"),
     MinE = cms.double(-1.0),
     triggerType = cms.int32(85)
 )
 
 
-process.hlt1AK8PFJetsTrimModTestMass00Cdc0379ecc8f02206272d67d4a80937c = cms.EDFilter("HLT1PFJet",
+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00Cdc0379ecc8f02206272d67d4a80937c = cms.EDFilter("HLT1PFJet",
     saveTags = cms.bool(False),
     MinPt = cms.double(40.0),
     MinN = cms.int32(1),
     MaxEta = cms.double(3.0),
     MinMass = cms.double(80.0),
-    inputTag = cms.InputTag("hltAK8PFJetsTrimModTest"),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p1Pt0p05"),
     MinE = cms.double(-1.0),
     triggerType = cms.int32(85)
 )
 
 
-process.hlt1AK8PFJetsTrimModTestMass00D76494201fbea4ed57016cdeb6d16c1c = cms.EDFilter("HLT1PFJet",
+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00D76494201fbea4ed57016cdeb6d16c1c = cms.EDFilter("HLT1PFJet",
     saveTags = cms.bool(False),
     MinPt = cms.double(40.0),
     MinN = cms.int32(1),
     MaxEta = cms.double(3.0),
     MinMass = cms.double(15.0),
-    inputTag = cms.InputTag("hltAK8PFJetsTrimModTest"),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p1Pt0p05"),
     MinE = cms.double(-1.0),
     triggerType = cms.int32(85)
 )
 
 
-process.hlt1AK8PFJetsTrimModTestMass00E0199c0c2f8f6fc7eee4c42e4708898c = cms.EDFilter("HLT1PFJet",
+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00E0199c0c2f8f6fc7eee4c42e4708898c = cms.EDFilter("HLT1PFJet",
     saveTags = cms.bool(False),
     MinPt = cms.double(40.0),
     MinN = cms.int32(1),
     MaxEta = cms.double(3.0),
     MinMass = cms.double(25.0),
-    inputTag = cms.InputTag("hltAK8PFJetsTrimModTest"),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p1Pt0p05"),
     MinE = cms.double(-1.0),
     triggerType = cms.int32(85)
 )
 
 
-process.hlt1AK8PFJetsTrimModTestMass00E1f79057a3334fe8136ec0862f8c6645 = cms.EDFilter("HLT1PFJet",
+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00E1f79057a3334fe8136ec0862f8c6645 = cms.EDFilter("HLT1PFJet",
     saveTags = cms.bool(False),
     MinPt = cms.double(40.0),
     MinN = cms.int32(1),
     MaxEta = cms.double(3.0),
     MinMass = cms.double(5.0),
-    inputTag = cms.InputTag("hltAK8PFJetsTrimModTest"),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p1Pt0p05"),
     MinE = cms.double(-1.0),
     triggerType = cms.int32(85)
 )
 
 
-process.hlt1AK8PFJetsTrimModTestMass00Ebc65b02f78e215a6c80377563e1082f = cms.EDFilter("HLT1PFJet",
+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00Ebc65b02f78e215a6c80377563e1082f = cms.EDFilter("HLT1PFJet",
     saveTags = cms.bool(False),
     MinPt = cms.double(40.0),
     MinN = cms.int32(1),
     MaxEta = cms.double(3.0),
     MinMass = cms.double(40.0),
-    inputTag = cms.InputTag("hltAK8PFJetsTrimModTest"),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p1Pt0p05"),
     MinE = cms.double(-1.0),
     triggerType = cms.int32(85)
 )
 
 
-process.hlt1AK8PFJetsTrimModTestMass00F02887f505e29957c00acc6a7b31a076 = cms.EDFilter("HLT1PFJet",
+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00F02887f505e29957c00acc6a7b31a076 = cms.EDFilter("HLT1PFJet",
     saveTags = cms.bool(False),
     MinPt = cms.double(40.0),
     MinN = cms.int32(1),
     MaxEta = cms.double(3.0),
     MinMass = cms.double(45.0),
-    inputTag = cms.InputTag("hltAK8PFJetsTrimModTest"),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p1Pt0p05"),
     MinE = cms.double(-1.0),
     triggerType = cms.int32(85)
 )
 
 
-process.hlt1AK8PFJetsTrimModTestMass00Fa2fa750f091c30c0e34f9c276982cc2 = cms.EDFilter("HLT1PFJet",
+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00Fa2fa750f091c30c0e34f9c276982cc2 = cms.EDFilter("HLT1PFJet",
     saveTags = cms.bool(False),
     MinPt = cms.double(40.0),
     MinN = cms.int32(1),
     MaxEta = cms.double(3.0),
     MinMass = cms.double(10.0),
-    inputTag = cms.InputTag("hltAK8PFJetsTrimModTest"),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p1Pt0p05"),
+    MinE = cms.double(-1.0),
+    triggerType = cms.int32(85)
+)
+
+
+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00 = cms.EDFilter("HLT1PFJet",
+    saveTags = cms.bool(False),
+    MinPt = cms.double(40.0),
+    MinN = cms.int32(1),
+    MaxEta = cms.double(3.0),
+    MinMass = cms.double(0.0),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p2Pt0p06"),
+    MinE = cms.double(-1.0),
+    triggerType = cms.int32(85)
+)
+
+
+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass000863f4f4b91802c0aa8abddaebb6dba6 = cms.EDFilter("HLT1PFJet",
+    saveTags = cms.bool(False),
+    MinPt = cms.double(40.0),
+    MinN = cms.int32(1),
+    MaxEta = cms.double(3.0),
+    MinMass = cms.double(20.0),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p2Pt0p06"),
+    MinE = cms.double(-1.0),
+    triggerType = cms.int32(85)
+)
+
+
+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass000c4eac09b01e10d488287685a733aa40 = cms.EDFilter("HLT1PFJet",
+    saveTags = cms.bool(False),
+    MinPt = cms.double(40.0),
+    MinN = cms.int32(1),
+    MaxEta = cms.double(3.0),
+    MinMass = cms.double(70.0),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p2Pt0p06"),
+    MinE = cms.double(-1.0),
+    triggerType = cms.int32(85)
+)
+
+
+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass000e7a491373928669523b88ca23f599d7 = cms.EDFilter("HLT1PFJet",
+    saveTags = cms.bool(False),
+    MinPt = cms.double(40.0),
+    MinN = cms.int32(1),
+    MaxEta = cms.double(3.0),
+    MinMass = cms.double(85.0),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p2Pt0p06"),
+    MinE = cms.double(-1.0),
+    triggerType = cms.int32(85)
+)
+
+
+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass001872fd050bb05eba241b47cfcb3e4393 = cms.EDFilter("HLT1PFJet",
+    saveTags = cms.bool(False),
+    MinPt = cms.double(40.0),
+    MinN = cms.int32(1),
+    MaxEta = cms.double(3.0),
+    MinMass = cms.double(35.0),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p2Pt0p06"),
+    MinE = cms.double(-1.0),
+    triggerType = cms.int32(85)
+)
+
+
+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass003285dee02ccc2f0fba010b5822aa24ce = cms.EDFilter("HLT1PFJet",
+    saveTags = cms.bool(False),
+    MinPt = cms.double(40.0),
+    MinN = cms.int32(1),
+    MaxEta = cms.double(3.0),
+    MinMass = cms.double(55.0),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p2Pt0p06"),
+    MinE = cms.double(-1.0),
+    triggerType = cms.int32(85)
+)
+
+
+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass005ecbeec25cd4d1df38c16f99a1c0afea = cms.EDFilter("HLT1PFJet",
+    saveTags = cms.bool(False),
+    MinPt = cms.double(40.0),
+    MinN = cms.int32(1),
+    MaxEta = cms.double(3.0),
+    MinMass = cms.double(60.0),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p2Pt0p06"),
+    MinE = cms.double(-1.0),
+    triggerType = cms.int32(85)
+)
+
+
+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass0068c0f93285e6a4487befbde993801eaa = cms.EDFilter("HLT1PFJet",
+    saveTags = cms.bool(False),
+    MinPt = cms.double(40.0),
+    MinN = cms.int32(1),
+    MaxEta = cms.double(3.0),
+    MinMass = cms.double(75.0),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p2Pt0p06"),
+    MinE = cms.double(-1.0),
+    triggerType = cms.int32(85)
+)
+
+
+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00690db50c99b2d30f93f17bdad09b137f = cms.EDFilter("HLT1PFJet",
+    saveTags = cms.bool(False),
+    MinPt = cms.double(40.0),
+    MinN = cms.int32(1),
+    MaxEta = cms.double(3.0),
+    MinMass = cms.double(0.0),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p2Pt0p06"),
+    MinE = cms.double(-1.0),
+    triggerType = cms.int32(85)
+)
+
+
+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass007f7e6d272b13267a7022a4c9bd294891 = cms.EDFilter("HLT1PFJet",
+    saveTags = cms.bool(False),
+    MinPt = cms.double(40.0),
+    MinN = cms.int32(1),
+    MaxEta = cms.double(3.0),
+    MinMass = cms.double(30.0),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p2Pt0p06"),
+    MinE = cms.double(-1.0),
+    triggerType = cms.int32(85)
+)
+
+
+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00C2d5638d4ab8c47c106439f61fe5da10 = cms.EDFilter("HLT1PFJet",
+    saveTags = cms.bool(False),
+    MinPt = cms.double(40.0),
+    MinN = cms.int32(1),
+    MaxEta = cms.double(3.0),
+    MinMass = cms.double(50.0),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p2Pt0p06"),
+    MinE = cms.double(-1.0),
+    triggerType = cms.int32(85)
+)
+
+
+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00C6b44566021b542f0a80552e537b408b = cms.EDFilter("HLT1PFJet",
+    saveTags = cms.bool(False),
+    MinPt = cms.double(40.0),
+    MinN = cms.int32(1),
+    MaxEta = cms.double(3.0),
+    MinMass = cms.double(65.0),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p2Pt0p06"),
+    MinE = cms.double(-1.0),
+    triggerType = cms.int32(85)
+)
+
+
+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00Cdc0379ecc8f02206272d67d4a80937c = cms.EDFilter("HLT1PFJet",
+    saveTags = cms.bool(False),
+    MinPt = cms.double(40.0),
+    MinN = cms.int32(1),
+    MaxEta = cms.double(3.0),
+    MinMass = cms.double(80.0),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p2Pt0p06"),
+    MinE = cms.double(-1.0),
+    triggerType = cms.int32(85)
+)
+
+
+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00D76494201fbea4ed57016cdeb6d16c1c = cms.EDFilter("HLT1PFJet",
+    saveTags = cms.bool(False),
+    MinPt = cms.double(40.0),
+    MinN = cms.int32(1),
+    MaxEta = cms.double(3.0),
+    MinMass = cms.double(15.0),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p2Pt0p06"),
+    MinE = cms.double(-1.0),
+    triggerType = cms.int32(85)
+)
+
+
+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00E0199c0c2f8f6fc7eee4c42e4708898c = cms.EDFilter("HLT1PFJet",
+    saveTags = cms.bool(False),
+    MinPt = cms.double(40.0),
+    MinN = cms.int32(1),
+    MaxEta = cms.double(3.0),
+    MinMass = cms.double(25.0),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p2Pt0p06"),
+    MinE = cms.double(-1.0),
+    triggerType = cms.int32(85)
+)
+
+
+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00E1f79057a3334fe8136ec0862f8c6645 = cms.EDFilter("HLT1PFJet",
+    saveTags = cms.bool(False),
+    MinPt = cms.double(40.0),
+    MinN = cms.int32(1),
+    MaxEta = cms.double(3.0),
+    MinMass = cms.double(5.0),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p2Pt0p06"),
+    MinE = cms.double(-1.0),
+    triggerType = cms.int32(85)
+)
+
+
+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00Ebc65b02f78e215a6c80377563e1082f = cms.EDFilter("HLT1PFJet",
+    saveTags = cms.bool(False),
+    MinPt = cms.double(40.0),
+    MinN = cms.int32(1),
+    MaxEta = cms.double(3.0),
+    MinMass = cms.double(40.0),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p2Pt0p06"),
+    MinE = cms.double(-1.0),
+    triggerType = cms.int32(85)
+)
+
+
+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00F02887f505e29957c00acc6a7b31a076 = cms.EDFilter("HLT1PFJet",
+    saveTags = cms.bool(False),
+    MinPt = cms.double(40.0),
+    MinN = cms.int32(1),
+    MaxEta = cms.double(3.0),
+    MinMass = cms.double(45.0),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p2Pt0p06"),
+    MinE = cms.double(-1.0),
+    triggerType = cms.int32(85)
+)
+
+
+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00Fa2fa750f091c30c0e34f9c276982cc2 = cms.EDFilter("HLT1PFJet",
+    saveTags = cms.bool(False),
+    MinPt = cms.double(40.0),
+    MinN = cms.int32(1),
+    MaxEta = cms.double(3.0),
+    MinMass = cms.double(10.0),
+    inputTag = cms.InputTag("hltAK8PFJetsTrimR0p2Pt0p06"),
     MinE = cms.double(-1.0),
     triggerType = cms.int32(85)
 )
@@ -6044,6 +7480,18 @@ process.hltAK8SinglePFJet360TrimModMass30 = cms.EDFilter("HLT1PFJet",
 )
 
 
+process.hltBPTXAntiCoincidence = cms.EDFilter("HLTLevel1Activity",
+    technicalBits = cms.uint64(8),
+    ignoreL1Mask = cms.bool(True),
+    invert = cms.bool(True),
+    physicsLoBits = cms.uint64(0),
+    physicsHiBits = cms.uint64(0),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    daqPartitions = cms.uint32(1),
+    bunchCrossings = cms.vint32(0, 1, -1)
+)
+
+
 process.hltBoolEnd = cms.EDFilter("HLTBool",
     result = cms.bool(True)
 )
@@ -6051,6 +7499,17 @@ process.hltBoolEnd = cms.EDFilter("HLTBool",
 
 process.hltBoolFalse = cms.EDFilter("HLTBool",
     result = cms.bool(False)
+)
+
+
+process.hltHt280 = cms.EDFilter("HLTHtMhtFilter",
+    saveTags = cms.bool(False),
+    mhtLabels = cms.VInputTag("hltHtMht"),
+    meffSlope = cms.vdouble(1.0),
+    minMeff = cms.vdouble(0.0),
+    minMht = cms.vdouble(0.0),
+    htLabels = cms.VInputTag("hltHtMht"),
+    minHt = cms.vdouble(280.0)
 )
 
 
@@ -6142,13 +7601,25 @@ process.hltHt750 = cms.EDFilter("HLTHtMhtFilter",
 )
 
 
-process.hltL1sL1HTT175 = cms.EDFilter("HLTLevel1GTSeed",
+process.hltL1BeamHaloAntiCoincidence3BX = cms.EDFilter("HLTLevel1Activity",
+    technicalBits = cms.uint64(0),
+    ignoreL1Mask = cms.bool(True),
+    invert = cms.bool(True),
+    physicsLoBits = cms.uint64(0),
+    physicsHiBits = cms.uint64(9223372036854775808),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    daqPartitions = cms.uint32(1),
+    bunchCrossings = cms.vint32(0, 1, -1)
+)
+
+
+process.hltL1sL1HTT150OrHTT175 = cms.EDFilter("HLTLevel1GTSeed",
     saveTags = cms.bool(True),
-    L1SeedsLogicalExpression = cms.string('L1_HTT175'),
+    L1SeedsLogicalExpression = cms.string('L1_HTT150 OR L1_HTT175'),
     L1MuonCollectionTag = cms.InputTag("hltL1extraParticles"),
     L1UseL1TriggerObjectMaps = cms.bool(True),
     L1UseAliasesForSeeding = cms.bool(True),
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     L1CollectionsTag = cms.InputTag("hltL1extraParticles"),
     L1NrBxInEvent = cms.int32(3),
     L1GtObjectMapTag = cms.InputTag("hltL1GtObjectMap"),
@@ -6156,17 +7627,162 @@ process.hltL1sL1HTT175 = cms.EDFilter("HLTLevel1GTSeed",
 )
 
 
-process.hltL1sL1SingleJet128 = cms.EDFilter("HLTLevel1GTSeed",
+process.hltL1sL1HTT175 = cms.EDFilter("HLTLevel1GTSeed",
     saveTags = cms.bool(True),
-    L1SeedsLogicalExpression = cms.string('L1_SingleJet128'),
+    L1SeedsLogicalExpression = cms.string('L1_HTT175'),
     L1MuonCollectionTag = cms.InputTag("hltL1extraParticles"),
     L1UseL1TriggerObjectMaps = cms.bool(True),
     L1UseAliasesForSeeding = cms.bool(True),
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     L1CollectionsTag = cms.InputTag("hltL1extraParticles"),
     L1NrBxInEvent = cms.int32(3),
     L1GtObjectMapTag = cms.InputTag("hltL1GtObjectMap"),
     L1TechTriggerSeeding = cms.bool(False)
+)
+
+
+process.hltL1sL1HTT175ORHTT200 = cms.EDFilter("HLTLevel1GTSeed",
+    saveTags = cms.bool(True),
+    L1SeedsLogicalExpression = cms.string('L1_HTT175 OR L1_HTT200'),
+    L1MuonCollectionTag = cms.InputTag("hltL1extraParticles"),
+    L1UseL1TriggerObjectMaps = cms.bool(True),
+    L1UseAliasesForSeeding = cms.bool(True),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    L1CollectionsTag = cms.InputTag("hltL1extraParticles"),
+    L1NrBxInEvent = cms.int32(3),
+    L1GtObjectMapTag = cms.InputTag("hltL1GtObjectMap"),
+    L1TechTriggerSeeding = cms.bool(False)
+)
+
+
+process.hltL1sL1HTT175ORHTT200ORHTT250 = cms.EDFilter("HLTLevel1GTSeed",
+    saveTags = cms.bool(True),
+    L1SeedsLogicalExpression = cms.string('L1_HTT175 OR L1_HTT200 OR L1_HTT250'),
+    L1MuonCollectionTag = cms.InputTag("hltL1extraParticles"),
+    L1UseL1TriggerObjectMaps = cms.bool(True),
+    L1UseAliasesForSeeding = cms.bool(True),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    L1CollectionsTag = cms.InputTag("hltL1extraParticles"),
+    L1NrBxInEvent = cms.int32(3),
+    L1GtObjectMapTag = cms.InputTag("hltL1GtObjectMap"),
+    L1TechTriggerSeeding = cms.bool(False)
+)
+
+
+process.hltL1sL1HTT200 = cms.EDFilter("HLTLevel1GTSeed",
+    saveTags = cms.bool(True),
+    L1SeedsLogicalExpression = cms.string('L1_HTT200'),
+    L1MuonCollectionTag = cms.InputTag("hltL1extraParticles"),
+    L1UseL1TriggerObjectMaps = cms.bool(True),
+    L1UseAliasesForSeeding = cms.bool(True),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    L1CollectionsTag = cms.InputTag("hltL1extraParticles"),
+    L1NrBxInEvent = cms.int32(3),
+    L1GtObjectMapTag = cms.InputTag("hltL1GtObjectMap"),
+    L1TechTriggerSeeding = cms.bool(False)
+)
+
+
+process.hltL1sL1HTT200ORHTT250 = cms.EDFilter("HLTLevel1GTSeed",
+    saveTags = cms.bool(True),
+    L1SeedsLogicalExpression = cms.string('L1_HTT200 OR L1_HTT250'),
+    L1MuonCollectionTag = cms.InputTag("hltL1extraParticles"),
+    L1UseL1TriggerObjectMaps = cms.bool(True),
+    L1UseAliasesForSeeding = cms.bool(True),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    L1CollectionsTag = cms.InputTag("hltL1extraParticles"),
+    L1NrBxInEvent = cms.int32(3),
+    L1GtObjectMapTag = cms.InputTag("hltL1GtObjectMap"),
+    L1TechTriggerSeeding = cms.bool(False)
+)
+
+
+process.hltL1sL1HTT250 = cms.EDFilter("HLTLevel1GTSeed",
+    saveTags = cms.bool(True),
+    L1SeedsLogicalExpression = cms.string('L1_HTT250'),
+    L1MuonCollectionTag = cms.InputTag("hltL1extraParticles"),
+    L1UseL1TriggerObjectMaps = cms.bool(True),
+    L1UseAliasesForSeeding = cms.bool(True),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    L1CollectionsTag = cms.InputTag("hltL1extraParticles"),
+    L1NrBxInEvent = cms.int32(3),
+    L1GtObjectMapTag = cms.InputTag("hltL1GtObjectMap"),
+    L1TechTriggerSeeding = cms.bool(False)
+)
+
+
+process.hltL1sL1SingleJet200 = cms.EDFilter("HLTLevel1GTSeed",
+    saveTags = cms.bool(True),
+    L1SeedsLogicalExpression = cms.string('L1_SingleJet200'),
+    L1MuonCollectionTag = cms.InputTag("hltL1extraParticles"),
+    L1UseL1TriggerObjectMaps = cms.bool(True),
+    L1UseAliasesForSeeding = cms.bool(True),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    L1CollectionsTag = cms.InputTag("hltL1extraParticles"),
+    L1NrBxInEvent = cms.int32(3),
+    L1GtObjectMapTag = cms.InputTag("hltL1GtObjectMap"),
+    L1TechTriggerSeeding = cms.bool(False)
+)
+
+
+process.hltL1sL1SingleJetC20NotBptxOR = cms.EDFilter("HLTLevel1GTSeed",
+    saveTags = cms.bool(False),
+    L1SeedsLogicalExpression = cms.string('L1_SingleJetC20_NotBptxOR'),
+    L1MuonCollectionTag = cms.InputTag("hltL1extraParticles"),
+    L1UseL1TriggerObjectMaps = cms.bool(True),
+    L1UseAliasesForSeeding = cms.bool(True),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    L1CollectionsTag = cms.InputTag("hltL1extraParticles"),
+    L1NrBxInEvent = cms.int32(1),
+    L1GtObjectMapTag = cms.InputTag("hltL1GtObjectMap"),
+    L1TechTriggerSeeding = cms.bool(False)
+)
+
+
+process.hltMET70 = cms.EDFilter("HLT1CaloMET",
+    saveTags = cms.bool(True),
+    MinPt = cms.double(70.0),
+    MinN = cms.int32(1),
+    MaxEta = cms.double(-1.0),
+    MinMass = cms.double(-1.0),
+    inputTag = cms.InputTag("hltMet"),
+    MinE = cms.double(-1.0),
+    triggerType = cms.int32(87)
+)
+
+
+process.hltMETClean60 = cms.EDFilter("HLT1CaloMET",
+    saveTags = cms.bool(True),
+    MinPt = cms.double(60.0),
+    MinN = cms.int32(1),
+    MaxEta = cms.double(-1.0),
+    MinMass = cms.double(-1.0),
+    inputTag = cms.InputTag("hltMetClean"),
+    MinE = cms.double(-1.0),
+    triggerType = cms.int32(87)
+)
+
+
+process.hltMETCleanUsingJetID60 = cms.EDFilter("HLT1CaloMET",
+    saveTags = cms.bool(True),
+    MinPt = cms.double(60.0),
+    MinN = cms.int32(1),
+    MaxEta = cms.double(-1.0),
+    MinMass = cms.double(-1.0),
+    inputTag = cms.InputTag("hltMetCleanUsingJetID"),
+    MinE = cms.double(-1.0),
+    triggerType = cms.int32(87)
+)
+
+
+process.hltPFHT350 = cms.EDFilter("HLTHtMhtFilter",
+    saveTags = cms.bool(True),
+    mhtLabels = cms.VInputTag("hltPFHT"),
+    meffSlope = cms.vdouble(1.0),
+    minMeff = cms.vdouble(0.0),
+    minMht = cms.vdouble(0.0),
+    htLabels = cms.VInputTag("hltPFHT"),
+    minHt = cms.vdouble(350.0)
 )
 
 
@@ -6269,1635 +7885,3614 @@ process.hltPFHT950 = cms.EDFilter("HLTHtMhtFilter",
 )
 
 
+process.hltPFMET120Filter = cms.EDFilter("HLTMhtFilter",
+    saveTags = cms.bool(True),
+    mhtLabels = cms.VInputTag("hltPFMETProducer"),
+    minMht = cms.vdouble(120.0)
+)
+
+
 process.hltPreAK8PFHT450 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT450TrimMass00 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT550 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT550TrimMass00 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT650 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT650TrimMass00 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT650TrimMass00TrimMass00 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT650TrimMass00TrimMass05 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT650TrimMass00TrimMass10 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT650TrimMass00TrimMass15 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT650TrimMass00TrimMass20 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT650TrimMass00TrimMass25 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT650TrimMass00TrimMass30 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT650TrimMass00TrimMass35 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT650TrimMass00TrimMass40 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT650TrimMass00TrimMass45 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT650TrimMass00TrimMass50 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT650TrimMass00TrimMass55 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT650TrimMass00TrimMass60 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT650TrimMass00TrimMass65 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT650TrimMass00TrimMass70 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT650TrimMass00TrimMass75 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT650TrimMass00TrimMass80 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT650TrimMass00TrimMass85 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT650TrimModMass00 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT650TrimR0p1Pt0p03Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT650TrimModMass00TrimModMass00 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT650TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT650TrimModMass00TrimModMass05 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT650TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass05 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT650TrimModMass00TrimModMass10 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT650TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass10 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT650TrimModMass00TrimModMass15 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT650TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass15 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT650TrimModMass00TrimModMass20 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT650TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass20 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT650TrimModMass00TrimModMass25 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT650TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass25 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT650TrimModMass00TrimModMass30 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT650TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass30 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT650TrimModMass00TrimModMass35 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT650TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass35 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT650TrimModMass00TrimModMass40 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT650TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass40 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT650TrimModMass00TrimModMass45 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT650TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass45 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT650TrimModMass00TrimModMass50 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT650TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass50 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT650TrimModMass00TrimModMass55 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT650TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass55 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT650TrimModMass00TrimModMass60 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT650TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass60 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT650TrimModMass00TrimModMass65 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT650TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass65 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT650TrimModMass00TrimModMass70 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT650TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass70 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT650TrimModMass00TrimModMass75 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT650TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass75 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT650TrimModMass00TrimModMass80 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT650TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass80 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT650TrimModMass00TrimModMass85 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT650TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass85 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT650TrimModTestMass00 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT650TrimR0p1Pt0p05Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT650TrimModTestMass00TrimModTestMass00 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT650TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT650TrimModTestMass00TrimModTestMass05 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT650TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass05 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT650TrimModTestMass00TrimModTestMass10 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT650TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass10 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT650TrimModTestMass00TrimModTestMass15 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT650TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass15 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT650TrimModTestMass00TrimModTestMass20 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT650TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass20 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT650TrimModTestMass00TrimModTestMass25 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT650TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass25 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT650TrimModTestMass00TrimModTestMass30 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT650TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass30 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT650TrimModTestMass00TrimModTestMass35 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT650TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass35 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT650TrimModTestMass00TrimModTestMass40 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT650TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass40 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT650TrimModTestMass00TrimModTestMass45 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT650TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass45 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT650TrimModTestMass00TrimModTestMass50 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT650TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass50 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT650TrimModTestMass00TrimModTestMass55 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT650TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass55 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT650TrimModTestMass00TrimModTestMass60 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT650TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass60 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT650TrimModTestMass00TrimModTestMass65 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT650TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass65 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT650TrimModTestMass00TrimModTestMass70 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT650TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass70 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT650TrimModTestMass00TrimModTestMass75 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT650TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass75 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT650TrimModTestMass00TrimModTestMass80 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT650TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass80 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT650TrimModTestMass00TrimModTestMass85 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT650TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass85 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT650TrimR0p2Pt0p06Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT650TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT650TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass05 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT650TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass10 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT650TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass15 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT650TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass20 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT650TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass25 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT650TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass30 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT650TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass35 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT650TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass40 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT650TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass45 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT650TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass50 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT650TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass55 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT650TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass60 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT650TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass65 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT650TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass70 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT650TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass75 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT650TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass80 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT650TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass85 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT700TrimMass00 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT700TrimMass00TrimMass00 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT700TrimMass00TrimMass05 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT700TrimMass00TrimMass10 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT700TrimMass00TrimMass15 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT700TrimMass00TrimMass20 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT700TrimMass00TrimMass25 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT700TrimMass00TrimMass30 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT700TrimMass00TrimMass35 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT700TrimMass00TrimMass40 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT700TrimMass00TrimMass45 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT700TrimMass00TrimMass50 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT700TrimMass00TrimMass55 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT700TrimMass00TrimMass60 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT700TrimMass00TrimMass65 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT700TrimMass00TrimMass70 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT700TrimMass00TrimMass75 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT700TrimMass00TrimMass80 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT700TrimMass00TrimMass85 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT700TrimModMass00 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT700TrimR0p1Pt0p03Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT700TrimModMass00TrimModMass00 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT700TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT700TrimModMass00TrimModMass05 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT700TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass05 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT700TrimModMass00TrimModMass10 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT700TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass10 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT700TrimModMass00TrimModMass15 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT700TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass15 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT700TrimModMass00TrimModMass20 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT700TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass20 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT700TrimModMass00TrimModMass25 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT700TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass25 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT700TrimModMass00TrimModMass30 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT700TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass30 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT700TrimModMass00TrimModMass35 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT700TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass35 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT700TrimModMass00TrimModMass40 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT700TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass40 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT700TrimModMass00TrimModMass45 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT700TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass45 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT700TrimModMass00TrimModMass50 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT700TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass50 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT700TrimModMass00TrimModMass55 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT700TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass55 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT700TrimModMass00TrimModMass60 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT700TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass60 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT700TrimModMass00TrimModMass65 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT700TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass65 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT700TrimModMass00TrimModMass70 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT700TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass70 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT700TrimModMass00TrimModMass75 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT700TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass75 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT700TrimModMass00TrimModMass80 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT700TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass80 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT700TrimModMass00TrimModMass85 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT700TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass85 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT700TrimR0p1Pt0p05Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT700TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT700TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass05 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT700TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass10 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT700TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass15 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT700TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass20 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT700TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass25 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT700TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass30 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT700TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass35 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT700TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass40 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT700TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass45 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT700TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass50 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT700TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass55 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT700TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass60 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT700TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass65 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT700TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass70 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT700TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass75 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT700TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass80 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT700TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass85 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT700TrimR0p2Pt0p06Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT700TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT700TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass05 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT700TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass10 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT700TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass15 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT700TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass20 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT700TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass25 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT700TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass30 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT700TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass35 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT700TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass40 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT700TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass45 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT700TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass50 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT700TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass55 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT700TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass60 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT700TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass65 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT700TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass70 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT700TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass75 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT700TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass80 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT700TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass85 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT750 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT750TrimMass00 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT750TrimMass00TrimMass00 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT750TrimMass00TrimMass05 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT750TrimMass00TrimMass10 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT750TrimMass00TrimMass15 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT750TrimMass00TrimMass20 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT750TrimMass00TrimMass25 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT750TrimMass00TrimMass30 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT750TrimMass00TrimMass35 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT750TrimMass00TrimMass40 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT750TrimMass00TrimMass45 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT750TrimMass00TrimMass50 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT750TrimMass00TrimMass55 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT750TrimMass00TrimMass60 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT750TrimMass00TrimMass65 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT750TrimMass00TrimMass70 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT750TrimMass00TrimMass75 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT750TrimMass00TrimMass80 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT750TrimMass00TrimMass85 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT750TrimModMass00 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT750TrimR0p1Pt0p03Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT750TrimModMass00TrimModMass00 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT750TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT750TrimModMass00TrimModMass05 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT750TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass05 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT750TrimModMass00TrimModMass10 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT750TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass10 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT750TrimModMass00TrimModMass15 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT750TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass15 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT750TrimModMass00TrimModMass20 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT750TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass20 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT750TrimModMass00TrimModMass25 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT750TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass25 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT750TrimModMass00TrimModMass30 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT750TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass30 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT750TrimModMass00TrimModMass35 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT750TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass35 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT750TrimModMass00TrimModMass40 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT750TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass40 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT750TrimModMass00TrimModMass45 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT750TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass45 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT750TrimModMass00TrimModMass50 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT750TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass50 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT750TrimModMass00TrimModMass55 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT750TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass55 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT750TrimModMass00TrimModMass60 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT750TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass60 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT750TrimModMass00TrimModMass65 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT750TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass65 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT750TrimModMass00TrimModMass70 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT750TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass70 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT750TrimModMass00TrimModMass75 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT750TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass75 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT750TrimModMass00TrimModMass80 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT750TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass80 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT750TrimModMass00TrimModMass85 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT750TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass85 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT750TrimR0p1Pt0p05Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT750TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT750TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass05 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT750TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass10 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT750TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass15 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT750TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass20 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT750TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass25 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT750TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass30 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT750TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass35 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT750TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass40 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT750TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass45 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT750TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass50 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT750TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass55 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT750TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass60 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT750TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass65 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT750TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass70 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT750TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass75 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT750TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass80 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT750TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass85 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT750TrimR0p2Pt0p06Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT750TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT750TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass05 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT750TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass10 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT750TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass15 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT750TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass20 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT750TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass25 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT750TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass30 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT750TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass35 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT750TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass40 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT750TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass45 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT750TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass50 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT750TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass55 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT750TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass60 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT750TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass65 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT750TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass70 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT750TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass75 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT750TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass80 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT750TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass85 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT800TrimMass00 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT800TrimMass00TrimMass00 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT800TrimMass00TrimMass05 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT800TrimMass00TrimMass10 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT800TrimMass00TrimMass15 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT800TrimMass00TrimMass20 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT800TrimMass00TrimMass25 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT800TrimMass00TrimMass30 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT800TrimMass00TrimMass35 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT800TrimMass00TrimMass40 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT800TrimMass00TrimMass45 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT800TrimMass00TrimMass50 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT800TrimMass00TrimMass55 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT800TrimMass00TrimMass60 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT800TrimMass00TrimMass65 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT800TrimMass00TrimMass70 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT800TrimMass00TrimMass75 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT800TrimMass00TrimMass80 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT800TrimMass00TrimMass85 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT800TrimModMass00 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT800TrimR0p1Pt0p03Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT800TrimModMass00TrimModMass00 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT800TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT800TrimModMass00TrimModMass05 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT800TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass05 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT800TrimModMass00TrimModMass10 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT800TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass10 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT800TrimModMass00TrimModMass15 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT800TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass15 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT800TrimModMass00TrimModMass20 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT800TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass20 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT800TrimModMass00TrimModMass25 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT800TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass25 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT800TrimModMass00TrimModMass30 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT800TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass30 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT800TrimModMass00TrimModMass35 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT800TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass35 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT800TrimModMass00TrimModMass40 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT800TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass40 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT800TrimModMass00TrimModMass45 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT800TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass45 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT800TrimModMass00TrimModMass50 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT800TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass50 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT800TrimModMass00TrimModMass55 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT800TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass55 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT800TrimModMass00TrimModMass60 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT800TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass60 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT800TrimModMass00TrimModMass65 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT800TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass65 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT800TrimModMass00TrimModMass70 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT800TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass70 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT800TrimModMass00TrimModMass75 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT800TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass75 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT800TrimModMass00TrimModMass80 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT800TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass80 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT800TrimModMass00TrimModMass85 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT800TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass85 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT800TrimR0p1Pt0p05Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT800TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT800TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass05 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT800TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass10 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT800TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass15 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT800TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass20 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT800TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass25 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT800TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass30 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT800TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass35 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT800TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass40 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT800TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass45 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT800TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass50 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT800TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass55 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT800TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass60 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT800TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass65 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT800TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass70 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT800TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass75 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT800TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass80 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT800TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass85 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT800TrimR0p2Pt0p06Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT800TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT800TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass05 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT800TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass10 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT800TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass15 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT800TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass20 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT800TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass25 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT800TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass30 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT800TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass35 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT800TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass40 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT800TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass45 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT800TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass50 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT800TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass55 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT800TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass60 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT800TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass65 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT800TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass70 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT800TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass75 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT800TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass80 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT800TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass85 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT850 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT850TrimMass00 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT850TrimMass00TrimMass00 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT850TrimMass00TrimMass05 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT850TrimMass00TrimMass10 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT850TrimMass00TrimMass15 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT850TrimMass00TrimMass20 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT850TrimMass00TrimMass25 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT850TrimMass00TrimMass30 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT850TrimMass00TrimMass35 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT850TrimMass00TrimMass40 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT850TrimMass00TrimMass45 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT850TrimMass00TrimMass50 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT850TrimMass00TrimMass55 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT850TrimMass00TrimMass60 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT850TrimMass00TrimMass65 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT850TrimMass00TrimMass70 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT850TrimMass00TrimMass75 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT850TrimMass00TrimMass80 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT850TrimMass00TrimMass85 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT850TrimModMass00 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT850TrimModMass00TrimModMass00 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT850TrimModMass00TrimModMass05 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175ORHTT200 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT850TrimModMass00TrimModMass10 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175ORHTT200ORHTT250 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT850TrimModMass00TrimModMass15 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175ORHTT200ORHTT250TrimR0p1Pt0p03Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT850TrimModMass00TrimModMass20 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175ORHTT200ORHTT250TrimR0p1Pt0p03Mass05 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT850TrimModMass00TrimModMass25 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175ORHTT200ORHTT250TrimR0p1Pt0p03Mass10 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT850TrimModMass00TrimModMass30 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175ORHTT200ORHTT250TrimR0p1Pt0p03Mass15 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT850TrimModMass00TrimModMass35 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175ORHTT200ORHTT250TrimR0p1Pt0p03Mass20 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT850TrimModMass00TrimModMass40 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175ORHTT200ORHTT250TrimR0p1Pt0p03Mass25 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT850TrimModMass00TrimModMass45 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175ORHTT200ORHTT250TrimR0p1Pt0p03Mass30 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT850TrimModMass00TrimModMass50 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175ORHTT200ORHTT250TrimR0p1Pt0p03Mass35 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT850TrimModMass00TrimModMass55 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175ORHTT200ORHTT250TrimR0p1Pt0p03Mass40 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT850TrimModMass00TrimModMass60 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175ORHTT200ORHTT250TrimR0p1Pt0p03Mass45 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT850TrimModMass00TrimModMass65 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175ORHTT200ORHTT250TrimR0p1Pt0p03Mass50 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT850TrimModMass00TrimModMass70 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175ORHTT200ORHTT250TrimR0p1Pt0p03Mass55 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT850TrimModMass00TrimModMass75 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175ORHTT200ORHTT250TrimR0p1Pt0p03Mass60 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT850TrimModMass00TrimModMass80 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175ORHTT200ORHTT250TrimR0p1Pt0p03Mass65 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT850TrimModMass00TrimModMass85 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175ORHTT200ORHTT250TrimR0p1Pt0p03Mass70 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175ORHTT200ORHTT250TrimR0p1Pt0p03Mass75 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175ORHTT200ORHTT250TrimR0p1Pt0p03Mass80 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175ORHTT200ORHTT250TrimR0p1Pt0p03Mass85 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175ORHTT200TrimR0p1Pt0p03Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175ORHTT200TrimR0p1Pt0p03Mass05 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175ORHTT200TrimR0p1Pt0p03Mass10 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175ORHTT200TrimR0p1Pt0p03Mass15 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175ORHTT200TrimR0p1Pt0p03Mass20 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175ORHTT200TrimR0p1Pt0p03Mass25 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175ORHTT200TrimR0p1Pt0p03Mass30 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175ORHTT200TrimR0p1Pt0p03Mass35 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175ORHTT200TrimR0p1Pt0p03Mass40 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175ORHTT200TrimR0p1Pt0p03Mass45 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175ORHTT200TrimR0p1Pt0p03Mass50 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175ORHTT200TrimR0p1Pt0p03Mass55 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175ORHTT200TrimR0p1Pt0p03Mass60 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175ORHTT200TrimR0p1Pt0p03Mass65 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175ORHTT200TrimR0p1Pt0p03Mass70 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175ORHTT200TrimR0p1Pt0p03Mass75 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175ORHTT200TrimR0p1Pt0p03Mass80 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175ORHTT200TrimR0p1Pt0p03Mass85 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175TrimR0p1Pt0p03Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175TrimR0p1Pt0p03Mass05 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175TrimR0p1Pt0p03Mass10 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175TrimR0p1Pt0p03Mass15 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175TrimR0p1Pt0p03Mass20 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175TrimR0p1Pt0p03Mass25 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175TrimR0p1Pt0p03Mass30 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175TrimR0p1Pt0p03Mass35 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175TrimR0p1Pt0p03Mass40 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175TrimR0p1Pt0p03Mass45 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175TrimR0p1Pt0p03Mass50 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175TrimR0p1Pt0p03Mass55 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175TrimR0p1Pt0p03Mass60 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175TrimR0p1Pt0p03Mass65 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175TrimR0p1Pt0p03Mass70 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175TrimR0p1Pt0p03Mass75 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175TrimR0p1Pt0p03Mass80 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT175TrimR0p1Pt0p03Mass85 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT200 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT200ORHTT250 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT200ORHTT250TrimR0p1Pt0p03Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT200ORHTT250TrimR0p1Pt0p03Mass05 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT200ORHTT250TrimR0p1Pt0p03Mass10 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT200ORHTT250TrimR0p1Pt0p03Mass15 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT200ORHTT250TrimR0p1Pt0p03Mass20 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT200ORHTT250TrimR0p1Pt0p03Mass25 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT200ORHTT250TrimR0p1Pt0p03Mass30 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT200ORHTT250TrimR0p1Pt0p03Mass35 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT200ORHTT250TrimR0p1Pt0p03Mass40 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT200ORHTT250TrimR0p1Pt0p03Mass45 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT200ORHTT250TrimR0p1Pt0p03Mass50 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT200ORHTT250TrimR0p1Pt0p03Mass55 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT200ORHTT250TrimR0p1Pt0p03Mass60 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT200ORHTT250TrimR0p1Pt0p03Mass65 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT200ORHTT250TrimR0p1Pt0p03Mass70 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT200ORHTT250TrimR0p1Pt0p03Mass75 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT200ORHTT250TrimR0p1Pt0p03Mass80 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT200ORHTT250TrimR0p1Pt0p03Mass85 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT200TrimR0p1Pt0p03Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT200TrimR0p1Pt0p03Mass05 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT200TrimR0p1Pt0p03Mass10 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT200TrimR0p1Pt0p03Mass15 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT200TrimR0p1Pt0p03Mass20 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT200TrimR0p1Pt0p03Mass25 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT200TrimR0p1Pt0p03Mass30 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT200TrimR0p1Pt0p03Mass35 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT200TrimR0p1Pt0p03Mass40 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT200TrimR0p1Pt0p03Mass45 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT200TrimR0p1Pt0p03Mass50 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT200TrimR0p1Pt0p03Mass55 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT200TrimR0p1Pt0p03Mass60 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT200TrimR0p1Pt0p03Mass65 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT200TrimR0p1Pt0p03Mass70 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT200TrimR0p1Pt0p03Mass75 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT200TrimR0p1Pt0p03Mass80 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT200TrimR0p1Pt0p03Mass85 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT250 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT250TrimR0p1Pt0p03Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT250TrimR0p1Pt0p03Mass05 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT250TrimR0p1Pt0p03Mass10 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT250TrimR0p1Pt0p03Mass15 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT250TrimR0p1Pt0p03Mass20 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT250TrimR0p1Pt0p03Mass25 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT250TrimR0p1Pt0p03Mass30 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT250TrimR0p1Pt0p03Mass35 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT250TrimR0p1Pt0p03Mass40 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT250TrimR0p1Pt0p03Mass45 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT250TrimR0p1Pt0p03Mass50 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT250TrimR0p1Pt0p03Mass55 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT250TrimR0p1Pt0p03Mass60 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT250TrimR0p1Pt0p03Mass65 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT250TrimR0p1Pt0p03Mass70 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT250TrimR0p1Pt0p03Mass75 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT250TrimR0p1Pt0p03Mass80 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00L1HTT250TrimR0p1Pt0p03Mass85 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass05 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass10 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass15 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass20 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass25 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass30 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass35 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass40 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass45 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass50 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass55 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass60 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass65 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass70 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass75 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass80 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass85 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p05Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass05 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass10 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass15 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass20 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass25 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass30 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass35 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass40 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass45 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass50 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass55 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass60 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass65 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass70 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass75 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass80 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass85 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p2Pt0p06Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass05 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass10 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass15 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass20 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass25 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass30 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass35 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass40 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass45 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass50 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass55 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass60 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass65 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass70 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass75 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass80 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT850TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass85 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT900TrimMass00 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT900TrimMass00TrimMass00 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT900TrimMass00TrimMass05 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT900TrimMass00TrimMass10 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT900TrimMass00TrimMass15 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT900TrimMass00TrimMass20 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT900TrimMass00TrimMass25 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT900TrimMass00TrimMass30 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT900TrimMass00TrimMass35 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT900TrimMass00TrimMass40 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT900TrimMass00TrimMass45 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT900TrimMass00TrimMass50 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT900TrimMass00TrimMass55 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT900TrimMass00TrimMass60 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT900TrimMass00TrimMass65 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT900TrimMass00TrimMass70 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT900TrimMass00TrimMass75 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT900TrimMass00TrimMass80 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFHT900TrimMass00TrimMass85 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT900TrimModMass00 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT900TrimR0p1Pt0p03Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT900TrimModMass00TrimModMass00 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT900TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT900TrimModMass00TrimModMass05 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT900TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass05 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT900TrimModMass00TrimModMass10 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT900TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass10 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT900TrimModMass00TrimModMass15 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT900TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass15 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT900TrimModMass00TrimModMass20 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT900TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass20 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT900TrimModMass00TrimModMass25 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT900TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass25 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT900TrimModMass00TrimModMass30 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT900TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass30 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT900TrimModMass00TrimModMass35 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT900TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass35 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT900TrimModMass00TrimModMass40 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT900TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass40 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT900TrimModMass00TrimModMass45 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT900TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass45 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT900TrimModMass00TrimModMass50 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT900TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass50 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT900TrimModMass00TrimModMass55 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT900TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass55 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT900TrimModMass00TrimModMass60 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT900TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass60 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT900TrimModMass00TrimModMass65 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT900TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass65 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT900TrimModMass00TrimModMass70 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT900TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass70 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT900TrimModMass00TrimModMass75 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT900TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass75 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT900TrimModMass00TrimModMass80 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT900TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass80 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
-process.hltPreAK8PFHT900TrimModMass00TrimModMass85 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+process.hltPreAK8PFHT900TrimR0p1Pt0p03Mass00TrimR0p1Pt0p03Mass85 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT900TrimR0p1Pt0p05Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT900TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT900TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass05 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT900TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass10 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT900TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass15 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT900TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass20 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT900TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass25 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT900TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass30 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT900TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass35 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT900TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass40 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT900TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass45 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT900TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass50 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT900TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass55 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT900TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass60 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT900TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass65 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT900TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass70 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT900TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass75 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT900TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass80 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT900TrimR0p1Pt0p05Mass00TrimR0p1Pt0p05Mass85 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT900TrimR0p2Pt0p06Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT900TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass00 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT900TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass05 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT900TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass10 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT900TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass15 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT900TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass20 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT900TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass25 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT900TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass30 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT900TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass35 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT900TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass40 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT900TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass45 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT900TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass50 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT900TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass55 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT900TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass60 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT900TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass65 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT900TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass70 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT900TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass75 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT900TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass80 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreAK8PFHT900TrimR0p2Pt0p06Mass00TrimR0p2Pt0p06Mass85 = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFJet360TrimModMass30 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFNOJECTrimHT450 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFNOJECTrimHT550 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFNOJECTrimHT650 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFNOJECTrimHT750 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPreAK8PFNOJECTrimHT850 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPreJetE30NoBPTX3BXNoHalo = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
+    offset = cms.uint32(0)
+)
+
+
+process.hltPrePFHT350PFMET120NoiseCleaned = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPrePFHT450TrimMass00 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPrePFHT550TrimMass00 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPrePFHT650 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPrePFHT650TrimMass00 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPrePFHT700 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPrePFHT750 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPrePFHT750TrimMass00 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPrePFHT800 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPrePFHT850 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPrePFHT850TrimMass00 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPrePFHT900 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
 )
 
 
 process.hltPrePFHT950 = cms.EDFilter("HLTPrescaler",
-    L1GtReadoutRecordTag = cms.InputTag("hltGtDigis"),
+    L1GtReadoutRecordTag = cms.InputTag("simGtDigis"),
     offset = cms.uint32(0)
+)
+
+
+process.hltStoppedHSCP1CaloJetEnergy30 = cms.EDFilter("HLT1CaloJet",
+    saveTags = cms.bool(True),
+    MinPt = cms.double(-1.0),
+    MinN = cms.int32(1),
+    MaxEta = cms.double(3.0),
+    MinMass = cms.double(-1.0),
+    inputTag = cms.InputTag("hltStoppedHSCPIterativeCone4CaloJets"),
+    MinE = cms.double(30.0),
+    triggerType = cms.int32(85)
+)
+
+
+process.hltStoppedHSCPHpdFilter = cms.EDFilter("HLTHPDFilter",
+    rbxSpikeEnergy = cms.double(50.0),
+    energy = cms.double(-99.0),
+    inputTag = cms.InputTag("hltHbhereco"),
+    hpdSpikeIsolationEnergy = cms.double(1.0),
+    hpdSpikeEnergy = cms.double(10.0),
+    rbxSpikeUnbalance = cms.double(0.2)
 )
 
 
@@ -7920,35 +11515,44 @@ process.hltGetRaw = cms.EDAnalyzer("HLTGetRaw",
 process.output = cms.OutputModule("PoolOutputModule",
     splitLevel = cms.untracked.int32(0),
     outputCommands = cms.untracked.vstring('drop *', 
-        'keep *_patJets*_*_*', 
         'keep *_TriggerResults_*_*', 
         'keep *_hltTriggerSummaryAOD_*_*', 
-        'keep *_hltAK8CaloJetsCorrectedIDPassed_*_*', 
-        'keep *_hltTowerMakerForAll_*_*', 
-        'keep *_hltL1extraParticles_*_*', 
-        'keep *_hltPFHT_*_*', 
+        'keep *_hltMetClean_*_*', 
+        'keep *_hltAK8TrimModJets_*_*', 
+        'keep *_simGtDigis_*_*', 
         'keep *_hltAntiKT5CaloJets_*_*', 
-        'keep *_hltL1GtObjectMap_*_*', 
-        'keep *_hltAK8PFTrimHT_*_*', 
-        'keep *_hltAK4PFJetsTrim_*_*', 
         'keep *_hltAK8HtMht_*_*', 
-        'keep *_hltHtMht_*_*', 
         'keep *_hltAntiKT5PFJets_*_*', 
-        'keep *_hltGtDigis_*_*', 
+        'keep *_hltAK8PFHT_*_*', 
+        'keep *_hltHbhereco_*_*', 
+        'keep *_hltAK8PFJetsTrimR0p1Pt0p03_*_*', 
+        'keep *_hltAK8PFJetsTrimR0p1Pt0p05_*_*', 
+        'keep *_hltAK8PFJetsTrimR0p2Pt0p06_*_*', 
+        'keep *_hltAK8PFTrimHT_*_*', 
+        'keep *_hltStoppedHSCPIterativeCone4CaloJets_*_*', 
+        'keep *_hltAK8CaloJetsCorrectedIDPassed_*_*', 
+        'keep *_hltPFMETProducer_*_*', 
+        'keep *_hltAK4PFJetsTrim_*_*', 
+        'keep *_hltL1GtObjectMap_*_*', 
+        'keep *_hltAK4CaloJetsPF_*_*', 
+        'keep *_hltAntiKT5PFJetsNoPU_*_*', 
+        'keep *_hltL1extraParticles_*_*', 
+        'keep *_hltTowerMakerForAll_*_*', 
+        'keep *_hltPFHT_*_*', 
+        'keep *_hltMetCleanUsingJetID_*_*', 
         'keep *_hltAK8PFJetsTrim_*_*', 
         'keep *_hltParticleFlow_*_*', 
         'keep *_hltLightPFTracks_*_*', 
-        'keep *_hltAK8PFJetsTrimModTest_*_*', 
-        'keep *_hltAK8PFHT_*_*', 
-        'keep *_hltAK4CaloJetsPF_*_*', 
-        'keep *_hltAntiKT5PFJetsNoPU_*_*', 
-        'keep *_hltAK8PFJetsTrimMod_*_*', 
-        'keep *_hltAK8TrimModJets_*_*'),
+        'keep *_hltMet_*_*', 
+        'keep *_hltHtMht_*_*'),
     fileName = cms.untracked.string('test_Filt.root'),
     dataset = cms.untracked.PSet(
         dataTier = cms.untracked.string('HLTDEBUG')
     )
 )
+
+
+process.HLTHBHENoiseCleanerSequence = cms.Sequence(process.hltHcalNoiseInfoProducer+process.hltHcalTowerNoiseCleaner)
 
 
 process.HLTDoLocalPixelSequence = cms.Sequence(process.hltSiPixelDigis+process.hltSiPixelClusters+process.hltSiPixelClustersCache+process.hltSiPixelRecHits)
@@ -7960,7 +11564,16 @@ process.HLTPreshowerSequence = cms.Sequence(process.hltEcalPreshowerDigis+proces
 process.HLTParticleFlowSequence = cms.Sequence(process.HLTPreshowerSequence+process.hltParticleFlowRecHitECALUnseeded+process.hltParticleFlowRecHitHCAL+process.hltParticleFlowRecHitPSUnseeded+process.hltParticleFlowClusterECALUncorrectedUnseeded+process.hltParticleFlowClusterPSUnseeded+process.hltParticleFlowClusterECALUnseeded+process.hltParticleFlowClusterHCAL+process.hltParticleFlowClusterHFEM+process.hltParticleFlowClusterHFHAD+process.hltLightPFTracks+process.hltParticleFlowBlock+process.hltParticleFlow)
 
 
-process.HLTL1UnpackerSequence = cms.Sequence(process.hltGtDigis+process.hltGctDigis+process.hltL1GtObjectMap+process.hltL1extraParticles)
+process.HLTRecoMETSequence = cms.Sequence(process.hltEcalDigis+process.hltEcalUncalibRecHit+process.hltEcalDetIdToBeRecovered+process.hltEcalRecHit+process.hltHcalDigis+process.hltHbhereco+process.hltHfreco+process.hltHoreco+process.hltTowerMakerForAll+process.hltMet)
+
+
+process.L1TRerunHCALTP_FromRAW = cms.Sequence(process.hcalDigis+process.simHcalTriggerPrimitiveDigis)
+
+
+process.HLTStoppedHSCPLocalHcalReco = cms.Sequence(process.hltHcalDigis+process.hltHbhereco)
+
+
+process.csctfReEmulSequence = cms.Sequence(process.simCscTriggerPrimitiveDigis+process.csctfReEmulTrackDigis+process.csctfReEmulDigis)
 
 
 process.HLTMuonLocalRecoSequence = cms.Sequence(process.hltMuonDTDigis+process.hltDt1DRecHits+process.hltDt4DSegments+process.hltMuonCSCDigis+process.hltCsc2DRecHits+process.hltCscSegments+process.hltMuonRPCDigis+process.hltRpcRecHits)
@@ -7975,7 +11588,16 @@ process.HLTAK8PFJetsCorrectionSequence = cms.Sequence(process.hltFixedGridRhoFas
 process.HLTDoLocalHcalSequence = cms.Sequence(process.hltHcalDigis+process.hltHbhereco+process.hltHfreco+process.hltHoreco)
 
 
+process.SimL1MuTrackFinders = cms.Sequence(process.simCsctfTrackDigis+process.simDttfDigis+process.simCsctfDigis)
+
+
 process.HLTIter0TrackAndTauJet4Iter1Sequence = cms.Sequence(process.hltTrackIter0RefsForJets4Iter1+process.hltAK4Iter0TrackJets4Iter1+process.hltIter0TrackAndTauJets4Iter1)
+
+
+process.HLTDoFullUnpackingEgammaEcalWithoutPreshowerSequence = cms.Sequence(process.hltEcalDigis+process.hltEcalUncalibRecHit+process.hltEcalDetIdToBeRecovered+process.hltEcalRecHit)
+
+
+process.RawToDigi = cms.Sequence(process.csctfDigis+process.dttfDigis+process.gctDigis+process.gtDigis+process.gtEvmDigis+process.siPixelDigis+process.siStripDigis+process.ecalDigis+process.ecalPreshowerDigis+process.hcalDigis+process.muonCSCDigis+process.muonDTDigis+process.muonRPCDigis+process.castorDigis+process.scalersRawToDigi)
 
 
 process.HLTAK4PFJetsCorrectionSequence = cms.Sequence(process.hltFixedGridRhoFastjetAll+process.hltAK4PFJetsCorrected)
@@ -7984,7 +11606,13 @@ process.HLTAK4PFJetsCorrectionSequence = cms.Sequence(process.hltFixedGridRhoFas
 process.HLTL2muonrecoNocandSequence = cms.Sequence(process.HLTMuonLocalRecoSequence+process.hltL2OfflineMuonSeeds+process.hltL2MuonSeeds+process.hltL2Muons)
 
 
-process.HLTDoFullUnpackingEgammaEcalWithoutPreshowerSequence = cms.Sequence(process.hltEcalDigis+process.hltEcalUncalibRecHit+process.hltEcalDetIdToBeRecovered+process.hltEcalRecHit)
+process.L1TCaloStage1 = cms.Sequence(process.rctUpgradeFormatDigis+process.caloStage1Digis+process.caloStage1FinalDigis+process.caloStage1LegacyFormatDigis)
+
+
+process.reEmulCaloChain = cms.Sequence(process.L1TRerunHCALTP_FromRAW+process.ecalDigis+process.simRctDigis+process.L1TCaloStage1)
+
+
+process.HLTStoppedHSCPJetSequence = cms.Sequence(process.hltStoppedHSCPTowerMakerForAll+process.hltStoppedHSCPIterativeCone4CaloJets)
 
 
 process.HLTAK8CaloJetsCorrectionSequence = cms.Sequence(process.hltFixedGridRhoFastjetAllCalo+process.hltAK8CaloJetsCorrected+process.hltAK8CaloJetsCorrectedIDPassed)
@@ -7994,6 +11622,9 @@ process.HLTIter1TrackAndTauJets4Iter2Sequence = cms.Sequence(process.hltIter1Tra
 
 
 process.HLTBeamSpot = cms.Sequence(process.hltScalersRawToDigi+process.hltOnlineBeamSpot)
+
+
+process.RawToDigi_noTk = cms.Sequence(process.csctfDigis+process.dttfDigis+process.gctDigis+process.gtDigis+process.gtEvmDigis+process.ecalDigis+process.ecalPreshowerDigis+process.hcalDigis+process.muonCSCDigis+process.muonDTDigis+process.muonRPCDigis+process.castorDigis+process.scalersRawToDigi)
 
 
 process.HLTEndSequence = cms.Sequence(process.hltBoolEnd)
@@ -8008,13 +11639,13 @@ process.HLTIterativeTrackingIteration1 = cms.Sequence(process.hltIter1ClustersRe
 process.HLTIterativeTrackingIteration0 = cms.Sequence(process.hltIter0PFLowPixelSeedsFromPixelTracks+process.hltIter0PFlowCkfTrackCandidates+process.hltIter0PFlowCtfWithMaterialTracks+process.hltIter0PFlowTrackSelectionHighPurity)
 
 
+process.SimL1MuTriggerPrimitives = cms.Sequence(process.simDtTriggerPrimitiveDigis+process.simCscTriggerPrimitiveDigis)
+
+
 process.HLTIterativeTrackingIter02 = cms.Sequence(process.HLTIterativeTrackingIteration0+process.HLTIter0TrackAndTauJet4Iter1Sequence+process.HLTIterativeTrackingIteration1+process.hltIter1Merged+process.HLTIter1TrackAndTauJets4Iter2Sequence+process.HLTIterativeTrackingIteration2+process.hltIter2Merged)
 
 
 process.HLTRecopixelvertexingSequence = cms.Sequence(process.hltPixelLayerTriplets+process.hltPixelTracks+process.hltPixelVertices+process.hltTrimmedPixelVertices)
-
-
-process.HLTBeginSequence = cms.Sequence(process.hltTriggerType+process.HLTL1UnpackerSequence+process.HLTBeamSpot)
 
 
 process.HLTDoLocalStripSequence = cms.Sequence(process.hltSiStripExcludedFEDListProducer+process.hltSiStripRawToClustersFacility+process.hltSiStripClusters)
@@ -8023,22 +11654,40 @@ process.HLTDoLocalStripSequence = cms.Sequence(process.hltSiStripExcludedFEDList
 process.HLTDoCaloSequencePF = cms.Sequence(process.HLTDoFullUnpackingEgammaEcalWithoutPreshowerSequence+process.HLTDoLocalHcalSequence+process.hltTowerMakerForPF)
 
 
+process.SimL1TechnicalTriggers = cms.Sequence(process.simBscDigis+process.simRpcTechTrigDigis+process.simHcalTechTrigDigis)
+
+
 process.HLTTrackReconstructionForPF = cms.Sequence(process.HLTDoLocalPixelSequence+process.HLTRecopixelvertexingSequence+process.HLTDoLocalStripSequence+process.HLTIterativeTrackingIter02+process.hltPFMuonMerging+process.hltMuonLinks+process.hltMuons)
 
 
-process.HLTL3muonTkCandidateSequence = cms.Sequence(process.HLTDoLocalPixelSequence+process.HLTDoLocalStripSequence+process.hltL3TrajSeedOIState+process.hltL3TrackCandidateFromL2OIState+process.hltL3TkTracksFromL2OIState+process.hltL3MuonsOIState+process.hltL3TrajSeedOIHit+process.hltL3TrackCandidateFromL2OIHit+process.hltL3TkTracksFromL2OIHit+process.hltL3MuonsOIHit+process.hltL3TkFromL2OICombination+process.hltPixelLayerTriplets+process.hltPixelLayerPairs+process.hltMixedLayerPairs+process.hltL3TrajSeedIOHit+process.hltL3TrackCandidateFromL2IOHit+process.hltL3TkTracksFromL2IOHit+process.hltL3MuonsIOHit+process.hltL3TrajectorySeed+process.hltL3TrackCandidateFromL2)
+process.reEmulMuonChain = cms.Sequence(process.rpcTriggerReEmulDigis+process.csctfReEmulSequence+process.dttfReEmulDigis+process.gmtReEmulDigis)
+
+
+process.L1TCaloStage1_PPFromRaw = cms.Sequence(process.L1TRerunHCALTP_FromRAW+process.ecalDigis+process.simRctDigis+process.L1TCaloStage1+process.simGtDigis)
 
 
 process.HLTL2muonrecoSequence = cms.Sequence(process.HLTL2muonrecoNocandSequence+process.hltL2MuonCandidates)
 
 
+process.HLTL3muonTkCandidateSequence = cms.Sequence(process.HLTDoLocalPixelSequence+process.HLTDoLocalStripSequence+process.hltL3TrajSeedOIState+process.hltL3TrackCandidateFromL2OIState+process.hltL3TkTracksFromL2OIState+process.hltL3MuonsOIState+process.hltL3TrajSeedOIHit+process.hltL3TrackCandidateFromL2OIHit+process.hltL3TkTracksFromL2OIHit+process.hltL3MuonsOIHit+process.hltL3TkFromL2OICombination+process.hltPixelLayerTriplets+process.hltPixelLayerPairs+process.hltMixedLayerPairs+process.hltL3TrajSeedIOHit+process.hltL3TrackCandidateFromL2IOHit+process.hltL3TkTracksFromL2IOHit+process.hltL3MuonsIOHit+process.hltL3TrajectorySeed+process.hltL3TrackCandidateFromL2)
+
+
+process.SimL1Emulator = cms.Sequence(process.reEmulCaloChain+process.reEmulMuonChain+process.simGtDigis)
+
+
+process.HLTL1GtDigisSequence = cms.Sequence(process.RawToDigi+process.SimL1Emulator)
+
+
 process.HLTDoCaloSequence = cms.Sequence(process.HLTDoFullUnpackingEgammaEcalWithoutPreshowerSequence+process.HLTDoLocalHcalSequence+process.hltTowerMakerForAll)
+
+
+process.HLTAK4CaloJetsPrePFRecoSequence = cms.Sequence(process.HLTDoCaloSequencePF+process.hltAK4CaloJetsPF)
 
 
 process.HLTL3muonrecoNocandSequence = cms.Sequence(process.HLTL3muonTkCandidateSequence+process.hltL3TkTracksMergeStep1+process.hltL3TkTracksFromL2+process.hltL3MuonsLinksCombination+process.hltL3Muons)
 
 
-process.HLTAK4CaloJetsPrePFRecoSequence = cms.Sequence(process.HLTDoCaloSequencePF+process.hltAK4CaloJetsPF)
+process.HLTBeginSequenceAntiBPTX = cms.Sequence(process.hltTriggerType+process.HLTL1GtDigisSequence+process.hltL1GtObjectMap+process.hltL1extraParticles+process.hltBPTXAntiCoincidence+process.hltScalersRawToDigi+process.hltOnlineBeamSpot)
 
 
 process.HLTPreAK4PFJetsRecoSequence = cms.Sequence(process.HLTAK4CaloJetsPrePFRecoSequence+process.hltAK4CaloJetsPFEt5)
@@ -8056,6 +11705,18 @@ process.HLTL3muonrecoSequence = cms.Sequence(process.HLTL3muonrecoNocandSequence
 process.HLTAK8PFJetsReconstructionSequence = cms.Sequence(process.HLTL2muonrecoSequence+process.HLTL3muonrecoSequence+process.HLTTrackReconstructionForPF+process.HLTParticleFlowSequence+process.hltAK8PFJets)
 
 
+process.HLTL1UnpackerSequence = cms.Sequence(process.RawToDigi+process.SimL1Emulator+process.hltL1GtObjectMap+process.hltL1extraParticles)
+
+
+process.HLTAK8PFJetsSequence = cms.Sequence(process.HLTPreAK4PFJetsRecoSequence+process.HLTAK8PFJetsReconstructionSequence+process.HLTAK8PFJetsCorrectionSequence)
+
+
+process.HLTAK4CaloJetsSequence = cms.Sequence(process.HLTAK4CaloJetsReconstructionSequence+process.HLTAK4CaloJetsCorrectionSequence)
+
+
+process.HLTBeginSequence = cms.Sequence(process.hltTriggerType+process.HLTL1UnpackerSequence+process.HLTBeamSpot)
+
+
 process.HLTAK8CaloJetsSequence = cms.Sequence(process.HLTAK8CaloJetsReconstructionSequence+process.HLTAK8CaloJetsCorrectionSequence)
 
 
@@ -8065,16 +11726,16 @@ process.HLTAK8PFJetsReconstructionSequenceNOJEC = cms.Sequence(process.HLTL2muon
 process.HLTAK4PFJetsReconstructionSequence = cms.Sequence(process.HLTL2muonrecoSequence+process.HLTL3muonrecoSequence+process.HLTTrackReconstructionForPF+process.HLTParticleFlowSequence+process.hltAK4PFJets)
 
 
-process.HLTAK8PFJetsSequence = cms.Sequence(process.HLTPreAK4PFJetsRecoSequence+process.HLTAK8PFJetsReconstructionSequence+process.HLTAK8PFJetsCorrectionSequence)
-
-
 process.HLTAK8PFJetsNOJECSequence = cms.Sequence(process.HLTPreAK4PFJetsRecoSequence+process.HLTAK8PFJetsReconstructionSequenceNOJEC)
 
 
-process.HLTAK4CaloJetsSequence = cms.Sequence(process.HLTAK4CaloJetsReconstructionSequence+process.HLTAK4CaloJetsCorrectionSequence)
-
-
 process.HLTAK4PFJetsSequence = cms.Sequence(process.HLTPreAK4PFJetsRecoSequence+process.HLTAK4PFJetsReconstructionSequence+process.HLTAK4PFJetsCorrectionSequence)
+
+
+process.HLT_JetE30_NoBPTX3BX_NoHalo_v1 = cms.Path(process.hltTriggerType+process.hltBPTXAntiCoincidence+process.hltL1sL1SingleJetC20NotBptxOR+process.hltL1BeamHaloAntiCoincidence3BX+process.hltStoppedHSCPHpdFilter+process.hltStoppedHSCP1CaloJetEnergy30+process.HLTEndSequence)
+
+
+process.HLT_PFHT350_PFMET120_NoiseCleaned_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT150OrHTT175+process.hltMET70+process.hltMETClean60+process.hltMETCleanUsingJetID60+process.hltHt280+process.hltAK4CaloJetsPFEt5+process.hltPFMET120Filter+process.hltPFHT350+process.HLTEndSequence)
 
 
 process.HLTriggerFirstPath = cms.Path(process.hltGetConditions+process.hltGetRaw+process.hltBoolFalse)
@@ -8155,22 +11816,22 @@ process.HLT_AK8PFHT850_TrimMass00_v1 = cms.Path(process.hltTriggerType+process.h
 process.HLT_AK8PFHT900_TrimMass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimMass00+process.hltAK8PFHT900+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT650_TrimModMass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00+process.hltAK8PFHT650+process.HLTEndSequence)
+process.HLT_AK8PFHT650_TrimR0p1Pt0p03Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00+process.hltAK8PFHT650+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT700_TrimModMass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00+process.hltAK8PFHT700+process.HLTEndSequence)
+process.HLT_AK8PFHT700_TrimR0p1Pt0p03Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00+process.hltAK8PFHT700+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT750_TrimModMass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00+process.hltAK8PFHT750+process.HLTEndSequence)
+process.HLT_AK8PFHT750_TrimR0p1Pt0p03Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00+process.hltAK8PFHT750+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT800_TrimModMass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00+process.hltAK8PFHT800+process.HLTEndSequence)
+process.HLT_AK8PFHT800_TrimR0p1Pt0p03Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00+process.hltAK8PFHT800+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT850_TrimModMass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00+process.hltAK8PFHT850+process.HLTEndSequence)
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00+process.hltAK8PFHT850+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT900_TrimModMass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00+process.hltAK8PFHT900+process.HLTEndSequence)
+process.HLT_AK8PFHT900_TrimR0p1Pt0p03Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00+process.hltAK8PFHT900+process.HLTEndSequence)
 
 
 process.HLT_AK8PFNOJECTrimHT450_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht350+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimMass00+process.hltAK8PFTrimHT450+process.HLTEndSequence)
@@ -8188,10 +11849,61 @@ process.HLT_AK8PFNOJECTrimHT750_v1 = cms.Path(process.hltTriggerType+process.hlt
 process.HLT_AK8PFNOJECTrimHT850_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimMass00+process.hltAK8PFTrimHT850+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT650_TrimModTestMass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModTestMass00+process.hltAK8PFHT650+process.HLTEndSequence)
+process.HLT_AK8PFHT650_TrimR0p2Pt0p06Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00+process.hltAK8PFHT650+process.HLTEndSequence)
 
 
-process.HLT_AK8PFJet360TrimMod_Mass30_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1SingleJet128+process.hltAK8SingleCaloJet260+process.hltAK4CaloJetsPFEt5+process.hltAK8SinglePFJet360TrimModMass30+process.HLTEndSequence)
+process.HLT_AK8PFHT700_TrimR0p2Pt0p06Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00+process.hltAK8PFHT700+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT750_TrimR0p2Pt0p06Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00+process.hltAK8PFHT750+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT800_TrimR0p2Pt0p06Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00+process.hltAK8PFHT800+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p2Pt0p06Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT900_TrimR0p2Pt0p06Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00+process.hltAK8PFHT900+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT200+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT250_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175ORHTT200+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200ORHTT250_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT200ORHTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200ORHTT250_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175ORHTT200ORHTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT650_TrimR0p1Pt0p05Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00+process.hltAK8PFHT650+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT700_TrimR0p1Pt0p05Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00+process.hltAK8PFHT700+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT750_TrimR0p1Pt0p05Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00+process.hltAK8PFHT750+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT800_TrimR0p1Pt0p05Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00+process.hltAK8PFHT800+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p05Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT900_TrimR0p1Pt0p05Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00+process.hltAK8PFHT900+process.HLTEndSequence)
+
+
+process.HLT_AK8PFJet360TrimMod_Mass30_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1SingleJet200+process.hltAK8SingleCaloJet260+process.hltAK4CaloJetsPFEt5+process.hltAK8SinglePFJet360TrimModMass30+process.HLTEndSequence)
 
 
 process.HLTriggerFinalPath = cms.Path()
@@ -8521,382 +12233,1300 @@ process.HLT_AK8PFHT900_TrimMass00_TrimMass80_v1 = cms.Path(process.hltTriggerTyp
 process.HLT_AK8PFHT900_TrimMass00_TrimMass85_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimMass000e7a491373928669523b88ca23f599d7+process.hltAK8PFHT900+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT650_TrimModMass00_TrimModMass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00690db50c99b2d30f93f17bdad09b137f+process.hltAK8PFHT650+process.HLTEndSequence)
+process.HLT_AK8PFHT650_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00690db50c99b2d30f93f17bdad09b137f+process.hltAK8PFHT650+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT650_TrimModMass00_TrimModMass05_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00E1f79057a3334fe8136ec0862f8c6645+process.hltAK8PFHT650+process.HLTEndSequence)
+process.HLT_AK8PFHT650_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass05_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00E1f79057a3334fe8136ec0862f8c6645+process.hltAK8PFHT650+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT650_TrimModMass00_TrimModMass10_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00Fa2fa750f091c30c0e34f9c276982cc2+process.hltAK8PFHT650+process.HLTEndSequence)
+process.HLT_AK8PFHT650_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass10_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00Fa2fa750f091c30c0e34f9c276982cc2+process.hltAK8PFHT650+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT650_TrimModMass00_TrimModMass15_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00D76494201fbea4ed57016cdeb6d16c1c+process.hltAK8PFHT650+process.HLTEndSequence)
+process.HLT_AK8PFHT650_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass15_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00D76494201fbea4ed57016cdeb6d16c1c+process.hltAK8PFHT650+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT650_TrimModMass00_TrimModMass20_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass000863f4f4b91802c0aa8abddaebb6dba6+process.hltAK8PFHT650+process.HLTEndSequence)
+process.HLT_AK8PFHT650_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass20_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass000863f4f4b91802c0aa8abddaebb6dba6+process.hltAK8PFHT650+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT650_TrimModMass00_TrimModMass25_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00E0199c0c2f8f6fc7eee4c42e4708898c+process.hltAK8PFHT650+process.HLTEndSequence)
+process.HLT_AK8PFHT650_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass25_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00E0199c0c2f8f6fc7eee4c42e4708898c+process.hltAK8PFHT650+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT650_TrimModMass00_TrimModMass30_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass007f7e6d272b13267a7022a4c9bd294891+process.hltAK8PFHT650+process.HLTEndSequence)
+process.HLT_AK8PFHT650_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass30_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass007f7e6d272b13267a7022a4c9bd294891+process.hltAK8PFHT650+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT650_TrimModMass00_TrimModMass35_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass001872fd050bb05eba241b47cfcb3e4393+process.hltAK8PFHT650+process.HLTEndSequence)
+process.HLT_AK8PFHT650_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass35_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass001872fd050bb05eba241b47cfcb3e4393+process.hltAK8PFHT650+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT650_TrimModMass00_TrimModMass40_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00Ebc65b02f78e215a6c80377563e1082f+process.hltAK8PFHT650+process.HLTEndSequence)
+process.HLT_AK8PFHT650_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass40_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00Ebc65b02f78e215a6c80377563e1082f+process.hltAK8PFHT650+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT650_TrimModMass00_TrimModMass45_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00F02887f505e29957c00acc6a7b31a076+process.hltAK8PFHT650+process.HLTEndSequence)
+process.HLT_AK8PFHT650_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass45_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00F02887f505e29957c00acc6a7b31a076+process.hltAK8PFHT650+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT650_TrimModMass00_TrimModMass50_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00C2d5638d4ab8c47c106439f61fe5da10+process.hltAK8PFHT650+process.HLTEndSequence)
+process.HLT_AK8PFHT650_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass50_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00C2d5638d4ab8c47c106439f61fe5da10+process.hltAK8PFHT650+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT650_TrimModMass00_TrimModMass55_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass003285dee02ccc2f0fba010b5822aa24ce+process.hltAK8PFHT650+process.HLTEndSequence)
+process.HLT_AK8PFHT650_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass55_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass003285dee02ccc2f0fba010b5822aa24ce+process.hltAK8PFHT650+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT650_TrimModMass00_TrimModMass60_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass005ecbeec25cd4d1df38c16f99a1c0afea+process.hltAK8PFHT650+process.HLTEndSequence)
+process.HLT_AK8PFHT650_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass60_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass005ecbeec25cd4d1df38c16f99a1c0afea+process.hltAK8PFHT650+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT650_TrimModMass00_TrimModMass65_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00C6b44566021b542f0a80552e537b408b+process.hltAK8PFHT650+process.HLTEndSequence)
+process.HLT_AK8PFHT650_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass65_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00C6b44566021b542f0a80552e537b408b+process.hltAK8PFHT650+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT650_TrimModMass00_TrimModMass70_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass000c4eac09b01e10d488287685a733aa40+process.hltAK8PFHT650+process.HLTEndSequence)
+process.HLT_AK8PFHT650_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass70_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass000c4eac09b01e10d488287685a733aa40+process.hltAK8PFHT650+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT650_TrimModMass00_TrimModMass75_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass0068c0f93285e6a4487befbde993801eaa+process.hltAK8PFHT650+process.HLTEndSequence)
+process.HLT_AK8PFHT650_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass75_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass0068c0f93285e6a4487befbde993801eaa+process.hltAK8PFHT650+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT650_TrimModMass00_TrimModMass80_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00Cdc0379ecc8f02206272d67d4a80937c+process.hltAK8PFHT650+process.HLTEndSequence)
+process.HLT_AK8PFHT650_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass80_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00Cdc0379ecc8f02206272d67d4a80937c+process.hltAK8PFHT650+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT650_TrimModMass00_TrimModMass85_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass000e7a491373928669523b88ca23f599d7+process.hltAK8PFHT650+process.HLTEndSequence)
+process.HLT_AK8PFHT650_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass85_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass000e7a491373928669523b88ca23f599d7+process.hltAK8PFHT650+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT700_TrimModMass00_TrimModMass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00690db50c99b2d30f93f17bdad09b137f+process.hltAK8PFHT700+process.HLTEndSequence)
+process.HLT_AK8PFHT700_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00690db50c99b2d30f93f17bdad09b137f+process.hltAK8PFHT700+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT700_TrimModMass00_TrimModMass05_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00E1f79057a3334fe8136ec0862f8c6645+process.hltAK8PFHT700+process.HLTEndSequence)
+process.HLT_AK8PFHT700_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass05_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00E1f79057a3334fe8136ec0862f8c6645+process.hltAK8PFHT700+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT700_TrimModMass00_TrimModMass10_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00Fa2fa750f091c30c0e34f9c276982cc2+process.hltAK8PFHT700+process.HLTEndSequence)
+process.HLT_AK8PFHT700_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass10_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00Fa2fa750f091c30c0e34f9c276982cc2+process.hltAK8PFHT700+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT700_TrimModMass00_TrimModMass15_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00D76494201fbea4ed57016cdeb6d16c1c+process.hltAK8PFHT700+process.HLTEndSequence)
+process.HLT_AK8PFHT700_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass15_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00D76494201fbea4ed57016cdeb6d16c1c+process.hltAK8PFHT700+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT700_TrimModMass00_TrimModMass20_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass000863f4f4b91802c0aa8abddaebb6dba6+process.hltAK8PFHT700+process.HLTEndSequence)
+process.HLT_AK8PFHT700_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass20_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass000863f4f4b91802c0aa8abddaebb6dba6+process.hltAK8PFHT700+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT700_TrimModMass00_TrimModMass25_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00E0199c0c2f8f6fc7eee4c42e4708898c+process.hltAK8PFHT700+process.HLTEndSequence)
+process.HLT_AK8PFHT700_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass25_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00E0199c0c2f8f6fc7eee4c42e4708898c+process.hltAK8PFHT700+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT700_TrimModMass00_TrimModMass30_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass007f7e6d272b13267a7022a4c9bd294891+process.hltAK8PFHT700+process.HLTEndSequence)
+process.HLT_AK8PFHT700_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass30_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass007f7e6d272b13267a7022a4c9bd294891+process.hltAK8PFHT700+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT700_TrimModMass00_TrimModMass35_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass001872fd050bb05eba241b47cfcb3e4393+process.hltAK8PFHT700+process.HLTEndSequence)
+process.HLT_AK8PFHT700_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass35_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass001872fd050bb05eba241b47cfcb3e4393+process.hltAK8PFHT700+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT700_TrimModMass00_TrimModMass40_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00Ebc65b02f78e215a6c80377563e1082f+process.hltAK8PFHT700+process.HLTEndSequence)
+process.HLT_AK8PFHT700_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass40_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00Ebc65b02f78e215a6c80377563e1082f+process.hltAK8PFHT700+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT700_TrimModMass00_TrimModMass45_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00F02887f505e29957c00acc6a7b31a076+process.hltAK8PFHT700+process.HLTEndSequence)
+process.HLT_AK8PFHT700_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass45_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00F02887f505e29957c00acc6a7b31a076+process.hltAK8PFHT700+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT700_TrimModMass00_TrimModMass50_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00C2d5638d4ab8c47c106439f61fe5da10+process.hltAK8PFHT700+process.HLTEndSequence)
+process.HLT_AK8PFHT700_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass50_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00C2d5638d4ab8c47c106439f61fe5da10+process.hltAK8PFHT700+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT700_TrimModMass00_TrimModMass55_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass003285dee02ccc2f0fba010b5822aa24ce+process.hltAK8PFHT700+process.HLTEndSequence)
+process.HLT_AK8PFHT700_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass55_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass003285dee02ccc2f0fba010b5822aa24ce+process.hltAK8PFHT700+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT700_TrimModMass00_TrimModMass60_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass005ecbeec25cd4d1df38c16f99a1c0afea+process.hltAK8PFHT700+process.HLTEndSequence)
+process.HLT_AK8PFHT700_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass60_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass005ecbeec25cd4d1df38c16f99a1c0afea+process.hltAK8PFHT700+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT700_TrimModMass00_TrimModMass65_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00C6b44566021b542f0a80552e537b408b+process.hltAK8PFHT700+process.HLTEndSequence)
+process.HLT_AK8PFHT700_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass65_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00C6b44566021b542f0a80552e537b408b+process.hltAK8PFHT700+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT700_TrimModMass00_TrimModMass70_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass000c4eac09b01e10d488287685a733aa40+process.hltAK8PFHT700+process.HLTEndSequence)
+process.HLT_AK8PFHT700_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass70_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass000c4eac09b01e10d488287685a733aa40+process.hltAK8PFHT700+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT700_TrimModMass00_TrimModMass75_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass0068c0f93285e6a4487befbde993801eaa+process.hltAK8PFHT700+process.HLTEndSequence)
+process.HLT_AK8PFHT700_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass75_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass0068c0f93285e6a4487befbde993801eaa+process.hltAK8PFHT700+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT700_TrimModMass00_TrimModMass80_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00Cdc0379ecc8f02206272d67d4a80937c+process.hltAK8PFHT700+process.HLTEndSequence)
+process.HLT_AK8PFHT700_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass80_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00Cdc0379ecc8f02206272d67d4a80937c+process.hltAK8PFHT700+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT700_TrimModMass00_TrimModMass85_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass000e7a491373928669523b88ca23f599d7+process.hltAK8PFHT700+process.HLTEndSequence)
+process.HLT_AK8PFHT700_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass85_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass000e7a491373928669523b88ca23f599d7+process.hltAK8PFHT700+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT750_TrimModMass00_TrimModMass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00690db50c99b2d30f93f17bdad09b137f+process.hltAK8PFHT750+process.HLTEndSequence)
+process.HLT_AK8PFHT750_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00690db50c99b2d30f93f17bdad09b137f+process.hltAK8PFHT750+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT750_TrimModMass00_TrimModMass05_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00E1f79057a3334fe8136ec0862f8c6645+process.hltAK8PFHT750+process.HLTEndSequence)
+process.HLT_AK8PFHT750_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass05_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00E1f79057a3334fe8136ec0862f8c6645+process.hltAK8PFHT750+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT750_TrimModMass00_TrimModMass10_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00Fa2fa750f091c30c0e34f9c276982cc2+process.hltAK8PFHT750+process.HLTEndSequence)
+process.HLT_AK8PFHT750_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass10_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00Fa2fa750f091c30c0e34f9c276982cc2+process.hltAK8PFHT750+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT750_TrimModMass00_TrimModMass15_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00D76494201fbea4ed57016cdeb6d16c1c+process.hltAK8PFHT750+process.HLTEndSequence)
+process.HLT_AK8PFHT750_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass15_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00D76494201fbea4ed57016cdeb6d16c1c+process.hltAK8PFHT750+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT750_TrimModMass00_TrimModMass20_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass000863f4f4b91802c0aa8abddaebb6dba6+process.hltAK8PFHT750+process.HLTEndSequence)
+process.HLT_AK8PFHT750_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass20_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass000863f4f4b91802c0aa8abddaebb6dba6+process.hltAK8PFHT750+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT750_TrimModMass00_TrimModMass25_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00E0199c0c2f8f6fc7eee4c42e4708898c+process.hltAK8PFHT750+process.HLTEndSequence)
+process.HLT_AK8PFHT750_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass25_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00E0199c0c2f8f6fc7eee4c42e4708898c+process.hltAK8PFHT750+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT750_TrimModMass00_TrimModMass30_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass007f7e6d272b13267a7022a4c9bd294891+process.hltAK8PFHT750+process.HLTEndSequence)
+process.HLT_AK8PFHT750_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass30_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass007f7e6d272b13267a7022a4c9bd294891+process.hltAK8PFHT750+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT750_TrimModMass00_TrimModMass35_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass001872fd050bb05eba241b47cfcb3e4393+process.hltAK8PFHT750+process.HLTEndSequence)
+process.HLT_AK8PFHT750_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass35_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass001872fd050bb05eba241b47cfcb3e4393+process.hltAK8PFHT750+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT750_TrimModMass00_TrimModMass40_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00Ebc65b02f78e215a6c80377563e1082f+process.hltAK8PFHT750+process.HLTEndSequence)
+process.HLT_AK8PFHT750_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass40_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00Ebc65b02f78e215a6c80377563e1082f+process.hltAK8PFHT750+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT750_TrimModMass00_TrimModMass45_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00F02887f505e29957c00acc6a7b31a076+process.hltAK8PFHT750+process.HLTEndSequence)
+process.HLT_AK8PFHT750_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass45_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00F02887f505e29957c00acc6a7b31a076+process.hltAK8PFHT750+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT750_TrimModMass00_TrimModMass50_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00C2d5638d4ab8c47c106439f61fe5da10+process.hltAK8PFHT750+process.HLTEndSequence)
+process.HLT_AK8PFHT750_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass50_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00C2d5638d4ab8c47c106439f61fe5da10+process.hltAK8PFHT750+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT750_TrimModMass00_TrimModMass55_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass003285dee02ccc2f0fba010b5822aa24ce+process.hltAK8PFHT750+process.HLTEndSequence)
+process.HLT_AK8PFHT750_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass55_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass003285dee02ccc2f0fba010b5822aa24ce+process.hltAK8PFHT750+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT750_TrimModMass00_TrimModMass60_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass005ecbeec25cd4d1df38c16f99a1c0afea+process.hltAK8PFHT750+process.HLTEndSequence)
+process.HLT_AK8PFHT750_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass60_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass005ecbeec25cd4d1df38c16f99a1c0afea+process.hltAK8PFHT750+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT750_TrimModMass00_TrimModMass65_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00C6b44566021b542f0a80552e537b408b+process.hltAK8PFHT750+process.HLTEndSequence)
+process.HLT_AK8PFHT750_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass65_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00C6b44566021b542f0a80552e537b408b+process.hltAK8PFHT750+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT750_TrimModMass00_TrimModMass70_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass000c4eac09b01e10d488287685a733aa40+process.hltAK8PFHT750+process.HLTEndSequence)
+process.HLT_AK8PFHT750_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass70_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass000c4eac09b01e10d488287685a733aa40+process.hltAK8PFHT750+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT750_TrimModMass00_TrimModMass75_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass0068c0f93285e6a4487befbde993801eaa+process.hltAK8PFHT750+process.HLTEndSequence)
+process.HLT_AK8PFHT750_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass75_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass0068c0f93285e6a4487befbde993801eaa+process.hltAK8PFHT750+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT750_TrimModMass00_TrimModMass80_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00Cdc0379ecc8f02206272d67d4a80937c+process.hltAK8PFHT750+process.HLTEndSequence)
+process.HLT_AK8PFHT750_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass80_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00Cdc0379ecc8f02206272d67d4a80937c+process.hltAK8PFHT750+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT750_TrimModMass00_TrimModMass85_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass000e7a491373928669523b88ca23f599d7+process.hltAK8PFHT750+process.HLTEndSequence)
+process.HLT_AK8PFHT750_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass85_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass000e7a491373928669523b88ca23f599d7+process.hltAK8PFHT750+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT800_TrimModMass00_TrimModMass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00690db50c99b2d30f93f17bdad09b137f+process.hltAK8PFHT800+process.HLTEndSequence)
+process.HLT_AK8PFHT800_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00690db50c99b2d30f93f17bdad09b137f+process.hltAK8PFHT800+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT800_TrimModMass00_TrimModMass05_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00E1f79057a3334fe8136ec0862f8c6645+process.hltAK8PFHT800+process.HLTEndSequence)
+process.HLT_AK8PFHT800_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass05_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00E1f79057a3334fe8136ec0862f8c6645+process.hltAK8PFHT800+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT800_TrimModMass00_TrimModMass10_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00Fa2fa750f091c30c0e34f9c276982cc2+process.hltAK8PFHT800+process.HLTEndSequence)
+process.HLT_AK8PFHT800_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass10_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00Fa2fa750f091c30c0e34f9c276982cc2+process.hltAK8PFHT800+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT800_TrimModMass00_TrimModMass15_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00D76494201fbea4ed57016cdeb6d16c1c+process.hltAK8PFHT800+process.HLTEndSequence)
+process.HLT_AK8PFHT800_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass15_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00D76494201fbea4ed57016cdeb6d16c1c+process.hltAK8PFHT800+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT800_TrimModMass00_TrimModMass20_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass000863f4f4b91802c0aa8abddaebb6dba6+process.hltAK8PFHT800+process.HLTEndSequence)
+process.HLT_AK8PFHT800_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass20_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass000863f4f4b91802c0aa8abddaebb6dba6+process.hltAK8PFHT800+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT800_TrimModMass00_TrimModMass25_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00E0199c0c2f8f6fc7eee4c42e4708898c+process.hltAK8PFHT800+process.HLTEndSequence)
+process.HLT_AK8PFHT800_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass25_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00E0199c0c2f8f6fc7eee4c42e4708898c+process.hltAK8PFHT800+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT800_TrimModMass00_TrimModMass30_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass007f7e6d272b13267a7022a4c9bd294891+process.hltAK8PFHT800+process.HLTEndSequence)
+process.HLT_AK8PFHT800_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass30_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass007f7e6d272b13267a7022a4c9bd294891+process.hltAK8PFHT800+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT800_TrimModMass00_TrimModMass35_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass001872fd050bb05eba241b47cfcb3e4393+process.hltAK8PFHT800+process.HLTEndSequence)
+process.HLT_AK8PFHT800_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass35_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass001872fd050bb05eba241b47cfcb3e4393+process.hltAK8PFHT800+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT800_TrimModMass00_TrimModMass40_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00Ebc65b02f78e215a6c80377563e1082f+process.hltAK8PFHT800+process.HLTEndSequence)
+process.HLT_AK8PFHT800_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass40_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00Ebc65b02f78e215a6c80377563e1082f+process.hltAK8PFHT800+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT800_TrimModMass00_TrimModMass45_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00F02887f505e29957c00acc6a7b31a076+process.hltAK8PFHT800+process.HLTEndSequence)
+process.HLT_AK8PFHT800_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass45_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00F02887f505e29957c00acc6a7b31a076+process.hltAK8PFHT800+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT800_TrimModMass00_TrimModMass50_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00C2d5638d4ab8c47c106439f61fe5da10+process.hltAK8PFHT800+process.HLTEndSequence)
+process.HLT_AK8PFHT800_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass50_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00C2d5638d4ab8c47c106439f61fe5da10+process.hltAK8PFHT800+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT800_TrimModMass00_TrimModMass55_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass003285dee02ccc2f0fba010b5822aa24ce+process.hltAK8PFHT800+process.HLTEndSequence)
+process.HLT_AK8PFHT800_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass55_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass003285dee02ccc2f0fba010b5822aa24ce+process.hltAK8PFHT800+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT800_TrimModMass00_TrimModMass60_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass005ecbeec25cd4d1df38c16f99a1c0afea+process.hltAK8PFHT800+process.HLTEndSequence)
+process.HLT_AK8PFHT800_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass60_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass005ecbeec25cd4d1df38c16f99a1c0afea+process.hltAK8PFHT800+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT800_TrimModMass00_TrimModMass65_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00C6b44566021b542f0a80552e537b408b+process.hltAK8PFHT800+process.HLTEndSequence)
+process.HLT_AK8PFHT800_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass65_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00C6b44566021b542f0a80552e537b408b+process.hltAK8PFHT800+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT800_TrimModMass00_TrimModMass70_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass000c4eac09b01e10d488287685a733aa40+process.hltAK8PFHT800+process.HLTEndSequence)
+process.HLT_AK8PFHT800_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass70_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass000c4eac09b01e10d488287685a733aa40+process.hltAK8PFHT800+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT800_TrimModMass00_TrimModMass75_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass0068c0f93285e6a4487befbde993801eaa+process.hltAK8PFHT800+process.HLTEndSequence)
+process.HLT_AK8PFHT800_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass75_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass0068c0f93285e6a4487befbde993801eaa+process.hltAK8PFHT800+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT800_TrimModMass00_TrimModMass80_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00Cdc0379ecc8f02206272d67d4a80937c+process.hltAK8PFHT800+process.HLTEndSequence)
+process.HLT_AK8PFHT800_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass80_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00Cdc0379ecc8f02206272d67d4a80937c+process.hltAK8PFHT800+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT800_TrimModMass00_TrimModMass85_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass000e7a491373928669523b88ca23f599d7+process.hltAK8PFHT800+process.HLTEndSequence)
+process.HLT_AK8PFHT800_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass85_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass000e7a491373928669523b88ca23f599d7+process.hltAK8PFHT800+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT850_TrimModMass00_TrimModMass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00690db50c99b2d30f93f17bdad09b137f+process.hltAK8PFHT850+process.HLTEndSequence)
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00690db50c99b2d30f93f17bdad09b137f+process.hltAK8PFHT850+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT850_TrimModMass00_TrimModMass05_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00E1f79057a3334fe8136ec0862f8c6645+process.hltAK8PFHT850+process.HLTEndSequence)
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass05_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00E1f79057a3334fe8136ec0862f8c6645+process.hltAK8PFHT850+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT850_TrimModMass00_TrimModMass10_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00Fa2fa750f091c30c0e34f9c276982cc2+process.hltAK8PFHT850+process.HLTEndSequence)
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass10_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00Fa2fa750f091c30c0e34f9c276982cc2+process.hltAK8PFHT850+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT850_TrimModMass00_TrimModMass15_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00D76494201fbea4ed57016cdeb6d16c1c+process.hltAK8PFHT850+process.HLTEndSequence)
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass15_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00D76494201fbea4ed57016cdeb6d16c1c+process.hltAK8PFHT850+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT850_TrimModMass00_TrimModMass20_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass000863f4f4b91802c0aa8abddaebb6dba6+process.hltAK8PFHT850+process.HLTEndSequence)
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass20_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass000863f4f4b91802c0aa8abddaebb6dba6+process.hltAK8PFHT850+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT850_TrimModMass00_TrimModMass25_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00E0199c0c2f8f6fc7eee4c42e4708898c+process.hltAK8PFHT850+process.HLTEndSequence)
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass25_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00E0199c0c2f8f6fc7eee4c42e4708898c+process.hltAK8PFHT850+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT850_TrimModMass00_TrimModMass30_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass007f7e6d272b13267a7022a4c9bd294891+process.hltAK8PFHT850+process.HLTEndSequence)
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass30_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass007f7e6d272b13267a7022a4c9bd294891+process.hltAK8PFHT850+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT850_TrimModMass00_TrimModMass35_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass001872fd050bb05eba241b47cfcb3e4393+process.hltAK8PFHT850+process.HLTEndSequence)
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass35_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass001872fd050bb05eba241b47cfcb3e4393+process.hltAK8PFHT850+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT850_TrimModMass00_TrimModMass40_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00Ebc65b02f78e215a6c80377563e1082f+process.hltAK8PFHT850+process.HLTEndSequence)
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass40_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00Ebc65b02f78e215a6c80377563e1082f+process.hltAK8PFHT850+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT850_TrimModMass00_TrimModMass45_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00F02887f505e29957c00acc6a7b31a076+process.hltAK8PFHT850+process.HLTEndSequence)
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass45_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00F02887f505e29957c00acc6a7b31a076+process.hltAK8PFHT850+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT850_TrimModMass00_TrimModMass50_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00C2d5638d4ab8c47c106439f61fe5da10+process.hltAK8PFHT850+process.HLTEndSequence)
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass50_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00C2d5638d4ab8c47c106439f61fe5da10+process.hltAK8PFHT850+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT850_TrimModMass00_TrimModMass55_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass003285dee02ccc2f0fba010b5822aa24ce+process.hltAK8PFHT850+process.HLTEndSequence)
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass55_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass003285dee02ccc2f0fba010b5822aa24ce+process.hltAK8PFHT850+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT850_TrimModMass00_TrimModMass60_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass005ecbeec25cd4d1df38c16f99a1c0afea+process.hltAK8PFHT850+process.HLTEndSequence)
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass60_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass005ecbeec25cd4d1df38c16f99a1c0afea+process.hltAK8PFHT850+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT850_TrimModMass00_TrimModMass65_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00C6b44566021b542f0a80552e537b408b+process.hltAK8PFHT850+process.HLTEndSequence)
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass65_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00C6b44566021b542f0a80552e537b408b+process.hltAK8PFHT850+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT850_TrimModMass00_TrimModMass70_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass000c4eac09b01e10d488287685a733aa40+process.hltAK8PFHT850+process.HLTEndSequence)
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass70_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass000c4eac09b01e10d488287685a733aa40+process.hltAK8PFHT850+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT850_TrimModMass00_TrimModMass75_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass0068c0f93285e6a4487befbde993801eaa+process.hltAK8PFHT850+process.HLTEndSequence)
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass75_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass0068c0f93285e6a4487befbde993801eaa+process.hltAK8PFHT850+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT850_TrimModMass00_TrimModMass80_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00Cdc0379ecc8f02206272d67d4a80937c+process.hltAK8PFHT850+process.HLTEndSequence)
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass80_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00Cdc0379ecc8f02206272d67d4a80937c+process.hltAK8PFHT850+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT850_TrimModMass00_TrimModMass85_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass000e7a491373928669523b88ca23f599d7+process.hltAK8PFHT850+process.HLTEndSequence)
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass85_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass000e7a491373928669523b88ca23f599d7+process.hltAK8PFHT850+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT900_TrimModMass00_TrimModMass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00690db50c99b2d30f93f17bdad09b137f+process.hltAK8PFHT900+process.HLTEndSequence)
+process.HLT_AK8PFHT900_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00690db50c99b2d30f93f17bdad09b137f+process.hltAK8PFHT900+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT900_TrimModMass00_TrimModMass05_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00E1f79057a3334fe8136ec0862f8c6645+process.hltAK8PFHT900+process.HLTEndSequence)
+process.HLT_AK8PFHT900_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass05_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00E1f79057a3334fe8136ec0862f8c6645+process.hltAK8PFHT900+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT900_TrimModMass00_TrimModMass10_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00Fa2fa750f091c30c0e34f9c276982cc2+process.hltAK8PFHT900+process.HLTEndSequence)
+process.HLT_AK8PFHT900_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass10_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00Fa2fa750f091c30c0e34f9c276982cc2+process.hltAK8PFHT900+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT900_TrimModMass00_TrimModMass15_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00D76494201fbea4ed57016cdeb6d16c1c+process.hltAK8PFHT900+process.HLTEndSequence)
+process.HLT_AK8PFHT900_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass15_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00D76494201fbea4ed57016cdeb6d16c1c+process.hltAK8PFHT900+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT900_TrimModMass00_TrimModMass20_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass000863f4f4b91802c0aa8abddaebb6dba6+process.hltAK8PFHT900+process.HLTEndSequence)
+process.HLT_AK8PFHT900_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass20_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass000863f4f4b91802c0aa8abddaebb6dba6+process.hltAK8PFHT900+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT900_TrimModMass00_TrimModMass25_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00E0199c0c2f8f6fc7eee4c42e4708898c+process.hltAK8PFHT900+process.HLTEndSequence)
+process.HLT_AK8PFHT900_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass25_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00E0199c0c2f8f6fc7eee4c42e4708898c+process.hltAK8PFHT900+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT900_TrimModMass00_TrimModMass30_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass007f7e6d272b13267a7022a4c9bd294891+process.hltAK8PFHT900+process.HLTEndSequence)
+process.HLT_AK8PFHT900_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass30_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass007f7e6d272b13267a7022a4c9bd294891+process.hltAK8PFHT900+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT900_TrimModMass00_TrimModMass35_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass001872fd050bb05eba241b47cfcb3e4393+process.hltAK8PFHT900+process.HLTEndSequence)
+process.HLT_AK8PFHT900_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass35_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass001872fd050bb05eba241b47cfcb3e4393+process.hltAK8PFHT900+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT900_TrimModMass00_TrimModMass40_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00Ebc65b02f78e215a6c80377563e1082f+process.hltAK8PFHT900+process.HLTEndSequence)
+process.HLT_AK8PFHT900_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass40_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00Ebc65b02f78e215a6c80377563e1082f+process.hltAK8PFHT900+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT900_TrimModMass00_TrimModMass45_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00F02887f505e29957c00acc6a7b31a076+process.hltAK8PFHT900+process.HLTEndSequence)
+process.HLT_AK8PFHT900_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass45_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00F02887f505e29957c00acc6a7b31a076+process.hltAK8PFHT900+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT900_TrimModMass00_TrimModMass50_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00C2d5638d4ab8c47c106439f61fe5da10+process.hltAK8PFHT900+process.HLTEndSequence)
+process.HLT_AK8PFHT900_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass50_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00C2d5638d4ab8c47c106439f61fe5da10+process.hltAK8PFHT900+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT900_TrimModMass00_TrimModMass55_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass003285dee02ccc2f0fba010b5822aa24ce+process.hltAK8PFHT900+process.HLTEndSequence)
+process.HLT_AK8PFHT900_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass55_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass003285dee02ccc2f0fba010b5822aa24ce+process.hltAK8PFHT900+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT900_TrimModMass00_TrimModMass60_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass005ecbeec25cd4d1df38c16f99a1c0afea+process.hltAK8PFHT900+process.HLTEndSequence)
+process.HLT_AK8PFHT900_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass60_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass005ecbeec25cd4d1df38c16f99a1c0afea+process.hltAK8PFHT900+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT900_TrimModMass00_TrimModMass65_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00C6b44566021b542f0a80552e537b408b+process.hltAK8PFHT900+process.HLTEndSequence)
+process.HLT_AK8PFHT900_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass65_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00C6b44566021b542f0a80552e537b408b+process.hltAK8PFHT900+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT900_TrimModMass00_TrimModMass70_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass000c4eac09b01e10d488287685a733aa40+process.hltAK8PFHT900+process.HLTEndSequence)
+process.HLT_AK8PFHT900_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass70_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass000c4eac09b01e10d488287685a733aa40+process.hltAK8PFHT900+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT900_TrimModMass00_TrimModMass75_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass0068c0f93285e6a4487befbde993801eaa+process.hltAK8PFHT900+process.HLTEndSequence)
+process.HLT_AK8PFHT900_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass75_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass0068c0f93285e6a4487befbde993801eaa+process.hltAK8PFHT900+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT900_TrimModMass00_TrimModMass80_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass00Cdc0379ecc8f02206272d67d4a80937c+process.hltAK8PFHT900+process.HLTEndSequence)
+process.HLT_AK8PFHT900_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass80_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00Cdc0379ecc8f02206272d67d4a80937c+process.hltAK8PFHT900+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT900_TrimModMass00_TrimModMass85_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModMass000e7a491373928669523b88ca23f599d7+process.hltAK8PFHT900+process.HLTEndSequence)
+process.HLT_AK8PFHT900_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass85_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass000e7a491373928669523b88ca23f599d7+process.hltAK8PFHT900+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT650_TrimModTestMass00_TrimModTestMass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModTestMass00690db50c99b2d30f93f17bdad09b137f+process.hltAK8PFHT650+process.HLTEndSequence)
+process.HLT_AK8PFHT650_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00690db50c99b2d30f93f17bdad09b137f+process.hltAK8PFHT650+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT650_TrimModTestMass00_TrimModTestMass05_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModTestMass00E1f79057a3334fe8136ec0862f8c6645+process.hltAK8PFHT650+process.HLTEndSequence)
+process.HLT_AK8PFHT650_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass05_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00E1f79057a3334fe8136ec0862f8c6645+process.hltAK8PFHT650+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT650_TrimModTestMass00_TrimModTestMass10_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModTestMass00Fa2fa750f091c30c0e34f9c276982cc2+process.hltAK8PFHT650+process.HLTEndSequence)
+process.HLT_AK8PFHT650_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass10_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00Fa2fa750f091c30c0e34f9c276982cc2+process.hltAK8PFHT650+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT650_TrimModTestMass00_TrimModTestMass15_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModTestMass00D76494201fbea4ed57016cdeb6d16c1c+process.hltAK8PFHT650+process.HLTEndSequence)
+process.HLT_AK8PFHT650_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass15_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00D76494201fbea4ed57016cdeb6d16c1c+process.hltAK8PFHT650+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT650_TrimModTestMass00_TrimModTestMass20_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModTestMass000863f4f4b91802c0aa8abddaebb6dba6+process.hltAK8PFHT650+process.HLTEndSequence)
+process.HLT_AK8PFHT650_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass20_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass000863f4f4b91802c0aa8abddaebb6dba6+process.hltAK8PFHT650+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT650_TrimModTestMass00_TrimModTestMass25_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModTestMass00E0199c0c2f8f6fc7eee4c42e4708898c+process.hltAK8PFHT650+process.HLTEndSequence)
+process.HLT_AK8PFHT650_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass25_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00E0199c0c2f8f6fc7eee4c42e4708898c+process.hltAK8PFHT650+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT650_TrimModTestMass00_TrimModTestMass30_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModTestMass007f7e6d272b13267a7022a4c9bd294891+process.hltAK8PFHT650+process.HLTEndSequence)
+process.HLT_AK8PFHT650_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass30_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass007f7e6d272b13267a7022a4c9bd294891+process.hltAK8PFHT650+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT650_TrimModTestMass00_TrimModTestMass35_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModTestMass001872fd050bb05eba241b47cfcb3e4393+process.hltAK8PFHT650+process.HLTEndSequence)
+process.HLT_AK8PFHT650_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass35_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass001872fd050bb05eba241b47cfcb3e4393+process.hltAK8PFHT650+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT650_TrimModTestMass00_TrimModTestMass40_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModTestMass00Ebc65b02f78e215a6c80377563e1082f+process.hltAK8PFHT650+process.HLTEndSequence)
+process.HLT_AK8PFHT650_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass40_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00Ebc65b02f78e215a6c80377563e1082f+process.hltAK8PFHT650+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT650_TrimModTestMass00_TrimModTestMass45_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModTestMass00F02887f505e29957c00acc6a7b31a076+process.hltAK8PFHT650+process.HLTEndSequence)
+process.HLT_AK8PFHT650_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass45_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00F02887f505e29957c00acc6a7b31a076+process.hltAK8PFHT650+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT650_TrimModTestMass00_TrimModTestMass50_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModTestMass00C2d5638d4ab8c47c106439f61fe5da10+process.hltAK8PFHT650+process.HLTEndSequence)
+process.HLT_AK8PFHT650_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass50_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00C2d5638d4ab8c47c106439f61fe5da10+process.hltAK8PFHT650+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT650_TrimModTestMass00_TrimModTestMass55_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModTestMass003285dee02ccc2f0fba010b5822aa24ce+process.hltAK8PFHT650+process.HLTEndSequence)
+process.HLT_AK8PFHT650_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass55_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass003285dee02ccc2f0fba010b5822aa24ce+process.hltAK8PFHT650+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT650_TrimModTestMass00_TrimModTestMass60_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModTestMass005ecbeec25cd4d1df38c16f99a1c0afea+process.hltAK8PFHT650+process.HLTEndSequence)
+process.HLT_AK8PFHT650_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass60_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass005ecbeec25cd4d1df38c16f99a1c0afea+process.hltAK8PFHT650+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT650_TrimModTestMass00_TrimModTestMass65_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModTestMass00C6b44566021b542f0a80552e537b408b+process.hltAK8PFHT650+process.HLTEndSequence)
+process.HLT_AK8PFHT650_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass65_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00C6b44566021b542f0a80552e537b408b+process.hltAK8PFHT650+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT650_TrimModTestMass00_TrimModTestMass70_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModTestMass000c4eac09b01e10d488287685a733aa40+process.hltAK8PFHT650+process.HLTEndSequence)
+process.HLT_AK8PFHT650_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass70_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass000c4eac09b01e10d488287685a733aa40+process.hltAK8PFHT650+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT650_TrimModTestMass00_TrimModTestMass75_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModTestMass0068c0f93285e6a4487befbde993801eaa+process.hltAK8PFHT650+process.HLTEndSequence)
+process.HLT_AK8PFHT650_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass75_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass0068c0f93285e6a4487befbde993801eaa+process.hltAK8PFHT650+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT650_TrimModTestMass00_TrimModTestMass80_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModTestMass00Cdc0379ecc8f02206272d67d4a80937c+process.hltAK8PFHT650+process.HLTEndSequence)
+process.HLT_AK8PFHT650_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass80_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00Cdc0379ecc8f02206272d67d4a80937c+process.hltAK8PFHT650+process.HLTEndSequence)
 
 
-process.HLT_AK8PFHT650_TrimModTestMass00_TrimModTestMass85_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimModTestMass000e7a491373928669523b88ca23f599d7+process.hltAK8PFHT650+process.HLTEndSequence)
+process.HLT_AK8PFHT650_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass85_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass000e7a491373928669523b88ca23f599d7+process.hltAK8PFHT650+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT700_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00690db50c99b2d30f93f17bdad09b137f+process.hltAK8PFHT700+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT700_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass05_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00E1f79057a3334fe8136ec0862f8c6645+process.hltAK8PFHT700+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT700_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass10_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00Fa2fa750f091c30c0e34f9c276982cc2+process.hltAK8PFHT700+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT700_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass15_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00D76494201fbea4ed57016cdeb6d16c1c+process.hltAK8PFHT700+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT700_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass20_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass000863f4f4b91802c0aa8abddaebb6dba6+process.hltAK8PFHT700+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT700_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass25_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00E0199c0c2f8f6fc7eee4c42e4708898c+process.hltAK8PFHT700+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT700_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass30_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass007f7e6d272b13267a7022a4c9bd294891+process.hltAK8PFHT700+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT700_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass35_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass001872fd050bb05eba241b47cfcb3e4393+process.hltAK8PFHT700+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT700_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass40_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00Ebc65b02f78e215a6c80377563e1082f+process.hltAK8PFHT700+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT700_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass45_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00F02887f505e29957c00acc6a7b31a076+process.hltAK8PFHT700+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT700_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass50_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00C2d5638d4ab8c47c106439f61fe5da10+process.hltAK8PFHT700+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT700_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass55_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass003285dee02ccc2f0fba010b5822aa24ce+process.hltAK8PFHT700+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT700_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass60_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass005ecbeec25cd4d1df38c16f99a1c0afea+process.hltAK8PFHT700+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT700_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass65_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00C6b44566021b542f0a80552e537b408b+process.hltAK8PFHT700+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT700_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass70_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass000c4eac09b01e10d488287685a733aa40+process.hltAK8PFHT700+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT700_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass75_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass0068c0f93285e6a4487befbde993801eaa+process.hltAK8PFHT700+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT700_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass80_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00Cdc0379ecc8f02206272d67d4a80937c+process.hltAK8PFHT700+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT700_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass85_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass000e7a491373928669523b88ca23f599d7+process.hltAK8PFHT700+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT750_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00690db50c99b2d30f93f17bdad09b137f+process.hltAK8PFHT750+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT750_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass05_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00E1f79057a3334fe8136ec0862f8c6645+process.hltAK8PFHT750+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT750_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass10_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00Fa2fa750f091c30c0e34f9c276982cc2+process.hltAK8PFHT750+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT750_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass15_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00D76494201fbea4ed57016cdeb6d16c1c+process.hltAK8PFHT750+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT750_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass20_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass000863f4f4b91802c0aa8abddaebb6dba6+process.hltAK8PFHT750+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT750_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass25_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00E0199c0c2f8f6fc7eee4c42e4708898c+process.hltAK8PFHT750+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT750_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass30_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass007f7e6d272b13267a7022a4c9bd294891+process.hltAK8PFHT750+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT750_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass35_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass001872fd050bb05eba241b47cfcb3e4393+process.hltAK8PFHT750+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT750_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass40_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00Ebc65b02f78e215a6c80377563e1082f+process.hltAK8PFHT750+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT750_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass45_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00F02887f505e29957c00acc6a7b31a076+process.hltAK8PFHT750+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT750_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass50_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00C2d5638d4ab8c47c106439f61fe5da10+process.hltAK8PFHT750+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT750_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass55_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass003285dee02ccc2f0fba010b5822aa24ce+process.hltAK8PFHT750+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT750_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass60_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass005ecbeec25cd4d1df38c16f99a1c0afea+process.hltAK8PFHT750+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT750_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass65_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00C6b44566021b542f0a80552e537b408b+process.hltAK8PFHT750+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT750_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass70_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass000c4eac09b01e10d488287685a733aa40+process.hltAK8PFHT750+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT750_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass75_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass0068c0f93285e6a4487befbde993801eaa+process.hltAK8PFHT750+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT750_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass80_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00Cdc0379ecc8f02206272d67d4a80937c+process.hltAK8PFHT750+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT750_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass85_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass000e7a491373928669523b88ca23f599d7+process.hltAK8PFHT750+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT800_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00690db50c99b2d30f93f17bdad09b137f+process.hltAK8PFHT800+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT800_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass05_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00E1f79057a3334fe8136ec0862f8c6645+process.hltAK8PFHT800+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT800_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass10_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00Fa2fa750f091c30c0e34f9c276982cc2+process.hltAK8PFHT800+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT800_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass15_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00D76494201fbea4ed57016cdeb6d16c1c+process.hltAK8PFHT800+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT800_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass20_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass000863f4f4b91802c0aa8abddaebb6dba6+process.hltAK8PFHT800+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT800_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass25_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00E0199c0c2f8f6fc7eee4c42e4708898c+process.hltAK8PFHT800+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT800_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass30_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass007f7e6d272b13267a7022a4c9bd294891+process.hltAK8PFHT800+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT800_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass35_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass001872fd050bb05eba241b47cfcb3e4393+process.hltAK8PFHT800+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT800_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass40_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00Ebc65b02f78e215a6c80377563e1082f+process.hltAK8PFHT800+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT800_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass45_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00F02887f505e29957c00acc6a7b31a076+process.hltAK8PFHT800+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT800_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass50_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00C2d5638d4ab8c47c106439f61fe5da10+process.hltAK8PFHT800+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT800_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass55_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass003285dee02ccc2f0fba010b5822aa24ce+process.hltAK8PFHT800+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT800_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass60_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass005ecbeec25cd4d1df38c16f99a1c0afea+process.hltAK8PFHT800+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT800_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass65_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00C6b44566021b542f0a80552e537b408b+process.hltAK8PFHT800+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT800_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass70_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass000c4eac09b01e10d488287685a733aa40+process.hltAK8PFHT800+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT800_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass75_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass0068c0f93285e6a4487befbde993801eaa+process.hltAK8PFHT800+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT800_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass80_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00Cdc0379ecc8f02206272d67d4a80937c+process.hltAK8PFHT800+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT800_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass85_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass000e7a491373928669523b88ca23f599d7+process.hltAK8PFHT800+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00690db50c99b2d30f93f17bdad09b137f+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass05_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00E1f79057a3334fe8136ec0862f8c6645+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass10_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00Fa2fa750f091c30c0e34f9c276982cc2+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass15_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00D76494201fbea4ed57016cdeb6d16c1c+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass20_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass000863f4f4b91802c0aa8abddaebb6dba6+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass25_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00E0199c0c2f8f6fc7eee4c42e4708898c+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass30_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass007f7e6d272b13267a7022a4c9bd294891+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass35_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass001872fd050bb05eba241b47cfcb3e4393+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass40_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00Ebc65b02f78e215a6c80377563e1082f+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass45_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00F02887f505e29957c00acc6a7b31a076+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass50_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00C2d5638d4ab8c47c106439f61fe5da10+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass55_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass003285dee02ccc2f0fba010b5822aa24ce+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass60_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass005ecbeec25cd4d1df38c16f99a1c0afea+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass65_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00C6b44566021b542f0a80552e537b408b+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass70_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass000c4eac09b01e10d488287685a733aa40+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass75_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass0068c0f93285e6a4487befbde993801eaa+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass80_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00Cdc0379ecc8f02206272d67d4a80937c+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass85_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass000e7a491373928669523b88ca23f599d7+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT900_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00690db50c99b2d30f93f17bdad09b137f+process.hltAK8PFHT900+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT900_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass05_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00E1f79057a3334fe8136ec0862f8c6645+process.hltAK8PFHT900+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT900_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass10_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00Fa2fa750f091c30c0e34f9c276982cc2+process.hltAK8PFHT900+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT900_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass15_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00D76494201fbea4ed57016cdeb6d16c1c+process.hltAK8PFHT900+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT900_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass20_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass000863f4f4b91802c0aa8abddaebb6dba6+process.hltAK8PFHT900+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT900_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass25_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00E0199c0c2f8f6fc7eee4c42e4708898c+process.hltAK8PFHT900+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT900_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass30_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass007f7e6d272b13267a7022a4c9bd294891+process.hltAK8PFHT900+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT900_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass35_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass001872fd050bb05eba241b47cfcb3e4393+process.hltAK8PFHT900+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT900_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass40_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00Ebc65b02f78e215a6c80377563e1082f+process.hltAK8PFHT900+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT900_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass45_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00F02887f505e29957c00acc6a7b31a076+process.hltAK8PFHT900+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT900_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass50_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00C2d5638d4ab8c47c106439f61fe5da10+process.hltAK8PFHT900+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT900_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass55_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass003285dee02ccc2f0fba010b5822aa24ce+process.hltAK8PFHT900+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT900_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass60_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass005ecbeec25cd4d1df38c16f99a1c0afea+process.hltAK8PFHT900+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT900_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass65_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00C6b44566021b542f0a80552e537b408b+process.hltAK8PFHT900+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT900_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass70_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass000c4eac09b01e10d488287685a733aa40+process.hltAK8PFHT900+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT900_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass75_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass0068c0f93285e6a4487befbde993801eaa+process.hltAK8PFHT900+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT900_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass80_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass00Cdc0379ecc8f02206272d67d4a80937c+process.hltAK8PFHT900+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT900_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass85_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p2Pt0p06Mass000e7a491373928669523b88ca23f599d7+process.hltAK8PFHT900+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT650_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00690db50c99b2d30f93f17bdad09b137f+process.hltAK8PFHT650+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT650_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass05_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00E1f79057a3334fe8136ec0862f8c6645+process.hltAK8PFHT650+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT650_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass10_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00Fa2fa750f091c30c0e34f9c276982cc2+process.hltAK8PFHT650+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT650_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass15_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00D76494201fbea4ed57016cdeb6d16c1c+process.hltAK8PFHT650+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT650_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass20_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass000863f4f4b91802c0aa8abddaebb6dba6+process.hltAK8PFHT650+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT650_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass25_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00E0199c0c2f8f6fc7eee4c42e4708898c+process.hltAK8PFHT650+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT650_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass30_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass007f7e6d272b13267a7022a4c9bd294891+process.hltAK8PFHT650+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT650_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass35_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass001872fd050bb05eba241b47cfcb3e4393+process.hltAK8PFHT650+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT650_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass40_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00Ebc65b02f78e215a6c80377563e1082f+process.hltAK8PFHT650+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT650_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass45_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00F02887f505e29957c00acc6a7b31a076+process.hltAK8PFHT650+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT650_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass50_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00C2d5638d4ab8c47c106439f61fe5da10+process.hltAK8PFHT650+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT650_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass55_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass003285dee02ccc2f0fba010b5822aa24ce+process.hltAK8PFHT650+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT650_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass60_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass005ecbeec25cd4d1df38c16f99a1c0afea+process.hltAK8PFHT650+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT650_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass65_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00C6b44566021b542f0a80552e537b408b+process.hltAK8PFHT650+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT650_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass70_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass000c4eac09b01e10d488287685a733aa40+process.hltAK8PFHT650+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT650_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass75_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass0068c0f93285e6a4487befbde993801eaa+process.hltAK8PFHT650+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT650_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass80_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00Cdc0379ecc8f02206272d67d4a80937c+process.hltAK8PFHT650+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT650_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass85_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht550+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass000e7a491373928669523b88ca23f599d7+process.hltAK8PFHT650+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT700_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00690db50c99b2d30f93f17bdad09b137f+process.hltAK8PFHT700+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT700_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass05_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00E1f79057a3334fe8136ec0862f8c6645+process.hltAK8PFHT700+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT700_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass10_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00Fa2fa750f091c30c0e34f9c276982cc2+process.hltAK8PFHT700+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT700_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass15_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00D76494201fbea4ed57016cdeb6d16c1c+process.hltAK8PFHT700+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT700_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass20_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass000863f4f4b91802c0aa8abddaebb6dba6+process.hltAK8PFHT700+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT700_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass25_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00E0199c0c2f8f6fc7eee4c42e4708898c+process.hltAK8PFHT700+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT700_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass30_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass007f7e6d272b13267a7022a4c9bd294891+process.hltAK8PFHT700+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT700_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass35_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass001872fd050bb05eba241b47cfcb3e4393+process.hltAK8PFHT700+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT700_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass40_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00Ebc65b02f78e215a6c80377563e1082f+process.hltAK8PFHT700+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT700_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass45_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00F02887f505e29957c00acc6a7b31a076+process.hltAK8PFHT700+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT700_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass50_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00C2d5638d4ab8c47c106439f61fe5da10+process.hltAK8PFHT700+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT700_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass55_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass003285dee02ccc2f0fba010b5822aa24ce+process.hltAK8PFHT700+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT700_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass60_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass005ecbeec25cd4d1df38c16f99a1c0afea+process.hltAK8PFHT700+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT700_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass65_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00C6b44566021b542f0a80552e537b408b+process.hltAK8PFHT700+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT700_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass70_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass000c4eac09b01e10d488287685a733aa40+process.hltAK8PFHT700+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT700_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass75_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass0068c0f93285e6a4487befbde993801eaa+process.hltAK8PFHT700+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT700_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass80_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00Cdc0379ecc8f02206272d67d4a80937c+process.hltAK8PFHT700+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT700_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass85_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht600+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass000e7a491373928669523b88ca23f599d7+process.hltAK8PFHT700+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT750_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00690db50c99b2d30f93f17bdad09b137f+process.hltAK8PFHT750+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT750_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass05_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00E1f79057a3334fe8136ec0862f8c6645+process.hltAK8PFHT750+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT750_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass10_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00Fa2fa750f091c30c0e34f9c276982cc2+process.hltAK8PFHT750+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT750_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass15_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00D76494201fbea4ed57016cdeb6d16c1c+process.hltAK8PFHT750+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT750_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass20_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass000863f4f4b91802c0aa8abddaebb6dba6+process.hltAK8PFHT750+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT750_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass25_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00E0199c0c2f8f6fc7eee4c42e4708898c+process.hltAK8PFHT750+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT750_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass30_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass007f7e6d272b13267a7022a4c9bd294891+process.hltAK8PFHT750+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT750_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass35_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass001872fd050bb05eba241b47cfcb3e4393+process.hltAK8PFHT750+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT750_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass40_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00Ebc65b02f78e215a6c80377563e1082f+process.hltAK8PFHT750+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT750_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass45_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00F02887f505e29957c00acc6a7b31a076+process.hltAK8PFHT750+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT750_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass50_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00C2d5638d4ab8c47c106439f61fe5da10+process.hltAK8PFHT750+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT750_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass55_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass003285dee02ccc2f0fba010b5822aa24ce+process.hltAK8PFHT750+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT750_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass60_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass005ecbeec25cd4d1df38c16f99a1c0afea+process.hltAK8PFHT750+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT750_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass65_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00C6b44566021b542f0a80552e537b408b+process.hltAK8PFHT750+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT750_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass70_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass000c4eac09b01e10d488287685a733aa40+process.hltAK8PFHT750+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT750_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass75_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass0068c0f93285e6a4487befbde993801eaa+process.hltAK8PFHT750+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT750_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass80_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00Cdc0379ecc8f02206272d67d4a80937c+process.hltAK8PFHT750+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT750_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass85_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht650+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass000e7a491373928669523b88ca23f599d7+process.hltAK8PFHT750+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT800_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00690db50c99b2d30f93f17bdad09b137f+process.hltAK8PFHT800+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT800_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass05_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00E1f79057a3334fe8136ec0862f8c6645+process.hltAK8PFHT800+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT800_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass10_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00Fa2fa750f091c30c0e34f9c276982cc2+process.hltAK8PFHT800+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT800_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass15_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00D76494201fbea4ed57016cdeb6d16c1c+process.hltAK8PFHT800+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT800_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass20_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass000863f4f4b91802c0aa8abddaebb6dba6+process.hltAK8PFHT800+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT800_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass25_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00E0199c0c2f8f6fc7eee4c42e4708898c+process.hltAK8PFHT800+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT800_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass30_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass007f7e6d272b13267a7022a4c9bd294891+process.hltAK8PFHT800+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT800_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass35_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass001872fd050bb05eba241b47cfcb3e4393+process.hltAK8PFHT800+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT800_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass40_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00Ebc65b02f78e215a6c80377563e1082f+process.hltAK8PFHT800+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT800_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass45_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00F02887f505e29957c00acc6a7b31a076+process.hltAK8PFHT800+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT800_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass50_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00C2d5638d4ab8c47c106439f61fe5da10+process.hltAK8PFHT800+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT800_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass55_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass003285dee02ccc2f0fba010b5822aa24ce+process.hltAK8PFHT800+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT800_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass60_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass005ecbeec25cd4d1df38c16f99a1c0afea+process.hltAK8PFHT800+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT800_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass65_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00C6b44566021b542f0a80552e537b408b+process.hltAK8PFHT800+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT800_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass70_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass000c4eac09b01e10d488287685a733aa40+process.hltAK8PFHT800+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT800_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass75_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass0068c0f93285e6a4487befbde993801eaa+process.hltAK8PFHT800+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT800_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass80_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00Cdc0379ecc8f02206272d67d4a80937c+process.hltAK8PFHT800+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT800_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass85_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht700+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass000e7a491373928669523b88ca23f599d7+process.hltAK8PFHT800+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00690db50c99b2d30f93f17bdad09b137f+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass05_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00E1f79057a3334fe8136ec0862f8c6645+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass10_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00Fa2fa750f091c30c0e34f9c276982cc2+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass15_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00D76494201fbea4ed57016cdeb6d16c1c+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass20_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass000863f4f4b91802c0aa8abddaebb6dba6+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass25_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00E0199c0c2f8f6fc7eee4c42e4708898c+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass30_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass007f7e6d272b13267a7022a4c9bd294891+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass35_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass001872fd050bb05eba241b47cfcb3e4393+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass40_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00Ebc65b02f78e215a6c80377563e1082f+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass45_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00F02887f505e29957c00acc6a7b31a076+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass50_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00C2d5638d4ab8c47c106439f61fe5da10+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass55_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass003285dee02ccc2f0fba010b5822aa24ce+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass60_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass005ecbeec25cd4d1df38c16f99a1c0afea+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass65_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00C6b44566021b542f0a80552e537b408b+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass70_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass000c4eac09b01e10d488287685a733aa40+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass75_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass0068c0f93285e6a4487befbde993801eaa+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass80_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00Cdc0379ecc8f02206272d67d4a80937c+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass85_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass000e7a491373928669523b88ca23f599d7+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT900_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00690db50c99b2d30f93f17bdad09b137f+process.hltAK8PFHT900+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT900_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass05_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00E1f79057a3334fe8136ec0862f8c6645+process.hltAK8PFHT900+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT900_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass10_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00Fa2fa750f091c30c0e34f9c276982cc2+process.hltAK8PFHT900+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT900_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass15_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00D76494201fbea4ed57016cdeb6d16c1c+process.hltAK8PFHT900+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT900_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass20_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass000863f4f4b91802c0aa8abddaebb6dba6+process.hltAK8PFHT900+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT900_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass25_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00E0199c0c2f8f6fc7eee4c42e4708898c+process.hltAK8PFHT900+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT900_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass30_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass007f7e6d272b13267a7022a4c9bd294891+process.hltAK8PFHT900+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT900_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass35_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass001872fd050bb05eba241b47cfcb3e4393+process.hltAK8PFHT900+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT900_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass40_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00Ebc65b02f78e215a6c80377563e1082f+process.hltAK8PFHT900+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT900_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass45_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00F02887f505e29957c00acc6a7b31a076+process.hltAK8PFHT900+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT900_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass50_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00C2d5638d4ab8c47c106439f61fe5da10+process.hltAK8PFHT900+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT900_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass55_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass003285dee02ccc2f0fba010b5822aa24ce+process.hltAK8PFHT900+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT900_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass60_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass005ecbeec25cd4d1df38c16f99a1c0afea+process.hltAK8PFHT900+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT900_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass65_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00C6b44566021b542f0a80552e537b408b+process.hltAK8PFHT900+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT900_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass70_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass000c4eac09b01e10d488287685a733aa40+process.hltAK8PFHT900+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT900_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass75_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass0068c0f93285e6a4487befbde993801eaa+process.hltAK8PFHT900+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT900_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass80_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass00Cdc0379ecc8f02206272d67d4a80937c+process.hltAK8PFHT900+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT900_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass85_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht800+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p05Mass000e7a491373928669523b88ca23f599d7+process.hltAK8PFHT900+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175_TrimR0p1Pt0p03Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00690db50c99b2d30f93f17bdad09b137f+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175_TrimR0p1Pt0p03Mass05_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00E1f79057a3334fe8136ec0862f8c6645+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175_TrimR0p1Pt0p03Mass10_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00Fa2fa750f091c30c0e34f9c276982cc2+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175_TrimR0p1Pt0p03Mass15_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00D76494201fbea4ed57016cdeb6d16c1c+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175_TrimR0p1Pt0p03Mass20_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass000863f4f4b91802c0aa8abddaebb6dba6+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175_TrimR0p1Pt0p03Mass25_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00E0199c0c2f8f6fc7eee4c42e4708898c+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175_TrimR0p1Pt0p03Mass30_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass007f7e6d272b13267a7022a4c9bd294891+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175_TrimR0p1Pt0p03Mass35_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass001872fd050bb05eba241b47cfcb3e4393+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175_TrimR0p1Pt0p03Mass40_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00Ebc65b02f78e215a6c80377563e1082f+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175_TrimR0p1Pt0p03Mass45_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00F02887f505e29957c00acc6a7b31a076+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175_TrimR0p1Pt0p03Mass50_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00C2d5638d4ab8c47c106439f61fe5da10+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175_TrimR0p1Pt0p03Mass55_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass003285dee02ccc2f0fba010b5822aa24ce+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175_TrimR0p1Pt0p03Mass60_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass005ecbeec25cd4d1df38c16f99a1c0afea+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175_TrimR0p1Pt0p03Mass65_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00C6b44566021b542f0a80552e537b408b+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175_TrimR0p1Pt0p03Mass70_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass000c4eac09b01e10d488287685a733aa40+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175_TrimR0p1Pt0p03Mass75_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass0068c0f93285e6a4487befbde993801eaa+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175_TrimR0p1Pt0p03Mass80_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00Cdc0379ecc8f02206272d67d4a80937c+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175_TrimR0p1Pt0p03Mass85_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass000e7a491373928669523b88ca23f599d7+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200_TrimR0p1Pt0p03Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT200+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00690db50c99b2d30f93f17bdad09b137f+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200_TrimR0p1Pt0p03Mass05_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT200+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00E1f79057a3334fe8136ec0862f8c6645+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200_TrimR0p1Pt0p03Mass10_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT200+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00Fa2fa750f091c30c0e34f9c276982cc2+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200_TrimR0p1Pt0p03Mass15_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT200+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00D76494201fbea4ed57016cdeb6d16c1c+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200_TrimR0p1Pt0p03Mass20_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT200+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass000863f4f4b91802c0aa8abddaebb6dba6+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200_TrimR0p1Pt0p03Mass25_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT200+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00E0199c0c2f8f6fc7eee4c42e4708898c+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200_TrimR0p1Pt0p03Mass30_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT200+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass007f7e6d272b13267a7022a4c9bd294891+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200_TrimR0p1Pt0p03Mass35_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT200+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass001872fd050bb05eba241b47cfcb3e4393+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200_TrimR0p1Pt0p03Mass40_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT200+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00Ebc65b02f78e215a6c80377563e1082f+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200_TrimR0p1Pt0p03Mass45_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT200+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00F02887f505e29957c00acc6a7b31a076+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200_TrimR0p1Pt0p03Mass50_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT200+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00C2d5638d4ab8c47c106439f61fe5da10+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200_TrimR0p1Pt0p03Mass55_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT200+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass003285dee02ccc2f0fba010b5822aa24ce+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200_TrimR0p1Pt0p03Mass60_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT200+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass005ecbeec25cd4d1df38c16f99a1c0afea+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200_TrimR0p1Pt0p03Mass65_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT200+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00C6b44566021b542f0a80552e537b408b+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200_TrimR0p1Pt0p03Mass70_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT200+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass000c4eac09b01e10d488287685a733aa40+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200_TrimR0p1Pt0p03Mass75_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT200+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass0068c0f93285e6a4487befbde993801eaa+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200_TrimR0p1Pt0p03Mass80_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT200+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00Cdc0379ecc8f02206272d67d4a80937c+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200_TrimR0p1Pt0p03Mass85_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT200+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass000e7a491373928669523b88ca23f599d7+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT250_TrimR0p1Pt0p03Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00690db50c99b2d30f93f17bdad09b137f+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT250_TrimR0p1Pt0p03Mass05_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00E1f79057a3334fe8136ec0862f8c6645+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT250_TrimR0p1Pt0p03Mass10_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00Fa2fa750f091c30c0e34f9c276982cc2+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT250_TrimR0p1Pt0p03Mass15_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00D76494201fbea4ed57016cdeb6d16c1c+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT250_TrimR0p1Pt0p03Mass20_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass000863f4f4b91802c0aa8abddaebb6dba6+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT250_TrimR0p1Pt0p03Mass25_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00E0199c0c2f8f6fc7eee4c42e4708898c+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT250_TrimR0p1Pt0p03Mass30_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass007f7e6d272b13267a7022a4c9bd294891+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT250_TrimR0p1Pt0p03Mass35_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass001872fd050bb05eba241b47cfcb3e4393+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT250_TrimR0p1Pt0p03Mass40_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00Ebc65b02f78e215a6c80377563e1082f+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT250_TrimR0p1Pt0p03Mass45_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00F02887f505e29957c00acc6a7b31a076+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT250_TrimR0p1Pt0p03Mass50_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00C2d5638d4ab8c47c106439f61fe5da10+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT250_TrimR0p1Pt0p03Mass55_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass003285dee02ccc2f0fba010b5822aa24ce+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT250_TrimR0p1Pt0p03Mass60_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass005ecbeec25cd4d1df38c16f99a1c0afea+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT250_TrimR0p1Pt0p03Mass65_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00C6b44566021b542f0a80552e537b408b+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT250_TrimR0p1Pt0p03Mass70_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass000c4eac09b01e10d488287685a733aa40+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT250_TrimR0p1Pt0p03Mass75_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass0068c0f93285e6a4487befbde993801eaa+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT250_TrimR0p1Pt0p03Mass80_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00Cdc0379ecc8f02206272d67d4a80937c+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT250_TrimR0p1Pt0p03Mass85_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass000e7a491373928669523b88ca23f599d7+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200_TrimR0p1Pt0p03Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175ORHTT200+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00690db50c99b2d30f93f17bdad09b137f+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200_TrimR0p1Pt0p03Mass05_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175ORHTT200+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00E1f79057a3334fe8136ec0862f8c6645+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200_TrimR0p1Pt0p03Mass10_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175ORHTT200+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00Fa2fa750f091c30c0e34f9c276982cc2+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200_TrimR0p1Pt0p03Mass15_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175ORHTT200+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00D76494201fbea4ed57016cdeb6d16c1c+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200_TrimR0p1Pt0p03Mass20_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175ORHTT200+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass000863f4f4b91802c0aa8abddaebb6dba6+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200_TrimR0p1Pt0p03Mass25_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175ORHTT200+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00E0199c0c2f8f6fc7eee4c42e4708898c+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200_TrimR0p1Pt0p03Mass30_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175ORHTT200+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass007f7e6d272b13267a7022a4c9bd294891+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200_TrimR0p1Pt0p03Mass35_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175ORHTT200+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass001872fd050bb05eba241b47cfcb3e4393+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200_TrimR0p1Pt0p03Mass40_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175ORHTT200+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00Ebc65b02f78e215a6c80377563e1082f+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200_TrimR0p1Pt0p03Mass45_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175ORHTT200+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00F02887f505e29957c00acc6a7b31a076+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200_TrimR0p1Pt0p03Mass50_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175ORHTT200+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00C2d5638d4ab8c47c106439f61fe5da10+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200_TrimR0p1Pt0p03Mass55_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175ORHTT200+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass003285dee02ccc2f0fba010b5822aa24ce+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200_TrimR0p1Pt0p03Mass60_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175ORHTT200+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass005ecbeec25cd4d1df38c16f99a1c0afea+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200_TrimR0p1Pt0p03Mass65_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175ORHTT200+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00C6b44566021b542f0a80552e537b408b+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200_TrimR0p1Pt0p03Mass70_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175ORHTT200+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass000c4eac09b01e10d488287685a733aa40+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200_TrimR0p1Pt0p03Mass75_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175ORHTT200+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass0068c0f93285e6a4487befbde993801eaa+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200_TrimR0p1Pt0p03Mass80_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175ORHTT200+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00Cdc0379ecc8f02206272d67d4a80937c+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200_TrimR0p1Pt0p03Mass85_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175ORHTT200+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass000e7a491373928669523b88ca23f599d7+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200ORHTT250_TrimR0p1Pt0p03Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT200ORHTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00690db50c99b2d30f93f17bdad09b137f+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200ORHTT250_TrimR0p1Pt0p03Mass05_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT200ORHTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00E1f79057a3334fe8136ec0862f8c6645+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200ORHTT250_TrimR0p1Pt0p03Mass10_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT200ORHTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00Fa2fa750f091c30c0e34f9c276982cc2+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200ORHTT250_TrimR0p1Pt0p03Mass15_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT200ORHTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00D76494201fbea4ed57016cdeb6d16c1c+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200ORHTT250_TrimR0p1Pt0p03Mass20_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT200ORHTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass000863f4f4b91802c0aa8abddaebb6dba6+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200ORHTT250_TrimR0p1Pt0p03Mass25_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT200ORHTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00E0199c0c2f8f6fc7eee4c42e4708898c+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200ORHTT250_TrimR0p1Pt0p03Mass30_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT200ORHTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass007f7e6d272b13267a7022a4c9bd294891+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200ORHTT250_TrimR0p1Pt0p03Mass35_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT200ORHTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass001872fd050bb05eba241b47cfcb3e4393+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200ORHTT250_TrimR0p1Pt0p03Mass40_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT200ORHTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00Ebc65b02f78e215a6c80377563e1082f+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200ORHTT250_TrimR0p1Pt0p03Mass45_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT200ORHTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00F02887f505e29957c00acc6a7b31a076+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200ORHTT250_TrimR0p1Pt0p03Mass50_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT200ORHTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00C2d5638d4ab8c47c106439f61fe5da10+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200ORHTT250_TrimR0p1Pt0p03Mass55_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT200ORHTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass003285dee02ccc2f0fba010b5822aa24ce+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200ORHTT250_TrimR0p1Pt0p03Mass60_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT200ORHTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass005ecbeec25cd4d1df38c16f99a1c0afea+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200ORHTT250_TrimR0p1Pt0p03Mass65_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT200ORHTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00C6b44566021b542f0a80552e537b408b+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200ORHTT250_TrimR0p1Pt0p03Mass70_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT200ORHTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass000c4eac09b01e10d488287685a733aa40+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200ORHTT250_TrimR0p1Pt0p03Mass75_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT200ORHTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass0068c0f93285e6a4487befbde993801eaa+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200ORHTT250_TrimR0p1Pt0p03Mass80_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT200ORHTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00Cdc0379ecc8f02206272d67d4a80937c+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200ORHTT250_TrimR0p1Pt0p03Mass85_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT200ORHTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass000e7a491373928669523b88ca23f599d7+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200ORHTT250_TrimR0p1Pt0p03Mass00_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175ORHTT200ORHTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00690db50c99b2d30f93f17bdad09b137f+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200ORHTT250_TrimR0p1Pt0p03Mass05_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175ORHTT200ORHTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00E1f79057a3334fe8136ec0862f8c6645+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200ORHTT250_TrimR0p1Pt0p03Mass10_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175ORHTT200ORHTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00Fa2fa750f091c30c0e34f9c276982cc2+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200ORHTT250_TrimR0p1Pt0p03Mass15_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175ORHTT200ORHTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00D76494201fbea4ed57016cdeb6d16c1c+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200ORHTT250_TrimR0p1Pt0p03Mass20_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175ORHTT200ORHTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass000863f4f4b91802c0aa8abddaebb6dba6+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200ORHTT250_TrimR0p1Pt0p03Mass25_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175ORHTT200ORHTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00E0199c0c2f8f6fc7eee4c42e4708898c+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200ORHTT250_TrimR0p1Pt0p03Mass30_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175ORHTT200ORHTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass007f7e6d272b13267a7022a4c9bd294891+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200ORHTT250_TrimR0p1Pt0p03Mass35_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175ORHTT200ORHTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass001872fd050bb05eba241b47cfcb3e4393+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200ORHTT250_TrimR0p1Pt0p03Mass40_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175ORHTT200ORHTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00Ebc65b02f78e215a6c80377563e1082f+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200ORHTT250_TrimR0p1Pt0p03Mass45_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175ORHTT200ORHTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00F02887f505e29957c00acc6a7b31a076+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200ORHTT250_TrimR0p1Pt0p03Mass50_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175ORHTT200ORHTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00C2d5638d4ab8c47c106439f61fe5da10+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200ORHTT250_TrimR0p1Pt0p03Mass55_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175ORHTT200ORHTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass003285dee02ccc2f0fba010b5822aa24ce+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200ORHTT250_TrimR0p1Pt0p03Mass60_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175ORHTT200ORHTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass005ecbeec25cd4d1df38c16f99a1c0afea+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200ORHTT250_TrimR0p1Pt0p03Mass65_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175ORHTT200ORHTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00C6b44566021b542f0a80552e537b408b+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200ORHTT250_TrimR0p1Pt0p03Mass70_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175ORHTT200ORHTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass000c4eac09b01e10d488287685a733aa40+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200ORHTT250_TrimR0p1Pt0p03Mass75_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175ORHTT200ORHTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass0068c0f93285e6a4487befbde993801eaa+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200ORHTT250_TrimR0p1Pt0p03Mass80_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175ORHTT200ORHTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass00Cdc0379ecc8f02206272d67d4a80937c+process.hltAK8PFHT850+process.HLTEndSequence)
+
+
+process.HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200ORHTT250_TrimR0p1Pt0p03Mass85_v1 = cms.Path(process.hltTriggerType+process.hltL1sL1HTT175ORHTT200ORHTT250+process.hltAK8Ht750+process.hltAK4CaloJetsPFEt5+process.hlt1AK8PFJetsTrimR0p1Pt0p03Mass000e7a491373928669523b88ca23f599d7+process.hltAK8PFHT850+process.HLTEndSequence)
 
 
 process.HLTOutput_openhlt = cms.EndPath(process.output)
@@ -8910,6 +13540,22 @@ process.DQMStore = cms.Service("DQMStore",
     forceResetOnBeginLumi = cms.untracked.bool(False),
     LSbasedMode = cms.untracked.bool(True),
     verboseQT = cms.untracked.int32(0)
+)
+
+
+process.EvFDaqDirector = cms.Service("EvFDaqDirector",
+    buBaseDir = cms.untracked.string('.'),
+    runNumber = cms.untracked.uint32(0),
+    baseDir = cms.untracked.string('.'),
+    outputAdler32Recheck = cms.untracked.bool(False)
+)
+
+
+process.FastMonitoringService = cms.Service("FastMonitoringService",
+    slowName = cms.untracked.string('slowmoni'),
+    fastName = cms.untracked.string('fastmoni'),
+    fastMonIntervals = cms.untracked.uint32(2),
+    sleepTime = cms.untracked.int32(1)
 )
 
 
@@ -9066,8 +13712,7 @@ process.MessageLogger = cms.Service("MessageLogger",
         'Root_NoDictionary', 
         'TriggerSummaryProducerAOD', 
         'L1GtTrigReport', 
-        'HLTrigReport', 
-        'FastReport'),
+        'HLTrigReport'),
     fwkJobReports = cms.untracked.vstring('FrameworkJobReport')
 )
 
@@ -9196,6 +13841,23 @@ process.HcalGeometryFromDBEP = cms.ESProducer("HcalGeometryFromDBEP",
 )
 
 
+process.HcalTPGCoderULUT = cms.ESProducer("HcalTPGCoderULUT",
+    read_FG_LUTs = cms.bool(False),
+    FGLUTs = cms.FileInPath('CalibCalorimetry/HcalTPGAlgos/data/HBHE_FG_LUT.dat'),
+    MaskBit = cms.int32(32768),
+    read_Ascii_LUTs = cms.bool(False),
+    read_XML_LUTs = cms.bool(False),
+    RCalibFile = cms.FileInPath('CalibCalorimetry/HcalTPGAlgos/data/RecHit-TPG-calib.dat'),
+    LUTGenerationMode = cms.bool(True),
+    inputLUTs = cms.FileInPath('CalibCalorimetry/HcalTPGAlgos/data/inputLUTcoder_physics.dat'),
+    hcalTopologyConstants = cms.PSet(
+        maxDepthHE = cms.int32(3),
+        maxDepthHB = cms.int32(2),
+        mode = cms.string('HcalTopologyMode::LHC')
+    )
+)
+
+
 process.HcalTopologyIdealEP = cms.ESProducer("HcalTopologyIdealEP",
     Exclude = cms.untracked.string(''),
     appendToDataLabel = cms.string(''),
@@ -9204,6 +13866,6669 @@ process.HcalTopologyIdealEP = cms.ESProducer("HcalTopologyIdealEP",
         mode = cms.string('HcalTopologyMode::LHC'),
         maxDepthHB = cms.int32(2)
     )
+)
+
+
+process.HcalTrigTowerGeometryESProducer = cms.ESProducer("HcalTrigTowerGeometryESProducer")
+
+
+process.L1CaloInputScalesProducer = cms.ESProducer("L1CaloInputScalesProducer",
+    L1HcalEtThresholdsPositiveEta = cms.vdouble( (0, 0, 0, 0, 0.70733067, 
+        0.88416334, 1.2378287, 1.4146613, 1.591494, 1.7683267, 
+        2.121992, 2.2988247, 2.65249, 2.8293227, 3.0061554, 
+        3.3598207, 3.5366534, 3.8903187, 4.0671514, 4.4208167, 
+        4.774482, 4.9513147, 5.30498, 5.6586454, 5.835478, 
+        6.1891434, 6.5428087, 6.896474, 7.2501394, 7.426972, 
+        7.7806374, 8.1343027, 8.4879681, 8.8416334, 9.1952987, 
+        9.5489641, 9.9026294, 10.256295, 10.60996, 11.140458, 
+        11.494123, 11.847789, 12.201454, 12.555119, 12.908785, 
+        13.439283, 13.792948, 14.146613, 14.677111, 15.030777, 
+        15.384442, 15.91494, 16.268605, 16.799103, 17.152769, 
+        17.683267, 18.036932, 18.56743, 18.921095, 19.451593, 
+        19.982091, 20.335757, 20.866255, 21.396753, 21.750418, 
+        22.280916, 22.811414, 23.341912, 23.87241, 24.226075, 
+        24.756573, 25.287071, 25.81757, 26.348068, 26.878566, 
+        27.409064, 27.939562, 28.47006, 29.000558, 29.531056, 
+        30.061554, 30.592052, 31.299382, 31.82988, 32.360378, 
+        32.890876, 33.421374, 34.128705, 34.659203, 35.189701, 
+        35.897032, 36.42753, 36.958028, 37.665358, 38.195856, 
+        38.903187, 39.433685, 40.141016, 40.671514, 41.378844, 
+        41.909342, 42.616673, 43.147171, 43.854502, 44.561832, 
+        45.09233, 45.799661, 46.506992, 47.03749, 47.74482, 
+        48.452151, 49.159482, 49.866812, 50.39731, 51.104641, 
+        51.811972, 52.519302, 53.226633, 53.933964, 54.641294, 
+        55.348625, 56.055956, 56.763286, 57.470617, 58.177948, 
+        58.885278, 59.592609, 60.29994, 61.00727, 61.714601, 
+        62.421932, 63.306095, 64.013426, 64.720756, 65.428087, 
+        66.31225, 67.019581, 67.726912, 68.434242, 69.318406, 
+        70.025736, 70.9099, 71.61723, 72.324561, 73.208724, 
+        73.916055, 74.800218, 75.507549, 76.391712, 77.099043, 
+        77.983207, 78.690537, 79.574701, 80.458864, 81.166195, 
+        82.050358, 82.934521, 83.641852, 84.526015, 85.410179, 
+        86.294342, 87.001673, 87.885836, 88.769999, 89.654163, 
+        90.538326, 91.245657, 92.12982, 93.013983, 93.898147, 
+        94.78231, 95.666473, 96.550637, 97.4348, 98.318963, 
+        99.203127, 100.08729, 100.97145, 102.03245, 102.91661, 
+        103.80078, 104.68494, 105.5691, 106.45327, 107.51426, 
+        108.39843, 109.28259, 110.34358, 111.22775, 112.11191, 
+        113.17291, 114.05707, 114.94123, 116.00223, 116.88639, 
+        117.94739, 118.83155, 119.71572, 120.77671, 121.66088, 
+        122.72187, 123.78287, 124.66703, 125.72803, 126.61219, 
+        127.67319, 128.73418, 129.61835, 130.67934, 131.74034, 
+        132.6245, 133.6855, 134.74649, 135.80749, 136.69165, 
+        137.75265, 138.81364, 139.87464, 140.93564, 141.99663, 
+        143.05763, 143.94179, 145.00279, 146.06378, 147.12478, 
+        148.18578, 149.24677, 150.30777, 151.36876, 152.42976, 
+        153.49076, 154.72858, 155.78958, 156.85058, 157.91157, 
+        158.97257, 160.03356, 161.09456, 162.33239, 163.39339, 
+        164.45438, 165.51538, 166.75321, 167.8142, 168.8752, 
+        170.11303, 171.17402, 172.23502, 173.47285, 174.53384, 
+        175.77167, 176.83267, 177.89366, 179.13149, 180.19249, 
+        180.89982, 0, 0, 0, 0, 
+        0.70201378, 0.87751722, 1.2285241, 1.4040276, 1.579531, 
+        1.7550344, 2.1060413, 2.2815448, 2.6325517, 2.8080551, 
+        2.9835586, 3.3345654, 3.5100689, 3.8610758, 4.0365792, 
+        4.3875861, 4.738593, 4.9140964, 5.2651033, 5.6161102, 
+        5.7916137, 6.1426205, 6.4936274, 6.8446343, 7.1956412, 
+        7.3711447, 7.7221515, 8.0731584, 8.4241653, 8.7751722, 
+        9.1261791, 9.477186, 9.8281929, 10.1792, 10.530207, 
+        11.056717, 11.407724, 11.758731, 12.109738, 12.460745, 
+        12.811751, 13.338262, 13.689269, 14.040276, 14.566786, 
+        14.917793, 15.2688, 15.79531, 16.146317, 16.672827, 
+        17.023834, 17.550344, 17.901351, 18.427862, 18.778869, 
+        19.305379, 19.831889, 20.182896, 20.709406, 21.235917, 
+        21.586924, 22.113434, 22.639944, 23.166455, 23.692965, 
+        24.043972, 24.570482, 25.096993, 25.623503, 26.150013, 
+        26.676524, 27.203034, 27.729544, 28.256055, 28.782565, 
+        29.309075, 29.835586, 30.362096, 31.06411, 31.59062, 
+        32.11713, 32.643641, 33.170151, 33.872165, 34.398675, 
+        34.925185, 35.627199, 36.153709, 36.68022, 37.382234, 
+        37.908744, 38.610758, 39.137268, 39.839282, 40.365792, 
+        41.067806, 41.594316, 42.29633, 42.82284, 43.524854, 
+        44.226868, 44.753378, 45.455392, 46.157406, 46.683916, 
+        47.38593, 48.087944, 48.789957, 49.491971, 50.018482, 
+        50.720495, 51.422509, 52.124523, 52.826537, 53.52855, 
+        54.230564, 54.932578, 55.634592, 56.336606, 57.038619, 
+        57.740633, 58.442647, 59.144661, 59.846674, 60.548688, 
+        61.250702, 61.952716, 62.830233, 63.532247, 64.234261, 
+        64.936274, 65.813792, 66.515805, 67.217819, 67.919833, 
+        68.79735, 69.499364, 70.376881, 71.078895, 71.780909, 
+        72.658426, 73.36044, 74.237957, 74.939971, 75.817488, 
+        76.519502, 77.397019, 78.099033, 78.97655, 79.854067, 
+        80.556081, 81.433598, 82.311115, 83.013129, 83.890646, 
+        84.768164, 85.645681, 86.347695, 87.225212, 88.102729, 
+        88.980246, 89.857763, 90.559777, 91.437294, 92.314812, 
+        93.192329, 94.069846, 94.947363, 95.824881, 96.702398, 
+        97.579915, 98.457432, 99.334949, 100.21247, 101.26549, 
+        102.143, 103.02052, 103.89804, 104.77556, 105.65307, 
+        106.70609, 107.58361, 108.46113, 109.51415, 110.39167, 
+        111.26918, 112.3222, 113.19972, 114.07724, 115.13026, 
+        116.00778, 117.0608, 117.93831, 118.81583, 119.86885, 
+        120.74637, 121.79939, 122.85241, 123.72993, 124.78295, 
+        125.66047, 126.71349, 127.76651, 128.64402, 129.69705, 
+        130.75007, 131.62758, 132.6806, 133.73362, 134.78665, 
+        135.66416, 136.71718, 137.7702, 138.82322, 139.87624, 
+        140.92927, 141.98229, 142.8598, 143.91282, 144.96584, 
+        146.01887, 147.07189, 148.12491, 149.17793, 150.23095, 
+        151.28397, 152.33699, 153.56551, 154.61853, 155.67155, 
+        156.72458, 157.7776, 158.83062, 159.88364, 161.11216, 
+        162.16518, 163.2182, 164.27122, 165.49975, 166.55277, 
+        167.60579, 168.83431, 169.88733, 170.94035, 172.16888, 
+        173.2219, 174.45042, 175.50344, 176.55646, 177.78499, 
+        178.83801, 179.54002, 0, 0, 0, 
+        0, 0.69157744, 0.86447181, 1.2102605, 1.3831549, 
+        1.5560492, 1.7289436, 2.0747323, 2.2476267, 2.5934154, 
+        2.7663098, 2.9392041, 3.2849929, 3.4578872, 3.8036759, 
+        3.9765703, 4.322359, 4.6681477, 4.8410421, 5.1868308, 
+        5.5326196, 5.7055139, 6.0513026, 6.3970914, 6.7428801, 
+        7.0886688, 7.2615632, 7.6073519, 7.9531406, 8.2989293, 
+        8.6447181, 8.9905068, 9.3362955, 9.6820842, 10.027873, 
+        10.373662, 10.892345, 11.238133, 11.583922, 11.929711, 
+        12.2755, 12.621288, 13.139971, 13.48576, 13.831549, 
+        14.350232, 14.696021, 15.041809, 15.560492, 15.906281, 
+        16.424964, 16.770753, 17.289436, 17.635225, 18.153908, 
+        18.499697, 19.01838, 19.537063, 19.882852, 20.401535, 
+        20.920218, 21.266006, 21.784689, 22.303373, 22.822056, 
+        23.340739, 23.686527, 24.205211, 24.723894, 25.242577, 
+        25.76126, 26.279943, 26.798626, 27.317309, 27.835992, 
+        28.354675, 28.873358, 29.392041, 29.910724, 30.602302, 
+        31.120985, 31.639668, 32.158351, 32.677034, 33.368612, 
+        33.887295, 34.405978, 35.097555, 35.616238, 36.134921, 
+        36.826499, 37.345182, 38.036759, 38.555443, 39.24702, 
+        39.765703, 40.45728, 40.975964, 41.667541, 42.186224, 
+        42.877802, 43.569379, 44.088062, 44.77964, 45.471217, 
+        45.9899, 46.681477, 47.373055, 48.064632, 48.75621, 
+        49.274893, 49.96647, 50.658048, 51.349625, 52.041203, 
+        52.73278, 53.424358, 54.115935, 54.807512, 55.49909, 
+        56.190667, 56.882245, 57.573822, 58.2654, 58.956977, 
+        59.648555, 60.340132, 61.031709, 61.896181, 62.587759, 
+        63.279336, 63.970914, 64.835385, 65.526963, 66.21854, 
+        66.910118, 67.77459, 68.466167, 69.330639, 70.022216, 
+        70.713794, 71.578265, 72.269843, 73.134315, 73.825892, 
+        74.690364, 75.381941, 76.246413, 76.937991, 77.802462, 
+        78.666934, 79.358512, 80.222984, 81.087455, 81.779033, 
+        82.643505, 83.507976, 84.372448, 85.064026, 85.928497, 
+        86.792969, 87.657441, 88.521913, 89.21349, 90.077962, 
+        90.942434, 91.806906, 92.671378, 93.535849, 94.400321, 
+        95.264793, 96.129265, 96.993737, 97.858208, 98.72268, 
+        99.760046, 100.62452, 101.48899, 102.35346, 103.21793, 
+        104.08241, 105.11977, 105.98424, 106.84872, 107.88608, 
+        108.75055, 109.61502, 110.65239, 111.51686, 112.38133, 
+        113.4187, 114.28317, 115.32054, 116.18501, 117.04948, 
+        118.08685, 118.95132, 119.98869, 121.02605, 121.89052, 
+        122.92789, 123.79236, 124.82973, 125.86709, 126.73157, 
+        127.76893, 128.8063, 129.67077, 130.70814, 131.7455, 
+        132.78287, 133.64734, 134.68471, 135.72207, 136.75944, 
+        137.79681, 138.83417, 139.87154, 140.73601, 141.77338, 
+        142.81074, 143.84811, 144.88547, 145.92284, 146.96021, 
+        147.99757, 149.03494, 150.07231, 151.28257, 152.31993, 
+        153.3573, 154.39466, 155.43203, 156.4694, 157.50676, 
+        158.71702, 159.75439, 160.79176, 161.82912, 163.03938, 
+        164.07675, 165.11411, 166.32438, 167.36174, 168.39911, 
+        169.60937, 170.64673, 171.85699, 172.89436, 173.93173, 
+        175.14199, 176.17935, 176.87093, 0, 0, 
+        0, 0, 0.67639901, 0.84549877, 1.1836983, 
+        1.352798, 1.5218978, 1.6909975, 2.029197, 2.1982968, 
+        2.5364963, 2.7055961, 2.8746958, 3.2128953, 3.3819951, 
+        3.7201946, 3.8892943, 4.2274938, 4.5656933, 4.7347931, 
+        5.0729926, 5.4111921, 5.5802919, 5.9184914, 6.2566909, 
+        6.5948904, 6.9330899, 7.1021896, 7.4403892, 7.7785887, 
+        8.1167882, 8.4549877, 8.7931872, 9.1313867, 9.4695862, 
+        9.8077857, 10.145985, 10.653284, 10.991484, 11.329683, 
+        11.667883, 12.006082, 12.344282, 12.851581, 13.189781, 
+        13.52798, 14.03528, 14.373479, 14.711679, 15.218978, 
+        15.557177, 16.064477, 16.402676, 16.909975, 17.248175, 
+        17.755474, 18.093674, 18.600973, 19.108272, 19.446472, 
+        19.953771, 20.46107, 20.79927, 21.306569, 21.813868, 
+        22.321167, 22.828467, 23.166666, 23.673965, 24.181265, 
+        24.688564, 25.195863, 25.703163, 26.210462, 26.717761, 
+        27.22506, 27.73236, 28.239659, 28.746958, 29.254257, 
+        29.930656, 30.437956, 30.945255, 31.452554, 31.959853, 
+        32.636252, 33.143552, 33.650851, 34.32725, 34.834549, 
+        35.341848, 36.018247, 36.525547, 37.201946, 37.709245, 
+        38.385644, 38.892943, 39.569342, 40.076642, 40.753041, 
+        41.26034, 41.936739, 42.613138, 43.120437, 43.796836, 
+        44.473235, 44.980534, 45.656933, 46.333332, 47.009731, 
+        47.68613, 48.19343, 48.869829, 49.546228, 50.222627, 
+        50.899026, 51.575425, 52.251824, 52.928223, 53.604622, 
+        54.281021, 54.95742, 55.633819, 56.310218, 56.986617, 
+        57.663016, 58.339415, 59.015814, 59.692213, 60.537712, 
+        61.214111, 61.89051, 62.566909, 63.412408, 64.088807, 
+        64.765206, 65.441605, 66.287103, 66.963502, 67.809001, 
+        68.4854, 69.161799, 70.007298, 70.683697, 71.529196, 
+        72.205595, 73.051094, 73.727493, 74.572991, 75.24939, 
+        76.094889, 76.940388, 77.616787, 78.462286, 79.307784, 
+        79.984183, 80.829682, 81.675181, 82.52068, 83.197079, 
+        84.042577, 84.888076, 85.733575, 86.579074, 87.255473, 
+        88.100972, 88.94647, 89.791969, 90.637468, 91.482967, 
+        92.328465, 93.173964, 94.019463, 94.864962, 95.71046, 
+        96.555959, 97.570558, 98.416057, 99.261555, 100.10705, 
+        100.95255, 101.79805, 102.81265, 103.65815, 104.50365, 
+        105.51825, 106.36374, 107.20924, 108.22384, 109.06934, 
+        109.91484, 110.92944, 111.77494, 112.78954, 113.63503, 
+        114.48053, 115.49513, 116.34063, 117.35523, 118.36983, 
+        119.21533, 120.22992, 121.07542, 122.09002, 123.10462, 
+        123.95012, 124.96472, 125.97932, 126.82482, 127.83941, 
+        128.85401, 129.86861, 130.71411, 131.72871, 132.74331, 
+        133.75791, 134.7725, 135.7871, 136.8017, 137.6472, 
+        138.6618, 139.6764, 140.69099, 141.70559, 142.72019, 
+        143.73479, 144.74939, 145.76399, 146.77859, 147.96228, 
+        148.97688, 149.99148, 151.00608, 152.02068, 153.03528, 
+        154.04988, 155.23357, 156.24817, 157.26277, 158.27737, 
+        159.46107, 160.47567, 161.49026, 162.67396, 163.68856, 
+        164.70316, 165.88686, 166.90146, 168.08515, 169.09975, 
+        170.11435, 171.29805, 172.31265, 172.98905, 0, 
+        0, 0, 0, 0.6570034, 0.82125425, 
+        1.149756, 1.3140068, 1.4782577, 1.6425085, 1.9710102, 
+        2.1352611, 2.4637628, 2.6280136, 2.7922645, 3.1207662, 
+        3.285017, 3.6135187, 3.7777696, 4.1062713, 4.434773, 
+        4.5990238, 4.9275255, 5.2560272, 5.4202781, 5.7487798, 
+        6.0772815, 6.4057832, 6.7342849, 6.8985357, 7.2270374, 
+        7.5555391, 7.8840408, 8.2125425, 8.5410442, 8.8695459, 
+        9.1980476, 9.5265493, 9.855051, 10.347804, 10.676305, 
+        11.004807, 11.333309, 11.66181, 11.990312, 12.483065, 
+        12.811566, 13.140068, 13.632821, 13.961322, 14.289824, 
+        14.782577, 15.111078, 15.603831, 15.932333, 16.425085, 
+        16.753587, 17.246339, 17.574841, 18.067594, 18.560346, 
+        18.888848, 19.3816, 19.874353, 20.202855, 20.695607, 
+        21.18836, 21.681112, 22.173865, 22.502367, 22.995119, 
+        23.487872, 23.980624, 24.473377, 24.966129, 25.458882, 
+        25.951634, 26.444387, 26.93714, 27.429892, 27.922645, 
+        28.415397, 29.072401, 29.565153, 30.057906, 30.550658, 
+        31.043411, 31.700414, 32.193167, 32.685919, 33.342923, 
+        33.835675, 34.328428, 34.985431, 35.478184, 36.135187, 
+        36.62794, 37.284943, 37.777696, 38.434699, 38.927452, 
+        39.584455, 40.077208, 40.734211, 41.391214, 41.883967, 
+        42.54097, 43.197974, 43.690726, 44.34773, 45.004733, 
+        45.661737, 46.31874, 46.811492, 47.468496, 48.125499, 
+        48.782503, 49.439506, 50.096509, 50.753513, 51.410516, 
+        52.06752, 52.724523, 53.381527, 54.03853, 54.695533, 
+        55.352537, 56.00954, 56.666544, 57.323547, 57.98055, 
+        58.801805, 59.458808, 60.115811, 60.772815, 61.594069, 
+        62.251072, 62.908076, 63.565079, 64.386334, 65.043337, 
+        65.864591, 66.521595, 67.178598, 67.999852, 68.656856, 
+        69.47811, 70.135113, 70.956368, 71.613371, 72.434625, 
+        73.091629, 73.912883, 74.734137, 75.391141, 76.212395, 
+        77.033649, 77.690652, 78.511907, 79.333161, 80.154415, 
+        80.811419, 81.632673, 82.453927, 83.275181, 84.096436, 
+        84.753439, 85.574693, 86.395948, 87.217202, 88.038456, 
+        88.85971, 89.680965, 90.502219, 91.323473, 92.144727, 
+        92.965982, 93.787236, 94.772741, 95.593995, 96.415249, 
+        97.236504, 98.057758, 98.879012, 99.864517, 100.68577, 
+        101.50703, 102.49253, 103.31379, 104.13504, 105.12054, 
+        105.9418, 106.76305, 107.74856, 108.56981, 109.55532, 
+        110.37657, 111.19783, 112.18333, 113.00459, 113.99009, 
+        114.9756, 115.79685, 116.78235, 117.60361, 118.58911, 
+        119.57462, 120.39587, 121.38138, 122.36688, 123.18814, 
+        124.17364, 125.15915, 126.14465, 126.96591, 127.95141, 
+        128.93692, 129.92242, 130.90793, 131.89343, 132.87894, 
+        133.70019, 134.6857, 135.6712, 136.65671, 137.64221, 
+        138.62772, 139.61322, 140.59873, 141.58423, 142.56974, 
+        143.71949, 144.705, 145.6905, 146.67601, 147.66151, 
+        148.64702, 149.63253, 150.78228, 151.76779, 152.75329, 
+        153.7388, 154.88855, 155.87406, 156.85956, 158.00932, 
+        158.99482, 159.98033, 161.13008, 162.11559, 163.26535, 
+        164.25085, 165.23636, 166.38611, 167.37162, 168.02862, 
+        0, 0, 0, 0, 0.63402104, 
+        0.7925263, 1.1095368, 1.2680421, 1.4265473, 1.5850526, 
+        1.9020631, 2.0605684, 2.3775789, 2.5360842, 2.6945894, 
+        3.0115999, 3.1701052, 3.4871157, 3.645621, 3.9626315, 
+        4.279642, 4.4381473, 4.7551578, 5.0721683, 5.2306736, 
+        5.5476841, 5.8646946, 6.1817051, 6.4987157, 6.6572209, 
+        6.9742314, 7.291242, 7.6082525, 7.925263, 8.2422735, 
+        8.559284, 8.8762946, 9.1933051, 9.5103156, 9.9858314, 
+        10.302842, 10.619852, 10.936863, 11.253873, 11.570884, 
+        12.0464, 12.36341, 12.680421, 13.155937, 13.472947, 
+        13.789958, 14.265473, 14.582484, 15.058, 15.37501, 
+        15.850526, 16.167537, 16.643052, 16.960063, 17.435579, 
+        17.911094, 18.228105, 18.703621, 19.179136, 19.496147, 
+        19.971663, 20.447179, 20.922694, 21.39821, 21.715221, 
+        22.190736, 22.666252, 23.141768, 23.617284, 24.092799, 
+        24.568315, 25.043831, 25.519347, 25.994863, 26.470378, 
+        26.945894, 27.42141, 28.055431, 28.530947, 29.006463, 
+        29.481978, 29.957494, 30.591515, 31.067031, 31.542547, 
+        32.176568, 32.652084, 33.127599, 33.76162, 34.237136, 
+        34.871157, 35.346673, 35.980694, 36.45621, 37.090231, 
+        37.565747, 38.199768, 38.675283, 39.309304, 39.943325, 
+        40.418841, 41.052862, 41.686883, 42.162399, 42.79642, 
+        43.430441, 44.064462, 44.698483, 45.173999, 45.80802, 
+        46.442041, 47.076062, 47.710083, 48.344104, 48.978125, 
+        49.612146, 50.246167, 50.880188, 51.514209, 52.14823, 
+        52.782252, 53.416273, 54.050294, 54.684315, 55.318336, 
+        55.952357, 56.744883, 57.378904, 58.012925, 58.646946, 
+        59.439472, 60.073493, 60.707515, 61.341536, 62.134062, 
+        62.768083, 63.560609, 64.19463, 64.828651, 65.621178, 
+        66.255199, 67.047725, 67.681746, 68.474272, 69.108293, 
+        69.90082, 70.534841, 71.327367, 72.119893, 72.753914, 
+        73.546441, 74.338967, 74.972988, 75.765514, 76.558041, 
+        77.350567, 77.984588, 78.777114, 79.56964, 80.362167, 
+        81.154693, 81.788714, 82.58124, 83.373767, 84.166293, 
+        84.958819, 85.751346, 86.543872, 87.336398, 88.128924, 
+        88.921451, 89.713977, 90.506503, 91.457535, 92.250061, 
+        93.042588, 93.835114, 94.62764, 95.420166, 96.371198, 
+        97.163724, 97.956251, 98.907282, 99.699808, 100.49233, 
+        101.44337, 102.23589, 103.02842, 103.97945, 104.77198, 
+        105.72301, 106.51553, 107.30806, 108.25909, 109.05162, 
+        110.00265, 110.95368, 111.74621, 112.69724, 113.48977, 
+        114.4408, 115.39183, 116.18436, 117.13539, 118.08642, 
+        118.87894, 119.82998, 120.78101, 121.73204, 122.52457, 
+        123.4756, 124.42663, 125.37766, 126.32869, 127.27972, 
+        128.23076, 129.02328, 129.97431, 130.92534, 131.87638, 
+        132.82741, 133.77844, 134.72947, 135.6805, 136.63153, 
+        137.58257, 138.6921, 139.64313, 140.59417, 141.5452, 
+        142.49623, 143.44726, 144.39829, 145.50783, 146.45886, 
+        147.40989, 148.36092, 149.47046, 150.42149, 151.37252, 
+        152.48206, 153.43309, 154.38412, 155.49366, 156.44469, 
+        157.55423, 158.50526, 159.45629, 160.56583, 161.51686, 
+        162.15088, 0, 0, 0, 0, 
+        0.60814195, 0.76017743, 1.0642484, 1.2162839, 1.3683194, 
+        1.5203549, 1.8244258, 1.9764613, 2.2805323, 2.4325678, 
+        2.5846033, 2.8886743, 3.0407097, 3.3447807, 3.4968162, 
+        3.8008872, 4.1049581, 4.2569936, 4.5610646, 4.8651356, 
+        5.0171711, 5.321242, 5.625313, 5.929384, 6.233455, 
+        6.3854904, 6.6895614, 6.9936324, 7.2977034, 7.6017743, 
+        7.9058453, 8.2099163, 8.5139873, 8.8180582, 9.1221292, 
+        9.5782357, 9.8823066, 10.186378, 10.490449, 10.79452, 
+        11.098591, 11.554697, 11.858768, 12.162839, 12.618945, 
+        12.923016, 13.227087, 13.683194, 13.987265, 14.443371, 
+        14.747442, 15.203549, 15.50762, 15.963726, 16.267797, 
+        16.723904, 17.18001, 17.484081, 17.940187, 18.396294, 
+        18.700365, 19.156471, 19.612578, 20.068684, 20.524791, 
+        20.828862, 21.284968, 21.741075, 22.197181, 22.653288, 
+        23.109394, 23.5655, 24.021607, 24.477713, 24.93382, 
+        25.389926, 25.846033, 26.302139, 26.910281, 27.366388, 
+        27.822494, 28.278601, 28.734707, 29.342849, 29.798955, 
+        30.255062, 30.863204, 31.31931, 31.775417, 32.383559, 
+        32.839665, 33.447807, 33.903914, 34.512056, 34.968162, 
+        35.576304, 36.03241, 36.640552, 37.096659, 37.704801, 
+        38.312943, 38.769049, 39.377191, 39.985333, 40.44144, 
+        41.049581, 41.657723, 42.265865, 42.874007, 43.330114, 
+        43.938256, 44.546398, 45.15454, 45.762682, 46.370824, 
+        46.978965, 47.587107, 48.195249, 48.803391, 49.411533, 
+        50.019675, 50.627817, 51.235959, 51.844101, 52.452243, 
+        53.060385, 53.668527, 54.428704, 55.036846, 55.644988, 
+        56.25313, 57.013308, 57.62145, 58.229591, 58.837733, 
+        59.597911, 60.206053, 60.96623, 61.574372, 62.182514, 
+        62.942692, 63.550834, 64.311011, 64.919153, 65.67933, 
+        66.287472, 67.04765, 67.655792, 68.415969, 69.176147, 
+        69.784288, 70.544466, 71.304643, 71.912785, 72.672963, 
+        73.43314, 74.193318, 74.80146, 75.561637, 76.321814, 
+        77.081992, 77.842169, 78.450311, 79.210489, 79.970666, 
+        80.730844, 81.491021, 82.251198, 83.011376, 83.771553, 
+        84.531731, 85.291908, 86.052086, 86.812263, 87.724476, 
+        88.484653, 89.244831, 90.005008, 90.765186, 91.525363, 
+        92.437576, 93.197753, 93.957931, 94.870144, 95.630321, 
+        96.390499, 97.302712, 98.062889, 98.823066, 99.735279, 
+        100.49546, 101.40767, 102.16785, 102.92802, 103.84024, 
+        104.60041, 105.51263, 106.42484, 107.18502, 108.09723, 
+        108.85741, 109.76962, 110.68183, 111.44201, 112.35422, 
+        113.26644, 114.02662, 114.93883, 115.85104, 116.76325, 
+        117.52343, 118.43564, 119.34786, 120.26007, 121.17228, 
+        122.0845, 122.99671, 123.75689, 124.6691, 125.58131, 
+        126.49353, 127.40574, 128.31795, 129.23016, 130.14238, 
+        131.05459, 131.9668, 133.03105, 133.94326, 134.85548, 
+        135.76769, 136.6799, 137.59212, 138.50433, 139.56858, 
+        140.48079, 141.393, 142.30522, 143.36946, 144.28168, 
+        145.19389, 146.25814, 147.17035, 148.08256, 149.14681, 
+        150.05903, 151.12327, 152.03549, 152.9477, 154.01195, 
+        154.92416, 155.5323, 0, 0, 0, 
+        0, 0.5800716, 0.7250895, 1.0151253, 1.1601432, 
+        1.3051611, 1.450179, 1.7402148, 1.8852327, 2.1752685, 
+        2.3202864, 2.4653043, 2.7553401, 2.900358, 3.1903938, 
+        3.3354117, 3.6254475, 3.9154833, 4.0605012, 4.350537, 
+        4.6405728, 4.7855907, 5.0756265, 5.3656623, 5.6556981, 
+        5.9457339, 6.0907518, 6.3807876, 6.6708234, 6.9608592, 
+        7.250895, 7.5409308, 7.8309666, 8.1210024, 8.4110382, 
+        8.701074, 9.1361277, 9.4261635, 9.7161993, 10.006235, 
+        10.296271, 10.586307, 11.02136, 11.311396, 11.601432, 
+        12.036486, 12.326521, 12.616557, 13.051611, 13.341647, 
+        13.7767, 14.066736, 14.50179, 14.791826, 15.226879, 
+        15.516915, 15.951969, 16.387023, 16.677058, 17.112112, 
+        17.547166, 17.837202, 18.272255, 18.707309, 19.142363, 
+        19.577416, 19.867452, 20.302506, 20.73756, 21.172613, 
+        21.607667, 22.042721, 22.477774, 22.912828, 23.347882, 
+        23.782936, 24.217989, 24.653043, 25.088097, 25.668168, 
+        26.103222, 26.538276, 26.973329, 27.408383, 27.988455, 
+        28.423508, 28.858562, 29.438634, 29.873687, 30.308741, 
+        30.888813, 31.323866, 31.903938, 32.338992, 32.919063, 
+        33.354117, 33.934189, 34.369242, 34.949314, 35.384368, 
+        35.964439, 36.544511, 36.979564, 37.559636, 38.139708, 
+        38.574761, 39.154833, 39.734905, 40.314976, 40.895048, 
+        41.330101, 41.910173, 42.490245, 43.070316, 43.650388, 
+        44.230459, 44.810531, 45.390603, 45.970674, 46.550746, 
+        47.130817, 47.710889, 48.290961, 48.871032, 49.451104, 
+        50.031175, 50.611247, 51.191319, 51.916408, 52.49648, 
+        53.076551, 53.656623, 54.381712, 54.961784, 55.541856, 
+        56.121927, 56.847017, 57.427088, 58.152178, 58.732249, 
+        59.312321, 60.037411, 60.617482, 61.342572, 61.922643, 
+        62.647733, 63.227804, 63.952894, 64.532965, 65.258055, 
+        65.983144, 66.563216, 67.288306, 68.013395, 68.593467, 
+        69.318556, 70.043646, 70.768735, 71.348807, 72.073896, 
+        72.798986, 73.524075, 74.249165, 74.829236, 75.554326, 
+        76.279415, 77.004505, 77.729594, 78.454684, 79.179773, 
+        79.904863, 80.629952, 81.355042, 82.080131, 82.805221, 
+        83.675328, 84.400418, 85.125507, 85.850597, 86.575686, 
+        87.300776, 88.170883, 88.895973, 89.621062, 90.49117, 
+        91.216259, 91.941349, 92.811456, 93.536545, 94.261635, 
+        95.131742, 95.856832, 96.726939, 97.452029, 98.177118, 
+        99.047226, 99.772315, 100.64242, 101.51253, 102.23762, 
+        103.10773, 103.83282, 104.70292, 105.57303, 106.29812, 
+        107.16823, 108.03834, 108.76342, 109.63353, 110.50364, 
+        111.37375, 112.09884, 112.96894, 113.83905, 114.70916, 
+        115.57927, 116.44937, 117.31948, 118.04457, 118.91468, 
+        119.78479, 120.65489, 121.525, 122.39511, 123.26521, 
+        124.13532, 125.00543, 125.87554, 126.89066, 127.76077, 
+        128.63088, 129.50098, 130.37109, 131.2412, 132.11131, 
+        133.12643, 133.99654, 134.86665, 135.73675, 136.75188, 
+        137.62199, 138.49209, 139.50722, 140.37733, 141.24743, 
+        142.26256, 143.13267, 144.14779, 145.0179, 145.88801, 
+        146.90313, 147.77324, 148.35331, 0, 0, 
+        0, 0, 0.55049288, 0.6881161, 0.96336254, 
+        1.1009858, 1.238609, 1.3762322, 1.6514786, 1.7891019, 
+        2.0643483, 2.2019715, 2.3395948, 2.6148412, 2.7524644, 
+        3.0277109, 3.1653341, 3.4405805, 3.715827, 3.8534502, 
+        4.1286966, 4.4039431, 4.5415663, 4.8168127, 5.0920592, 
+        5.3673056, 5.642552, 5.7801753, 6.0554217, 6.3306682, 
+        6.6059146, 6.881161, 7.1564075, 7.4316539, 7.7069004, 
+        7.9821468, 8.2573932, 8.6702629, 8.9455093, 9.2207558, 
+        9.4960022, 9.7712487, 10.046495, 10.459365, 10.734611, 
+        11.009858, 11.422727, 11.697974, 11.97322, 12.38609, 
+        12.661336, 13.074206, 13.349452, 13.762322, 14.037569, 
+        14.450438, 14.725685, 15.138554, 15.551424, 15.82667, 
+        16.23954, 16.65241, 16.927656, 17.340526, 17.753395, 
+        18.166265, 18.579135, 18.854381, 19.267251, 19.680121, 
+        20.09299, 20.50586, 20.91873, 21.331599, 21.744469, 
+        22.157339, 22.570208, 22.983078, 23.395948, 23.808817, 
+        24.35931, 24.77218, 25.185049, 25.597919, 26.010789, 
+        26.561282, 26.974151, 27.387021, 27.937514, 28.350383, 
+        28.763253, 29.313746, 29.726616, 30.277109, 30.689978, 
+        31.240471, 31.653341, 32.203834, 32.616703, 33.167196, 
+        33.580066, 34.130559, 34.681052, 35.093921, 35.644414, 
+        36.194907, 36.607777, 37.15827, 37.708762, 38.259255, 
+        38.809748, 39.222618, 39.773111, 40.323604, 40.874097, 
+        41.424589, 41.975082, 42.525575, 43.076068, 43.626561, 
+        44.177054, 44.727547, 45.27804, 45.828532, 46.379025, 
+        46.929518, 47.480011, 48.030504, 48.580997, 49.269113, 
+        49.819606, 50.370099, 50.920592, 51.608708, 52.159201, 
+        52.709694, 53.260186, 53.948302, 54.498795, 55.186911, 
+        55.737404, 56.287897, 56.976013, 57.526506, 58.214622, 
+        58.765115, 59.453231, 60.003724, 60.69184, 61.242333, 
+        61.930449, 62.618565, 63.169058, 63.857174, 64.54529, 
+        65.095783, 65.783899, 66.472016, 67.160132, 67.710625, 
+        68.398741, 69.086857, 69.774973, 70.463089, 71.013582, 
+        71.701698, 72.389814, 73.07793, 73.766046, 74.454162, 
+        75.142278, 75.830395, 76.518511, 77.206627, 77.894743, 
+        78.582859, 79.408598, 80.096714, 80.784831, 81.472947, 
+        82.161063, 82.849179, 83.674918, 84.363034, 85.05115, 
+        85.87689, 86.565006, 87.253122, 88.078861, 88.766977, 
+        89.455093, 90.280833, 90.968949, 91.794688, 92.482804, 
+        93.17092, 93.99666, 94.684776, 95.510515, 96.336254, 
+        97.024371, 97.85011, 98.538226, 99.363965, 100.1897, 
+        100.87782, 101.70356, 102.5293, 103.21742, 104.04315, 
+        104.86889, 105.69463, 106.38275, 107.20849, 108.03423, 
+        108.85997, 109.68571, 110.51145, 111.33719, 112.0253, 
+        112.85104, 113.67678, 114.50252, 115.32826, 116.154, 
+        116.97974, 117.80548, 118.63122, 119.45696, 120.42032, 
+        121.24606, 122.0718, 122.89754, 123.72328, 124.54901, 
+        125.37475, 126.33812, 127.16386, 127.9896, 128.81533, 
+        129.7787, 130.60444, 131.43018, 132.39354, 133.21928, 
+        134.04502, 135.00838, 135.83412, 136.79748, 137.62322, 
+        138.44896, 139.41232, 140.23806, 140.78855, 0, 
+        0, 0, 0, 0.52003679, 0.65004599, 
+        0.91006438, 1.0400736, 1.1700828, 1.300092, 1.5601104, 
+        1.6901196, 1.950138, 2.0801472, 2.2101564, 2.4701747, 
+        2.6001839, 2.8602023, 2.9902115, 3.2502299, 3.5102483, 
+        3.6402575, 3.9002759, 4.1602943, 4.2903035, 4.5503219, 
+        4.8103403, 5.0703587, 5.3303771, 5.4603863, 5.7204047, 
+        5.9804231, 6.2404415, 6.5004599, 6.7604782, 7.0204966, 
+        7.280515, 7.5405334, 7.8005518, 8.1905794, 8.4505978, 
+        8.7106162, 8.9706346, 9.230653, 9.4906714, 9.880699, 
+        10.140717, 10.400736, 10.790763, 11.050782, 11.3108, 
+        11.700828, 11.960846, 12.350874, 12.610892, 13.00092, 
+        13.260938, 13.650966, 13.910984, 14.301012, 14.691039, 
+        14.951058, 15.341085, 15.731113, 15.991131, 16.381159, 
+        16.771186, 17.161214, 17.551242, 17.81126, 18.201288, 
+        18.591315, 18.981343, 19.37137, 19.761398, 20.151426, 
+        20.541453, 20.931481, 21.321508, 21.711536, 22.101564, 
+        22.491591, 23.011628, 23.401655, 23.791683, 24.181711, 
+        24.571738, 25.091775, 25.481803, 25.87183, 26.391867, 
+        26.781895, 27.171922, 27.691959, 28.081987, 28.602023, 
+        28.992051, 29.512088, 29.902115, 30.422152, 30.81218, 
+        31.332216, 31.722244, 32.242281, 32.762318, 33.152345, 
+        33.672382, 34.192419, 34.582446, 35.102483, 35.62252, 
+        36.142557, 36.662594, 37.052621, 37.572658, 38.092695, 
+        38.612732, 39.132768, 39.652805, 40.172842, 40.692879, 
+        41.212915, 41.732952, 42.252989, 42.773026, 43.293063, 
+        43.813099, 44.333136, 44.853173, 45.37321, 45.893247, 
+        46.543293, 47.063329, 47.583366, 48.103403, 48.753449, 
+        49.273486, 49.793522, 50.313559, 50.963605, 51.483642, 
+        52.133688, 52.653725, 53.173762, 53.823808, 54.343844, 
+        54.99389, 55.513927, 56.163973, 56.68401, 57.334056, 
+        57.854093, 58.504139, 59.154185, 59.674221, 60.324267, 
+        60.974313, 61.49435, 62.144396, 62.794442, 63.444488, 
+        63.964525, 64.614571, 65.264617, 65.914663, 66.564709, 
+        67.084746, 67.734792, 68.384838, 69.034884, 69.68493, 
+        70.334976, 70.985022, 71.635068, 72.285114, 72.93516, 
+        73.585206, 74.235252, 75.015307, 75.665353, 76.315399, 
+        76.965445, 77.615491, 78.265537, 79.045592, 79.695638, 
+        80.345684, 81.125739, 81.775785, 82.425831, 83.205886, 
+        83.855932, 84.505978, 85.286033, 85.936079, 86.716134, 
+        87.36618, 88.016226, 88.796282, 89.446328, 90.226383, 
+        91.006438, 91.656484, 92.436539, 93.086585, 93.86664, 
+        94.646695, 95.296741, 96.076797, 96.856852, 97.506898, 
+        98.286953, 99.067008, 99.847063, 100.49711, 101.27716, 
+        102.05722, 102.83727, 103.61733, 104.39739, 105.17744, 
+        105.82749, 106.60754, 107.3876, 108.16765, 108.94771, 
+        109.72776, 110.50782, 111.28787, 112.06793, 112.84798, 
+        113.75805, 114.5381, 115.31816, 116.09821, 116.87827, 
+        117.65832, 118.43838, 119.34844, 120.1285, 120.90855, 
+        121.68861, 122.59867, 123.37873, 124.15878, 125.06885, 
+        125.8489, 126.62896, 127.53902, 128.31908, 129.22914, 
+        130.0092, 130.78925, 131.69932, 132.47937, 132.99941, 
+        0, 0, 0, 0, 0.4892627, 
+        0.61157837, 0.85620972, 0.97852539, 1.1008411, 1.2231567, 
+        1.4677881, 1.5901038, 1.8347351, 1.9570508, 2.0793665, 
+        2.3239978, 2.4463135, 2.6909448, 2.8132605, 3.0578919, 
+        3.3025232, 3.4248389, 3.6694702, 3.9141016, 4.0364172, 
+        4.2810486, 4.5256799, 4.7703113, 5.0149426, 5.1372583, 
+        5.3818897, 5.626521, 5.8711524, 6.1157837, 6.3604151, 
+        6.6050464, 6.8496778, 7.0943091, 7.3389405, 7.7058875, 
+        7.9505188, 8.1951502, 8.4397815, 8.6844129, 8.9290442, 
+        9.2959912, 9.5406226, 9.7852539, 10.152201, 10.396832, 
+        10.641464, 11.008411, 11.253042, 11.619989, 11.86462, 
+        12.231567, 12.476199, 12.843146, 13.087777, 13.454724, 
+        13.821671, 14.066303, 14.43325, 14.800197, 15.044828, 
+        15.411775, 15.778722, 16.145669, 16.512616, 16.757247, 
+        17.124194, 17.491141, 17.858088, 18.225035, 18.591982, 
+        18.95893, 19.325877, 19.692824, 20.059771, 20.426718, 
+        20.793665, 21.160612, 21.649874, 22.016821, 22.383768, 
+        22.750715, 23.117662, 23.606925, 23.973872, 24.340819, 
+        24.830082, 25.197029, 25.563976, 26.053239, 26.420186, 
+        26.909448, 27.276395, 27.765658, 28.132605, 28.621868, 
+        28.988815, 29.478077, 29.845025, 30.334287, 30.82355, 
+        31.190497, 31.67976, 32.169022, 32.535969, 33.025232, 
+        33.514495, 34.003757, 34.49302, 34.859967, 35.34923, 
+        35.838493, 36.327755, 36.817018, 37.306281, 37.795543, 
+        38.284806, 38.774069, 39.263331, 39.752594, 40.241857, 
+        40.73112, 41.220382, 41.709645, 42.198908, 42.68817, 
+        43.177433, 43.789011, 44.278274, 44.767537, 45.256799, 
+        45.868378, 46.357641, 46.846903, 47.336166, 47.947744, 
+        48.437007, 49.048585, 49.537848, 50.027111, 50.638689, 
+        51.127952, 51.73953, 52.228793, 52.840371, 53.329634, 
+        53.941212, 54.430475, 55.042053, 55.653632, 56.142894, 
+        56.754473, 57.366051, 57.855314, 58.466892, 59.078471, 
+        59.690049, 60.179312, 60.79089, 61.402468, 62.014047, 
+        62.625625, 63.114888, 63.726466, 64.338045, 64.949623, 
+        65.561201, 66.17278, 66.784358, 67.395936, 68.007515, 
+        68.619093, 69.230672, 69.84225, 70.576144, 71.187722, 
+        71.799301, 72.410879, 73.022457, 73.634036, 74.36793, 
+        74.979508, 75.591087, 76.324981, 76.936559, 77.548137, 
+        78.282031, 78.89361, 79.505188, 80.239082, 80.850661, 
+        81.584555, 82.196133, 82.807711, 83.541605, 84.153184, 
+        84.887078, 85.620972, 86.23255, 86.966444, 87.578023, 
+        88.311917, 89.045811, 89.657389, 90.391283, 91.125177, 
+        91.736756, 92.47065, 93.204544, 93.938438, 94.550016, 
+        95.28391, 96.017804, 96.751698, 97.485592, 98.219486, 
+        98.95338, 99.564959, 100.29885, 101.03275, 101.76664, 
+        102.50053, 103.23443, 103.96832, 104.70222, 105.43611, 
+        106.17001, 107.02621, 107.76011, 108.494, 109.2279, 
+        109.96179, 110.69569, 111.42958, 112.28579, 113.01968, 
+        113.75358, 114.48747, 115.34368, 116.07757, 116.81147, 
+        117.66768, 118.40157, 119.13547, 119.99168, 120.72557, 
+        121.58178, 122.31567, 123.04957, 123.90578, 124.63967, 
+        125.12893, 0, 0, 0, 0, 
+        0.45864772, 0.57330965, 0.8026335, 0.91729543, 1.0319574, 
+        1.1466193, 1.3759432, 1.4906051, 1.7199289, 1.8345909, 
+        1.9492528, 2.1785767, 2.2932386, 2.5225624, 2.6372244, 
+        2.8665482, 3.0958721, 3.210534, 3.4398579, 3.6691817, 
+        3.7838437, 4.0131675, 4.2424914, 4.4718152, 4.7011391, 
+        4.815801, 5.0451249, 5.2744487, 5.5037726, 5.7330965, 
+        5.9624203, 6.1917442, 6.421068, 6.6503919, 6.8797158, 
+        7.2237015, 7.4530254, 7.6823493, 7.9116731, 8.140997, 
+        8.3703208, 8.7143066, 8.9436305, 9.1729543, 9.5169401, 
+        9.746264, 9.9755878, 10.319574, 10.548897, 10.892883, 
+        11.122207, 11.466193, 11.695517, 12.039503, 12.268826, 
+        12.612812, 12.956798, 13.186122, 13.530108, 13.874093, 
+        14.103417, 14.447403, 14.791389, 15.135375, 15.47936, 
+        15.708684, 16.05267, 16.396656, 16.740642, 17.084627, 
+        17.428613, 17.772599, 18.116585, 18.460571, 18.804556, 
+        19.148542, 19.492528, 19.836514, 20.295161, 20.639147, 
+        20.983133, 21.327119, 21.671105, 22.129752, 22.473738, 
+        22.817724, 23.276372, 23.620357, 23.964343, 24.422991, 
+        24.766977, 25.225624, 25.56961, 26.028258, 26.372244, 
+        26.830891, 27.174877, 27.633525, 27.977511, 28.436158, 
+        28.894806, 29.238792, 29.69744, 30.156087, 30.500073, 
+        30.958721, 31.417369, 31.876016, 32.334664, 32.67865, 
+        33.137298, 33.595945, 34.054593, 34.513241, 34.971888, 
+        35.430536, 35.889184, 36.347832, 36.806479, 37.265127, 
+        37.723775, 38.182422, 38.64107, 39.099718, 39.558366, 
+        40.017013, 40.475661, 41.048971, 41.507618, 41.966266, 
+        42.424914, 42.998223, 43.456871, 43.915519, 44.374167, 
+        44.947476, 45.406124, 45.979434, 46.438081, 46.896729, 
+        47.470039, 47.928686, 48.501996, 48.960644, 49.533953, 
+        49.992601, 50.565911, 51.024558, 51.597868, 52.171178, 
+        52.629825, 53.203135, 53.776445, 54.235093, 54.808402, 
+        55.381712, 55.955021, 56.413669, 56.986979, 57.560288, 
+        58.133598, 58.706908, 59.165555, 59.738865, 60.312175, 
+        60.885484, 61.458794, 62.032104, 62.605413, 63.178723, 
+        63.752033, 64.325342, 64.898652, 65.471962, 66.159933, 
+        66.733243, 67.306552, 67.879862, 68.453172, 69.026481, 
+        69.714453, 70.287763, 70.861072, 71.549044, 72.122353, 
+        72.695663, 73.383635, 73.956944, 74.530254, 75.218226, 
+        75.791535, 76.479507, 77.052816, 77.626126, 78.314098, 
+        78.887407, 79.575379, 80.26335, 80.83666, 81.524632, 
+        82.097941, 82.785913, 83.473884, 84.047194, 84.735166, 
+        85.423137, 85.996447, 86.684418, 87.37239, 88.060362, 
+        88.633671, 89.321643, 90.009614, 90.697586, 91.385558, 
+        92.073529, 92.761501, 93.33481, 94.022782, 94.710753, 
+        95.398725, 96.086697, 96.774668, 97.46264, 98.150611, 
+        98.838583, 99.526555, 100.32919, 101.01716, 101.70513, 
+        102.3931, 103.08107, 103.76905, 104.45702, 105.25965, 
+        105.94762, 106.63559, 107.32357, 108.1262, 108.81417, 
+        109.50214, 110.30478, 110.99275, 111.68072, 112.48335, 
+        113.17132, 113.97396, 114.66193, 115.3499, 116.15253, 
+        116.84051, 117.29915, 0, 0, 0, 
+        0, 0.42858365, 0.53572957, 0.75002139, 0.85716731, 
+        0.96431322, 1.0714591, 1.285751, 1.3928969, 1.6071887, 
+        1.7143346, 1.8214805, 2.0357724, 2.1429183, 2.3572101, 
+        2.464356, 2.6786478, 2.8929397, 3.0000856, 3.2143774, 
+        3.4286692, 3.5358151, 3.750107, 3.9643988, 4.1786906, 
+        4.3929824, 4.5001284, 4.7144202, 4.928712, 5.1430038, 
+        5.3572957, 5.5715875, 5.7858793, 6.0001711, 6.214463, 
+        6.4287548, 6.7501925, 6.9644844, 7.1787762, 7.393068, 
+        7.6073598, 7.8216517, 8.1430894, 8.3573812, 8.5716731, 
+        8.8931108, 9.1074026, 9.3216945, 9.6431322, 9.857424, 
+        10.178862, 10.393154, 10.714591, 10.928883, 11.250321, 
+        11.464613, 11.78605, 12.107488, 12.32178, 12.643218, 
+        12.964656, 13.178947, 13.500385, 13.821823, 14.143261, 
+        14.464698, 14.67899, 15.000428, 15.321866, 15.643303, 
+        15.964741, 16.286179, 16.607617, 16.929054, 17.250492, 
+        17.57193, 17.893368, 18.214805, 18.536243, 18.964827, 
+        19.286264, 19.607702, 19.92914, 20.250578, 20.679161, 
+        21.000599, 21.322037, 21.75062, 22.072058, 22.393496, 
+        22.82208, 23.143517, 23.572101, 23.893539, 24.322122, 
+        24.64356, 25.072144, 25.393581, 25.822165, 26.143603, 
+        26.572186, 27.00077, 27.322208, 27.750792, 28.179375, 
+        28.500813, 28.929397, 29.35798, 29.786564, 30.215148, 
+        30.536585, 30.965169, 31.393753, 31.822336, 32.25092, 
+        32.679504, 33.108087, 33.536671, 33.965254, 34.393838, 
+        34.822422, 35.251005, 35.679589, 36.108173, 36.536756, 
+        36.96534, 37.393924, 37.822507, 38.358237, 38.786821, 
+        39.215404, 39.643988, 40.179717, 40.608301, 41.036885, 
+        41.465468, 42.001198, 42.429782, 42.965511, 43.394095, 
+        43.822679, 44.358408, 44.786992, 45.322721, 45.751305, 
+        46.287035, 46.715618, 47.251348, 47.679931, 48.215661, 
+        48.751391, 49.179974, 49.715704, 50.251433, 50.680017, 
+        51.215747, 51.751476, 52.287206, 52.715789, 53.251519, 
+        53.787248, 54.322978, 54.858708, 55.287291, 55.823021, 
+        56.35875, 56.89448, 57.430209, 57.965939, 58.501669, 
+        59.037398, 59.573128, 60.108857, 60.644587, 61.180316, 
+        61.823192, 62.358922, 62.894651, 63.430381, 63.96611, 
+        64.50184, 65.144715, 65.680445, 66.216174, 66.85905, 
+        67.394779, 67.930509, 68.573384, 69.109114, 69.644844, 
+        70.287719, 70.823449, 71.466324, 72.002054, 72.537783, 
+        73.180659, 73.716388, 74.359264, 75.002139, 75.537869, 
+        76.180744, 76.716474, 77.359349, 78.002225, 78.537954, 
+        79.18083, 79.823705, 80.359435, 81.00231, 81.645186, 
+        82.288061, 82.823791, 83.466666, 84.109542, 84.752417, 
+        85.395293, 86.038168, 86.681044, 87.216773, 87.859649, 
+        88.502524, 89.1454, 89.788275, 90.431151, 91.074026, 
+        91.716902, 92.359777, 93.002653, 93.752674, 94.39555, 
+        95.038425, 95.681301, 96.324176, 96.967051, 97.609927, 
+        98.359948, 99.002824, 99.645699, 100.28857, 101.0386, 
+        101.68147, 102.32435, 103.07437, 103.71724, 104.36012, 
+        105.11014, 105.75302, 106.50304, 107.14591, 107.78879, 
+        108.53881, 109.18169, 109.61027, 0, 0, 
+        0, 0, 0.39937975, 0.49922469, 0.69891457, 
+        0.79875951, 0.89860445, 0.99844938, 1.1981393, 1.2979842, 
+        1.4976741, 1.597519, 1.697364, 1.8970538, 1.9968988, 
+        2.1965886, 2.2964336, 2.4961235, 2.6958133, 2.7956583, 
+        2.9953482, 3.195038, 3.294883, 3.4945728, 3.6942627, 
+        3.8939526, 4.0936425, 4.1934874, 4.3931773, 4.5928672, 
+        4.792557, 4.9922469, 5.1919368, 5.3916267, 5.5913166, 
+        5.7910064, 5.9906963, 6.2902311, 6.489921, 6.6896109, 
+        6.8893008, 7.0889906, 7.2886805, 7.5882153, 7.7879052, 
+        7.9875951, 8.2871299, 8.4868198, 8.6865096, 8.9860445, 
+        9.1857343, 9.4852691, 9.684959, 9.9844938, 10.184184, 
+        10.483719, 10.683408, 10.982943, 11.282478, 11.482168, 
+        11.781703, 12.081238, 12.280927, 12.580462, 12.879997, 
+        13.179532, 13.479067, 13.678757, 13.978291, 14.277826, 
+        14.577361, 14.876896, 15.176431, 15.475965, 15.7755, 
+        16.075035, 16.37457, 16.674105, 16.97364, 17.273174, 
+        17.672554, 17.972089, 18.271624, 18.571159, 18.870693, 
+        19.270073, 19.569608, 19.869143, 20.268522, 20.568057, 
+        20.867592, 21.266972, 21.566507, 21.965886, 22.265421, 
+        22.664801, 22.964336, 23.363716, 23.66325, 24.06263, 
+        24.362165, 24.761545, 25.160924, 25.460459, 25.859839, 
+        26.259219, 26.558754, 26.958133, 27.357513, 27.756893, 
+        28.156273, 28.455807, 28.855187, 29.254567, 29.653947, 
+        30.053326, 30.452706, 30.852086, 31.251466, 31.650845, 
+        32.050225, 32.449605, 32.848985, 33.248364, 33.647744, 
+        34.047124, 34.446504, 34.845884, 35.245263, 35.744488, 
+        36.143868, 36.543247, 36.942627, 37.441852, 37.841232, 
+        38.240611, 38.639991, 39.139216, 39.538596, 40.03782, 
+        40.4372, 40.83658, 41.335805, 41.735184, 42.234409, 
+        42.633789, 43.133013, 43.532393, 44.031618, 44.430998, 
+        44.930222, 45.429447, 45.828827, 46.328051, 46.827276, 
+        47.226656, 47.725881, 48.225105, 48.72433, 49.12371, 
+        49.622934, 50.122159, 50.621384, 51.120608, 51.519988, 
+        52.019213, 52.518438, 53.017662, 53.516887, 54.016112, 
+        54.515336, 55.014561, 55.513786, 56.01301, 56.512235, 
+        57.01146, 57.610529, 58.109754, 58.608979, 59.108204, 
+        59.607428, 60.106653, 60.705723, 61.204947, 61.704172, 
+        62.303242, 62.802466, 63.301691, 63.900761, 64.399985, 
+        64.89921, 65.49828, 65.997504, 66.596574, 67.095799, 
+        67.595023, 68.194093, 68.693318, 69.292387, 69.891457, 
+        70.390682, 70.989751, 71.488976, 72.088046, 72.687115, 
+        73.18634, 73.785409, 74.384479, 74.883704, 75.482773, 
+        76.081843, 76.680913, 77.180137, 77.779207, 78.378277, 
+        78.977346, 79.576416, 80.175486, 80.774555, 81.27378, 
+        81.87285, 82.471919, 83.070989, 83.670058, 84.269128, 
+        84.868198, 85.467267, 86.066337, 86.665407, 87.364321, 
+        87.963391, 88.56246, 89.16153, 89.7606, 90.359669, 
+        90.958739, 91.657653, 92.256723, 92.855793, 93.454862, 
+        94.153777, 94.752847, 95.351916, 96.050831, 96.6499, 
+        97.24897, 97.947885, 98.546954, 99.245869, 99.844938, 
+        100.44401, 101.14292, 101.74199, 102.14137, 0, 
+        0, 0, 0, 0.37126937, 0.46408671, 
+        0.64972139, 0.74253873, 0.83535608, 0.92817342, 1.1138081, 
+        1.2066254, 1.3922601, 1.4850775, 1.5778948, 1.7635295, 
+        1.8563468, 2.0419815, 2.1347989, 2.3204335, 2.5060682, 
+        2.5988856, 2.7845203, 2.9701549, 3.0629723, 3.248607, 
+        3.4342416, 3.6198763, 3.805511, 3.8983284, 4.083963, 
+        4.2695977, 4.4552324, 4.6408671, 4.8265018, 5.0121365, 
+        5.1977711, 5.3834058, 5.5690405, 5.8474925, 6.0331272, 
+        6.2187619, 6.4043966, 6.5900313, 6.7756659, 7.054118, 
+        7.2397527, 7.4253873, 7.7038394, 7.889474, 8.0751087, 
+        8.3535608, 8.5391954, 8.8176475, 9.0032821, 9.2817342, 
+        9.4673689, 9.7458209, 9.9314556, 10.209908, 10.48836, 
+        10.673994, 10.952446, 11.230898, 11.416533, 11.694985, 
+        11.973437, 12.251889, 12.530341, 12.715976, 12.994428, 
+        13.27288, 13.551332, 13.829784, 14.108236, 14.386688, 
+        14.66514, 14.943592, 15.222044, 15.500496, 15.778948, 
+        16.0574, 16.428669, 16.707122, 16.985574, 17.264026, 
+        17.542478, 17.913747, 18.192199, 18.470651, 18.84192, 
+        19.120372, 19.398824, 19.770094, 20.048546, 20.419815, 
+        20.698267, 21.069537, 21.347989, 21.719258, 21.99771, 
+        22.368979, 22.647431, 23.018701, 23.38997, 23.668422, 
+        24.039692, 24.410961, 24.689413, 25.060682, 25.431952, 
+        25.803221, 26.17449, 26.452942, 26.824212, 27.195481, 
+        27.566751, 27.93802, 28.309289, 28.680559, 29.051828, 
+        29.423097, 29.794367, 30.165636, 30.536905, 30.908175, 
+        31.279444, 31.650714, 32.021983, 32.393252, 32.764522, 
+        33.228608, 33.599878, 33.971147, 34.342416, 34.806503, 
+        35.177773, 35.549042, 35.920311, 36.384398, 36.755667, 
+        37.219754, 37.591023, 37.962293, 38.426379, 38.797649, 
+        39.261736, 39.633005, 40.097092, 40.468361, 40.932448, 
+        41.303717, 41.767804, 42.23189, 42.60316, 43.067247, 
+        43.531333, 43.902603, 44.366689, 44.830776, 45.294863, 
+        45.666132, 46.130219, 46.594306, 47.058392, 47.522479, 
+        47.893748, 48.357835, 48.821922, 49.286008, 49.750095, 
+        50.214182, 50.678269, 51.142355, 51.606442, 52.070529, 
+        52.534615, 52.998702, 53.555606, 54.019693, 54.48378, 
+        54.947866, 55.411953, 55.87604, 56.432944, 56.89703, 
+        57.361117, 57.918021, 58.382108, 58.846195, 59.403099, 
+        59.867185, 60.331272, 60.888176, 61.352263, 61.909167, 
+        62.373254, 62.83734, 63.394244, 63.858331, 64.415235, 
+        64.972139, 65.436226, 65.99313, 66.457217, 67.014121, 
+        67.571025, 68.035112, 68.592016, 69.14892, 69.613006, 
+        70.16991, 70.726814, 71.283718, 71.747805, 72.304709, 
+        72.861613, 73.418517, 73.975421, 74.532325, 75.089229, 
+        75.553316, 76.11022, 76.667124, 77.224028, 77.780932, 
+        78.337836, 78.89474, 79.451645, 80.008549, 80.565453, 
+        81.215174, 81.772078, 82.328982, 82.885886, 83.44279, 
+        83.999694, 84.556598, 85.20632, 85.763224, 86.320128, 
+        86.877032, 87.526753, 88.083657, 88.640561, 89.290283, 
+        89.847187, 90.404091, 91.053812, 91.610716, 92.260438, 
+        92.817342, 93.374246, 94.023967, 94.580871, 94.952141, 
+        0, 0, 0, 0, 0.34441886, 
+        0.43052357, 0.602733, 0.68883772, 0.77494243, 0.86104714, 
+        1.0332566, 1.1193613, 1.2915707, 1.3776754, 1.4637801, 
+        1.6359896, 1.7220943, 1.8943037, 1.9804084, 2.1526179, 
+        2.3248273, 2.410932, 2.5831414, 2.7553509, 2.8414556, 
+        3.013665, 3.1858744, 3.3580839, 3.5302933, 3.616398, 
+        3.7886074, 3.9608169, 4.1330263, 4.3052357, 4.4774452, 
+        4.6496546, 4.821864, 4.9940734, 5.1662829, 5.424597, 
+        5.5968064, 5.7690159, 5.9412253, 6.1134347, 6.2856442, 
+        6.5439583, 6.7161677, 6.8883772, 7.1466913, 7.3189007, 
+        7.4911102, 7.7494243, 7.9216337, 8.1799479, 8.3521573, 
+        8.6104714, 8.7826809, 9.040995, 9.2132044, 9.4715186, 
+        9.7298327, 9.9020422, 10.160356, 10.41867, 10.59088, 
+        10.849194, 11.107508, 11.365822, 11.624136, 11.796346, 
+        12.05466, 12.312974, 12.571288, 12.829602, 13.087917, 
+        13.346231, 13.604545, 13.862859, 14.121173, 14.379487, 
+        14.637801, 14.896116, 15.240534, 15.498849, 15.757163, 
+        16.015477, 16.273791, 16.61821, 16.876524, 17.134838, 
+        17.479257, 17.737571, 17.995885, 18.340304, 18.598618, 
+        18.943037, 19.201351, 19.54577, 19.804084, 20.148503, 
+        20.406817, 20.751236, 21.00955, 21.353969, 21.698388, 
+        21.956702, 22.301121, 22.64554, 22.903854, 23.248273, 
+        23.592692, 23.937111, 24.281529, 24.539844, 24.884262, 
+        25.228681, 25.5731, 25.917519, 26.261938, 26.606357, 
+        26.950776, 27.295194, 27.639613, 27.984032, 28.328451, 
+        28.67287, 29.017289, 29.361708, 29.706126, 30.050545, 
+        30.394964, 30.825488, 31.169907, 31.514325, 31.858744, 
+        32.289268, 32.633687, 32.978106, 33.322524, 33.753048, 
+        34.097467, 34.52799, 34.872409, 35.216828, 35.647352, 
+        35.991771, 36.422294, 36.766713, 37.197237, 37.541656, 
+        37.972179, 38.316598, 38.747122, 39.177645, 39.522064, 
+        39.952588, 40.383111, 40.72753, 41.158054, 41.588577, 
+        42.019101, 42.36352, 42.794043, 43.224567, 43.65509, 
+        44.085614, 44.430033, 44.860556, 45.29108, 45.721603, 
+        46.152127, 46.582651, 47.013174, 47.443698, 47.874221, 
+        48.304745, 48.735268, 49.165792, 49.68242, 50.112944, 
+        50.543467, 50.973991, 51.404515, 51.835038, 52.351666, 
+        52.78219, 53.212714, 53.729342, 54.159865, 54.590389, 
+        55.107017, 55.537541, 55.968064, 56.484693, 56.915216, 
+        57.431845, 57.862368, 58.292892, 58.80952, 59.240044, 
+        59.756672, 60.2733, 60.703824, 61.220452, 61.650976, 
+        62.167604, 62.684232, 63.114756, 63.631384, 64.148012, 
+        64.578536, 65.095164, 65.611792, 66.128421, 66.558944, 
+        67.075573, 67.592201, 68.108829, 68.625457, 69.142086, 
+        69.658714, 70.089238, 70.605866, 71.122494, 71.639122, 
+        72.155751, 72.672379, 73.189007, 73.705636, 74.222264, 
+        74.738892, 75.341625, 75.858253, 76.374882, 76.89151, 
+        77.408138, 77.924767, 78.441395, 79.044128, 79.560756, 
+        80.077384, 80.594013, 81.196746, 81.713374, 82.230002, 
+        82.832735, 83.349364, 83.865992, 84.468725, 84.985353, 
+        85.588086, 86.104714, 86.621343, 87.224076, 87.740704, 
+        88.085123, 0, 0, 0, 0, 
+        0.31893747, 0.39867184, 0.55814058, 0.63787495, 0.71760932, 
+        0.79734368, 0.95681242, 1.0365468, 1.1960155, 1.2757499, 
+        1.3554843, 1.514953, 1.5946874, 1.7541561, 1.8338905, 
+        1.9933592, 2.1528279, 2.2325623, 2.3920311, 2.5514998, 
+        2.6312342, 2.7907029, 2.9501716, 3.1096404, 3.2691091, 
+        3.3488435, 3.5083122, 3.6677809, 3.8272497, 3.9867184, 
+        4.1461872, 4.3056559, 4.4651246, 4.6245934, 4.7840621, 
+        5.0232652, 5.182734, 5.3422027, 5.5016714, 5.6611402, 
+        5.8206089, 6.059812, 6.2192807, 6.3787495, 6.6179526, 
+        6.7774213, 6.9368901, 7.1760932, 7.3355619, 7.574765, 
+        7.7342337, 7.9734368, 8.1329056, 8.3721087, 8.5315774, 
+        8.7707805, 9.0099836, 9.1694524, 9.4086555, 9.6478586, 
+        9.8073273, 10.04653, 10.285734, 10.524937, 10.76414, 
+        10.923608, 11.162812, 11.402015, 11.641218, 11.880421, 
+        12.119624, 12.358827, 12.59803, 12.837233, 13.076436, 
+        13.31564, 13.554843, 13.794046, 14.112983, 14.352186, 
+        14.591389, 14.830593, 15.069796, 15.388733, 15.627936, 
+        15.867139, 16.186077, 16.42528, 16.664483, 16.98342, 
+        17.222624, 17.541561, 17.780764, 18.099702, 18.338905, 
+        18.657842, 18.897045, 19.215983, 19.455186, 19.774123, 
+        20.093061, 20.332264, 20.651201, 20.970139, 21.209342, 
+        21.528279, 21.847217, 22.166154, 22.485092, 22.724295, 
+        23.043232, 23.36217, 23.681107, 24.000045, 24.318982, 
+        24.63792, 24.956857, 25.275795, 25.594732, 25.91367, 
+        26.232607, 26.551545, 26.870482, 27.18942, 27.508357, 
+        27.827295, 28.146232, 28.544904, 28.863841, 29.182779, 
+        29.501716, 29.900388, 30.219326, 30.538263, 30.857201, 
+        31.255872, 31.57481, 31.973482, 32.292419, 32.611357, 
+        33.010029, 33.328966, 33.727638, 34.046575, 34.445247, 
+        34.764185, 35.162856, 35.481794, 35.880466, 36.279138, 
+        36.598075, 36.996747, 37.395419, 37.714356, 38.113028, 
+        38.5117, 38.910372, 39.229309, 39.627981, 40.026653, 
+        40.425325, 40.823997, 41.142934, 41.541606, 41.940278, 
+        42.33895, 42.737621, 43.136293, 43.534965, 43.933637, 
+        44.332309, 44.730981, 45.129653, 45.528324, 46.006731, 
+        46.405402, 46.804074, 47.202746, 47.601418, 48.00009, 
+        48.478496, 48.877168, 49.27584, 49.754246, 50.152918, 
+        50.55159, 51.029996, 51.428668, 51.82734, 52.305746, 
+        52.704418, 53.182824, 53.581496, 53.980167, 54.458574, 
+        54.857246, 55.335652, 55.814058, 56.21273, 56.691136, 
+        57.089808, 57.568214, 58.04662, 58.445292, 58.923698, 
+        59.402105, 59.800776, 60.279183, 60.757589, 61.235995, 
+        61.634667, 62.113073, 62.591479, 63.069885, 63.548292, 
+        64.026698, 64.505104, 64.903776, 65.382182, 65.860588, 
+        66.338995, 66.817401, 67.295807, 67.774213, 68.252619, 
+        68.731026, 69.209432, 69.767572, 70.245979, 70.724385, 
+        71.202791, 71.681197, 72.159603, 72.63801, 73.19615, 
+        73.674556, 74.152963, 74.631369, 75.189509, 75.667916, 
+        76.146322, 76.704462, 77.182869, 77.661275, 78.219415, 
+        78.697822, 79.255962, 79.734368, 80.212775, 80.770915, 
+        81.249321, 81.568259, 0, 0, 0.29488721, 
+        0.44233082, 0.58977443, 0.73721804, 1.0321053, 1.1795489, 
+        1.3269925, 1.4744361, 1.7693233, 1.9167669, 2.2116541, 
+        2.3590977, 2.5065413, 2.8014285, 2.9488721, 3.2437594, 
+        3.391203, 3.6860902, 3.9809774, 4.128421, 4.4233082, 
+        4.7181954, 4.865639, 5.1605263, 5.4554135, 5.7503007, 
+        6.0451879, 6.1926315, 6.4875187, 6.7824059, 7.0772932, 
+        7.3721804, 7.6670676, 7.9619548, 8.256842, 8.5517292, 
+        8.8466164, 9.2889473, 9.5838345, 9.8787217, 10.173609, 
+        10.468496, 10.763383, 11.205714, 11.500601, 11.795489, 
+        12.237819, 12.532707, 12.827594, 13.269925, 13.564812, 
+        14.007143, 14.30203, 14.744361, 15.039248, 15.481579, 
+        15.776466, 16.218797, 16.661128, 16.956015, 17.398346, 
+        17.840677, 18.135564, 18.577895, 19.020225, 19.462556, 
+        19.904887, 20.199774, 20.642105, 21.084436, 21.526767, 
+        21.969098, 22.411428, 22.853759, 23.29609, 23.738421, 
+        24.180752, 24.623082, 25.065413, 25.507744, 26.097519, 
+        26.539849, 26.98218, 27.424511, 27.866842, 28.456616, 
+        28.898947, 29.341278, 29.931052, 30.373383, 30.815714, 
+        31.405488, 31.847819, 32.437594, 32.879924, 33.469699, 
+        33.91203, 34.501804, 34.944135, 35.533909, 35.97624, 
+        36.566015, 37.155789, 37.59812, 38.187894, 38.777669, 
+        39.22, 39.809774, 40.399548, 40.989323, 41.579097, 
+        42.021428, 42.611203, 43.200977, 43.790751, 44.380526, 
+        44.9703, 45.560075, 46.149849, 46.739624, 47.329398, 
+        47.919172, 48.508947, 49.098721, 49.688496, 50.27827, 
+        50.868045, 51.457819, 52.047593, 52.784811, 53.374586, 
+        53.96436, 54.554135, 55.291353, 55.881127, 56.470902, 
+        57.060676, 57.797894, 58.387669, 59.124887, 59.714661, 
+        60.304435, 61.041653, 61.631428, 62.368646, 62.95842, 
+        63.695638, 64.285413, 65.022631, 65.612405, 66.349623, 
+        67.086841, 67.676616, 68.413834, 69.151052, 69.740826, 
+        70.478044, 71.215262, 71.95248, 72.542255, 73.279473, 
+        74.016691, 74.753909, 75.491127, 76.080901, 76.818119, 
+        77.555338, 78.292556, 79.029774, 79.766992, 80.50421, 
+        81.241428, 81.978646, 82.715864, 83.453082, 84.1903, 
+        85.074962, 85.81218, 86.549398, 87.286616, 88.023834, 
+        88.761052, 89.645713, 90.382931, 91.120149, 92.004811, 
+        92.742029, 93.479247, 94.363909, 95.101127, 95.838345, 
+        96.723007, 97.460225, 98.344886, 99.082104, 99.819322, 
+        100.70398, 101.4412, 102.32586, 103.21053, 103.94774, 
+        104.8324, 105.56962, 106.45428, 107.33895, 108.07616, 
+        108.96083, 109.84549, 110.58271, 111.46737, 112.35203, 
+        113.23669, 113.97391, 114.85857, 115.74323, 116.62789, 
+        117.51256, 118.39722, 119.28188, 120.0191, 120.90376, 
+        121.78842, 122.67308, 123.55774, 124.4424, 125.32707, 
+        126.21173, 127.09639, 127.98105, 129.01316, 129.89782, 
+        130.78248, 131.66714, 132.5518, 133.43646, 134.32113, 
+        135.35323, 136.23789, 137.12255, 138.00722, 139.03932, 
+        139.92398, 140.80865, 141.84075, 142.72541, 143.61007, 
+        144.64218, 145.52684, 146.55895, 147.44361, 148.32827, 
+        149.36037, 150.24504, 150.83481, 0, 0, 
+        0.27229209, 0.40843813, 0.54458417, 0.68073022, 0.9530223, 
+        1.0891683, 1.2253144, 1.3614604, 1.6337525, 1.7698986, 
+        2.0421906, 2.1783367, 2.3144827, 2.5867748, 2.7229209, 
+        2.9952129, 3.131359, 3.4036511, 3.6759432, 3.8120892, 
+        4.0843813, 4.3566734, 4.4928194, 4.7651115, 5.0374036, 
+        5.3096957, 5.5819878, 5.7181338, 5.9904259, 6.262718, 
+        6.5350101, 6.8073022, 7.0795942, 7.3518863, 7.6241784, 
+        7.8964705, 8.1687626, 8.5772007, 8.8494928, 9.1217849, 
+        9.394077, 9.6663691, 9.9386611, 10.347099, 10.619391, 
+        10.891683, 11.300122, 11.572414, 11.844706, 12.253144, 
+        12.525436, 12.933874, 13.206166, 13.614604, 13.886896, 
+        14.295335, 14.567627, 14.976065, 15.384503, 15.656795, 
+        16.065233, 16.473671, 16.745963, 17.154401, 17.56284, 
+        17.971278, 18.379716, 18.652008, 19.060446, 19.468884, 
+        19.877322, 20.28576, 20.694199, 21.102637, 21.511075, 
+        21.919513, 22.327951, 22.736389, 23.144827, 23.553265, 
+        24.09785, 24.506288, 24.914726, 25.323164, 25.731602, 
+        26.276186, 26.684624, 27.093063, 27.637647, 28.046085, 
+        28.454523, 28.999107, 29.407545, 29.952129, 30.360568, 
+        30.905152, 31.31359, 31.858174, 32.266612, 32.811196, 
+        33.219635, 33.764219, 34.308803, 34.717241, 35.261825, 
+        35.806409, 36.214847, 36.759432, 37.304016, 37.8486, 
+        38.393184, 38.801622, 39.346206, 39.890791, 40.435375, 
+        40.979959, 41.524543, 42.069127, 42.613712, 43.158296, 
+        43.70288, 44.247464, 44.792048, 45.336632, 45.881217, 
+        46.425801, 46.970385, 47.514969, 48.059553, 48.740283, 
+        49.284868, 49.829452, 50.374036, 51.054766, 51.59935, 
+        52.143935, 52.688519, 53.369249, 53.913833, 54.594563, 
+        55.139147, 55.683732, 56.364462, 56.909046, 57.589776, 
+        58.13436, 58.815091, 59.359675, 60.040405, 60.584989, 
+        61.265719, 61.94645, 62.491034, 63.171764, 63.852494, 
+        64.397078, 65.077809, 65.758539, 66.439269, 66.983853, 
+        67.664583, 68.345314, 69.026044, 69.706774, 70.251358, 
+        70.932088, 71.612819, 72.293549, 72.974279, 73.655009, 
+        74.33574, 75.01647, 75.6972, 76.37793, 77.05866, 
+        77.739391, 78.556267, 79.236997, 79.917727, 80.598458, 
+        81.279188, 81.959918, 82.776794, 83.457524, 84.138255, 
+        84.955131, 85.635861, 86.316591, 87.133468, 87.814198, 
+        88.494928, 89.311804, 89.992535, 90.809411, 91.490141, 
+        92.170871, 92.987747, 93.668478, 94.485354, 95.30223, 
+        95.98296, 96.799837, 97.480567, 98.297443, 99.114319, 
+        99.79505, 100.61193, 101.4288, 102.10953, 102.92641, 
+        103.74328, 104.56016, 105.24089, 106.05777, 106.87464, 
+        107.69152, 108.5084, 109.32527, 110.14215, 110.82288, 
+        111.63976, 112.45663, 113.27351, 114.09038, 114.90726, 
+        115.72414, 116.54101, 117.35789, 118.17477, 119.12779, 
+        119.94466, 120.76154, 121.57842, 122.39529, 123.21217, 
+        124.02905, 124.98207, 125.79894, 126.61582, 127.4327, 
+        128.38572, 129.20259, 130.01947, 130.97249, 131.78937, 
+        132.60625, 133.55927, 134.37614, 135.32917, 136.14604, 
+        136.96292, 137.91594, 138.73282, 139.2774, 0, 
+        0, 0.25114638, 0.37671957, 0.50229277, 0.62786596, 
+        0.87901234, 1.0045855, 1.1301587, 1.2557319, 1.5068783, 
+        1.6324515, 1.8835979, 2.0091711, 2.1347443, 2.3858906, 
+        2.5114638, 2.7626102, 2.8881834, 3.1393298, 3.3904762, 
+        3.5160494, 3.7671957, 4.0183421, 4.1439153, 4.3950617, 
+        4.6462081, 4.8973545, 5.1485009, 5.274074, 5.5252204, 
+        5.7763668, 6.0275132, 6.2786596, 6.529806, 6.7809523, 
+        7.0320987, 7.2832451, 7.5343915, 7.9111111, 8.1622574, 
+        8.4134038, 8.6645502, 8.9156966, 9.166843, 9.5435626, 
+        9.7947089, 10.045855, 10.422575, 10.673721, 10.924868, 
+        11.301587, 11.552734, 11.929453, 12.1806, 12.557319, 
+        12.808466, 13.185185, 13.436331, 13.813051, 14.189771, 
+        14.440917, 14.817637, 15.194356, 15.445503, 15.822222, 
+        16.198942, 16.575661, 16.952381, 17.203527, 17.580247, 
+        17.956966, 18.333686, 18.710406, 19.087125, 19.463845, 
+        19.840564, 20.217284, 20.594003, 20.970723, 21.347443, 
+        21.724162, 22.226455, 22.603174, 22.979894, 23.356614, 
+        23.733333, 24.235626, 24.612346, 24.989065, 25.491358, 
+        25.868077, 26.244797, 26.74709, 27.123809, 27.626102, 
+        28.002822, 28.505114, 28.881834, 29.384127, 29.760846, 
+        30.263139, 30.639859, 31.142151, 31.644444, 32.021164, 
+        32.523457, 33.025749, 33.402469, 33.904762, 34.407054, 
+        34.909347, 35.41164, 35.78836, 36.290652, 36.792945, 
+        37.295238, 37.797531, 38.299823, 38.802116, 39.304409, 
+        39.806702, 40.308994, 40.811287, 41.31358, 41.815873, 
+        42.318166, 42.820458, 43.322751, 43.825044, 44.327337, 
+        44.955203, 45.457495, 45.959788, 46.462081, 47.089947, 
+        47.59224, 48.094532, 48.596825, 49.224691, 49.726984, 
+        50.35485, 50.857143, 51.359435, 51.987301, 52.489594, 
+        53.11746, 53.619753, 54.247619, 54.749911, 55.377777, 
+        55.88007, 56.507936, 57.135802, 57.638095, 58.265961, 
+        58.893827, 59.39612, 60.023986, 60.651851, 61.279717, 
+        61.78201, 62.409876, 63.037742, 63.665608, 64.293474, 
+        64.795767, 65.423633, 66.051499, 66.679365, 67.307231, 
+        67.935097, 68.562963, 69.190829, 69.818694, 70.44656, 
+        71.074426, 71.702292, 72.455731, 73.083597, 73.711463, 
+        74.339329, 74.967195, 75.595061, 76.3485, 76.976366, 
+        77.604232, 78.357671, 78.985537, 79.613403, 80.366843, 
+        80.994709, 81.622574, 82.376014, 83.00388, 83.757319, 
+        84.385185, 85.013051, 85.76649, 86.394356, 87.147795, 
+        87.901234, 88.5291, 89.282539, 89.910405, 90.663844, 
+        91.417283, 92.045149, 92.798589, 93.552028, 94.179894, 
+        94.933333, 95.686772, 96.440211, 97.068077, 97.821516, 
+        98.574955, 99.328394, 100.08183, 100.83527, 101.58871, 
+        102.21658, 102.97002, 103.72346, 104.4769, 105.23033, 
+        105.98377, 106.73721, 107.49065, 108.24409, 108.99753, 
+        109.87654, 110.62998, 111.38342, 112.13686, 112.8903, 
+        113.64374, 114.39718, 115.27619, 116.02963, 116.78307, 
+        117.53651, 118.41552, 119.16896, 119.9224, 120.80141, 
+        121.55485, 122.30829, 123.1873, 123.94074, 124.81975, 
+        125.57319, 126.32663, 127.20564, 127.95908, 128.46137, 
+        0, 0, 0.23109399, 0.34664098, 0.46218798, 
+        0.57773497, 0.80882896, 0.92437596, 1.039923, 1.1554699, 
+        1.3865639, 1.5021109, 1.7332049, 1.8487519, 1.9642989, 
+        2.1953929, 2.3109399, 2.5420339, 2.6575809, 2.8886749, 
+        3.1197689, 3.2353159, 3.4664098, 3.6975038, 3.8130508, 
+        4.0441448, 4.2752388, 4.5063328, 4.7374268, 4.8529738, 
+        5.0840678, 5.3151618, 5.5462558, 5.7773497, 6.0084437, 
+        6.2395377, 6.4706317, 6.7017257, 6.9328197, 7.2794607, 
+        7.5105547, 7.7416487, 7.9727426, 8.2038366, 8.4349306, 
+        8.7815716, 9.0126656, 9.2437596, 9.5904006, 9.8214946, 
+        10.052589, 10.39923, 10.630324, 10.976965, 11.208059, 
+        11.554699, 11.785793, 12.132434, 12.363528, 12.710169, 
+        13.05681, 13.287904, 13.634545, 13.981186, 14.21228, 
+        14.558921, 14.905562, 15.252203, 15.598844, 15.829938, 
+        16.176579, 16.52322, 16.869861, 17.216502, 17.563143, 
+        17.909784, 18.256425, 18.603066, 18.949707, 19.296348, 
+        19.642989, 19.98963, 20.451818, 20.798459, 21.1451, 
+        21.491741, 21.838382, 22.30057, 22.647211, 22.993852, 
+        23.45604, 23.802681, 24.149322, 24.61151, 24.958151, 
+        25.420339, 25.76698, 26.229168, 26.575809, 27.037997, 
+        27.384638, 27.846826, 28.193467, 28.655655, 29.117843, 
+        29.464484, 29.926672, 30.38886, 30.735501, 31.197689, 
+        31.659877, 32.122065, 32.584253, 32.930894, 33.393082, 
+        33.85527, 34.317457, 34.779645, 35.241833, 35.704021, 
+        36.166209, 36.628397, 37.090585, 37.552773, 38.014961, 
+        38.477149, 38.939337, 39.401525, 39.863713, 40.325901, 
+        40.788089, 41.365824, 41.828012, 42.2902, 42.752388, 
+        43.330123, 43.792311, 44.254499, 44.716687, 45.294422, 
+        45.75661, 46.334345, 46.796533, 47.258721, 47.836456, 
+        48.298644, 48.876379, 49.338567, 49.916302, 50.37849, 
+        50.956225, 51.418413, 51.996148, 52.573883, 53.036071, 
+        53.613806, 54.191541, 54.653729, 55.231464, 55.809199, 
+        56.386934, 56.849121, 57.426856, 58.004591, 58.582326, 
+        59.160061, 59.622249, 60.199984, 60.777719, 61.355454, 
+        61.933189, 62.510924, 63.088659, 63.666394, 64.244129, 
+        64.821864, 65.399599, 65.977334, 66.670616, 67.248351, 
+        67.826086, 68.403821, 68.981556, 69.559291, 70.252573, 
+        70.830308, 71.408043, 72.101325, 72.67906, 73.256795, 
+        73.950077, 74.527812, 75.105547, 75.798829, 76.376564, 
+        77.069846, 77.647581, 78.225316, 78.918598, 79.496332, 
+        80.189614, 80.882896, 81.460631, 82.153913, 82.731648, 
+        83.42493, 84.118212, 84.695947, 85.389229, 86.082511, 
+        86.660246, 87.353528, 88.04681, 88.740092, 89.317827, 
+        90.011109, 90.704391, 91.397673, 92.090955, 92.784237, 
+        93.477519, 94.055254, 94.748536, 95.441818, 96.1351, 
+        96.828382, 97.521664, 98.214946, 98.908228, 99.60151, 
+        100.29479, 101.10362, 101.7969, 102.49018, 103.18347, 
+        103.87675, 104.57003, 105.26331, 106.07214, 106.76542, 
+        107.45871, 108.15199, 108.96082, 109.6541, 110.34738, 
+        111.15621, 111.84949, 112.54277, 113.3516, 114.04488, 
+        114.85371, 115.54699, 116.24028, 117.04911, 117.74239, 
+        118.20458, 0, 0, 0.2111512, 0.3167268, 
+        0.4223024, 0.527878, 0.7390292, 0.8446048, 0.9501804, 
+        1.055756, 1.2669072, 1.3724828, 1.583634, 1.6892096, 
+        1.7947852, 2.0059364, 2.111512, 2.3226632, 2.4282388, 
+        2.63939, 2.8505412, 2.9561168, 3.167268, 3.3784192, 
+        3.4839948, 3.695146, 3.9062972, 4.1174484, 4.3285996, 
+        4.4341752, 4.6453264, 4.8564776, 5.0676288, 5.27878, 
+        5.4899312, 5.7010824, 5.9122336, 6.1233848, 6.334536, 
+        6.6512628, 6.862414, 7.0735652, 7.2847164, 7.4958676, 
+        7.7070188, 8.0237456, 8.2348968, 8.446048, 8.7627748, 
+        8.973926, 9.1850772, 9.501804, 9.7129552, 10.029682, 
+        10.240833, 10.55756, 10.768711, 11.085438, 11.296589, 
+        11.613316, 11.930043, 12.141194, 12.457921, 12.774648, 
+        12.985799, 13.302526, 13.619252, 13.935979, 14.252706, 
+        14.463857, 14.780584, 15.097311, 15.414038, 15.730764, 
+        16.047491, 16.364218, 16.680945, 16.997672, 17.314398, 
+        17.631125, 17.947852, 18.264579, 18.686881, 19.003608, 
+        19.320335, 19.637062, 19.953788, 20.376091, 20.692818, 
+        21.009544, 21.431847, 21.748574, 22.0653, 22.487603, 
+        22.80433, 23.226632, 23.543359, 23.965661, 24.282388, 
+        24.70469, 25.021417, 25.44372, 25.760446, 26.182749, 
+        26.605051, 26.921778, 27.34408, 27.766383, 28.08311, 
+        28.505412, 28.927714, 29.350017, 29.772319, 30.089046, 
+        30.511348, 30.933651, 31.355953, 31.778256, 32.200558, 
+        32.62286, 33.045163, 33.467465, 33.889768, 34.31207, 
+        34.734372, 35.156675, 35.578977, 36.00128, 36.423582, 
+        36.845884, 37.268187, 37.796065, 38.218367, 38.64067, 
+        39.062972, 39.59085, 40.013152, 40.435455, 40.857757, 
+        41.385635, 41.807938, 42.335816, 42.758118, 43.18042, 
+        43.708298, 44.130601, 44.658479, 45.080781, 45.608659, 
+        46.030962, 46.55884, 46.981142, 47.50902, 48.036898, 
+        48.4592, 48.987078, 49.514956, 49.937259, 50.465137, 
+        50.993015, 51.520893, 51.943195, 52.471073, 52.998951, 
+        53.526829, 54.054707, 54.47701, 55.004888, 55.532766, 
+        56.060644, 56.588522, 57.1164, 57.644278, 58.172156, 
+        58.700034, 59.227912, 59.75579, 60.283668, 60.917121, 
+        61.444999, 61.972877, 62.500755, 63.028633, 63.556511, 
+        64.189965, 64.717843, 65.245721, 65.879174, 66.407052, 
+        66.93493, 67.568384, 68.096262, 68.62414, 69.257594, 
+        69.785472, 70.418925, 70.946803, 71.474681, 72.108135, 
+        72.636013, 73.269466, 73.90292, 74.430798, 75.064252, 
+        75.59213, 76.225583, 76.859037, 77.386915, 78.020368, 
+        78.653822, 79.1817, 79.815154, 80.448607, 81.082061, 
+        81.609939, 82.243392, 82.876846, 83.5103, 84.143753, 
+        84.777207, 85.41066, 85.938538, 86.571992, 87.205446, 
+        87.838899, 88.472353, 89.105806, 89.73926, 90.372714, 
+        91.006167, 91.639621, 92.37865, 93.012104, 93.645557, 
+        94.279011, 94.912464, 95.545918, 96.179372, 96.918401, 
+        97.551854, 98.185308, 98.818762, 99.557791, 100.19124, 
+        100.8247, 101.56373, 102.19718, 102.83063, 103.56966, 
+        104.20312, 104.94215, 105.5756, 106.20905, 106.94808, 
+        107.58154, 108.00384, 0, 0, 0.19065189, 
+        0.28597784, 0.38130379, 0.47662974, 0.66728163, 0.76260758, 
+        0.85793353, 0.95325947, 1.1439114, 1.2392373, 1.4298892, 
+        1.5252152, 1.6205411, 1.811193, 1.9065189, 2.0971708, 
+        2.1924968, 2.3831487, 2.5738006, 2.6691265, 2.8597784, 
+        3.0504303, 3.1457563, 3.3364082, 3.5270601, 3.7177119, 
+        3.9083638, 4.0036898, 4.1943417, 4.3849936, 4.5756455, 
+        4.7662974, 4.9569493, 5.1476012, 5.3382531, 5.5289049, 
+        5.7195568, 6.0055347, 6.1961866, 6.3868385, 6.5774904, 
+        6.7681423, 6.9587942, 7.244772, 7.4354239, 7.6260758, 
+        7.9120536, 8.1027055, 8.2933574, 8.5793353, 8.7699872, 
+        9.055965, 9.2466169, 9.5325947, 9.7232466, 10.009224, 
+        10.199876, 10.485854, 10.771832, 10.962484, 11.248462, 
+        11.53444, 11.725092, 12.011069, 12.297047, 12.583025, 
+        12.869003, 13.059655, 13.345633, 13.63161, 13.917588, 
+        14.203566, 14.489544, 14.775522, 15.0615, 15.347478, 
+        15.633455, 15.919433, 16.205411, 16.491389, 16.872693, 
+        17.158671, 17.444648, 17.730626, 18.016604, 18.397908, 
+        18.683886, 18.969864, 19.351167, 19.637145, 19.923123, 
+        20.304427, 20.590405, 20.971708, 21.257686, 21.63899, 
+        21.924968, 22.306272, 22.59225, 22.973553, 23.259531, 
+        23.640835, 24.022139, 24.308117, 24.68942, 25.070724, 
+        25.356702, 25.738006, 26.11931, 26.500613, 26.881917, 
+        27.167895, 27.549199, 27.930503, 28.311806, 28.69311, 
+        29.074414, 29.455718, 29.837022, 30.218325, 30.599629, 
+        30.980933, 31.362237, 31.74354, 32.124844, 32.506148, 
+        32.887452, 33.268756, 33.650059, 34.126689, 34.507993, 
+        34.889297, 35.270601, 35.74723, 36.128534, 36.509838, 
+        36.891142, 37.367771, 37.749075, 38.225705, 38.607009, 
+        38.988312, 39.464942, 39.846246, 40.322876, 40.70418, 
+        41.180809, 41.562113, 42.038743, 42.420047, 42.896676, 
+        43.373306, 43.75461, 44.23124, 44.707869, 45.089173, 
+        45.565803, 46.042433, 46.519062, 46.900366, 47.376996, 
+        47.853626, 48.330255, 48.806885, 49.188189, 49.664819, 
+        50.141448, 50.618078, 51.094708, 51.571338, 52.047967, 
+        52.524597, 53.001227, 53.477856, 53.954486, 54.431116, 
+        55.003072, 55.479701, 55.956331, 56.432961, 56.909591, 
+        57.38622, 57.958176, 58.434806, 58.911435, 59.483391, 
+        59.960021, 60.436651, 61.008606, 61.485236, 61.961866, 
+        62.533821, 63.010451, 63.582407, 64.059037, 64.535666, 
+        65.107622, 65.584252, 66.156207, 66.728163, 67.204793, 
+        67.776749, 68.253378, 68.825334, 69.39729, 69.873919, 
+        70.445875, 71.017831, 71.494461, 72.066416, 72.638372, 
+        73.210328, 73.686957, 74.258913, 74.830869, 75.402824, 
+        75.97478, 76.546736, 77.118691, 77.595321, 78.167277, 
+        78.739233, 79.311188, 79.883144, 80.4551, 81.027055, 
+        81.599011, 82.170967, 82.742922, 83.410204, 83.98216, 
+        84.554115, 85.126071, 85.698027, 86.269982, 86.841938, 
+        87.50922, 88.081175, 88.653131, 89.225087, 89.892368, 
+        90.464324, 91.03628, 91.703561, 92.275517, 92.847473, 
+        93.514754, 94.08671, 94.753992, 95.325947, 95.897903, 
+        96.565185, 97.13714, 97.518444, 0, 0, 
+        0.16959733, 0.254396, 0.33919467, 0.42399333, 0.59359067, 
+        0.67838933, 0.763188, 0.84798667, 1.017584, 1.1023827, 
+        1.27198, 1.3567787, 1.4415773, 1.6111747, 1.6959733, 
+        1.8655707, 1.9503693, 2.1199667, 2.289564, 2.3743627, 
+        2.54396, 2.7135573, 2.798356, 2.9679533, 3.1375507, 
+        3.307148, 3.4767453, 3.561544, 3.7311413, 3.9007387, 
+        4.070336, 4.2399333, 4.4095307, 4.579128, 4.7487253, 
+        4.9183227, 5.08792, 5.342316, 5.5119133, 5.6815107, 
+        5.851108, 6.0207053, 6.1903027, 6.4446987, 6.614296, 
+        6.7838933, 7.0382893, 7.2078867, 7.377484, 7.63188, 
+        7.8014773, 8.0558733, 8.2254707, 8.4798667, 8.649464, 
+        8.90386, 9.0734573, 9.3278533, 9.5822493, 9.7518467, 
+        10.006243, 10.260639, 10.430236, 10.684632, 10.939028, 
+        11.193424, 11.44782, 11.617417, 11.871813, 12.126209, 
+        12.380605, 12.635001, 12.889397, 13.143793, 13.398189, 
+        13.652585, 13.906981, 14.161377, 14.415773, 14.670169, 
+        15.009364, 15.26376, 15.518156, 15.772552, 16.026948, 
+        16.366143, 16.620539, 16.874935, 17.214129, 17.468525, 
+        17.722921, 18.062116, 18.316512, 18.655707, 18.910103, 
+        19.249297, 19.503693, 19.842888, 20.097284, 20.436479, 
+        20.690875, 21.030069, 21.369264, 21.62366, 21.962855, 
+        22.302049, 22.556445, 22.89564, 23.234835, 23.574029, 
+        23.913224, 24.16762, 24.506815, 24.846009, 25.185204, 
+        25.524399, 25.863593, 26.202788, 26.541983, 26.881177, 
+        27.220372, 27.559567, 27.898761, 28.237956, 28.577151, 
+        28.916345, 29.25554, 29.594735, 29.933929, 30.357923, 
+        30.697117, 31.036312, 31.375507, 31.7995, 32.138695, 
+        32.477889, 32.817084, 33.241077, 33.580272, 34.004265, 
+        34.34346, 34.682655, 35.106648, 35.445843, 35.869836, 
+        36.209031, 36.633024, 36.972219, 37.396212, 37.735407, 
+        38.1594, 38.583393, 38.922588, 39.346581, 39.770575, 
+        40.109769, 40.533763, 40.957756, 41.381749, 41.720944, 
+        42.144937, 42.568931, 42.992924, 43.416917, 43.756112, 
+        44.180105, 44.604099, 45.028092, 45.452085, 45.876079, 
+        46.300072, 46.724065, 47.148059, 47.572052, 47.996045, 
+        48.420039, 48.928831, 49.352824, 49.776817, 50.200811, 
+        50.624804, 51.048797, 51.557589, 51.981583, 52.405576, 
+        52.914368, 53.338361, 53.762355, 54.271147, 54.69514, 
+        55.119133, 55.627925, 56.051919, 56.560711, 56.984704, 
+        57.408697, 57.917489, 58.341483, 58.850275, 59.359067, 
+        59.78306, 60.291852, 60.715845, 61.224637, 61.733429, 
+        62.157423, 62.666215, 63.175007, 63.599, 64.107792, 
+        64.616584, 65.125376, 65.549369, 66.058161, 66.566953, 
+        67.075745, 67.584537, 68.093329, 68.602121, 69.026115, 
+        69.534907, 70.043699, 70.552491, 71.061283, 71.570075, 
+        72.078867, 72.587659, 73.096451, 73.605243, 74.198833, 
+        74.707625, 75.216417, 75.725209, 76.234001, 76.742793, 
+        77.251585, 77.845176, 78.353968, 78.86276, 79.371552, 
+        79.965143, 80.473935, 80.982727, 81.576317, 82.085109, 
+        82.593901, 83.187492, 83.696284, 84.289875, 84.798667, 
+        85.307459, 85.901049, 86.409841, 86.749036, 0, 
+        0, 0.1473171, 0.22097565, 0.2946342, 0.36829274, 
+        0.51560984, 0.58926839, 0.66292694, 0.73658549, 0.88390259, 
+        0.95756113, 1.1048782, 1.1785368, 1.2521953, 1.3995124, 
+        1.473171, 1.6204881, 1.6941466, 1.8414637, 1.9887808, 
+        2.0624394, 2.2097565, 2.3570736, 2.4307321, 2.5780492, 
+        2.7253663, 2.8726834, 3.0200005, 3.0936591, 3.2409761, 
+        3.3882932, 3.5356103, 3.6829274, 3.8302445, 3.9775616, 
+        4.1248787, 4.2721958, 4.4195129, 4.6404886, 4.7878057, 
+        4.9351228, 5.0824399, 5.229757, 5.3770741, 5.5980497, 
+        5.7453668, 5.8926839, 6.1136596, 6.2609766, 6.4082937, 
+        6.6292694, 6.7765865, 6.9975621, 7.1448792, 7.3658549, 
+        7.513172, 7.7341476, 7.8814647, 8.1024404, 8.323416, 
+        8.4707331, 8.6917088, 8.9126844, 9.0600015, 9.2809772, 
+        9.5019528, 9.7229284, 9.9439041, 10.091221, 10.312197, 
+        10.533172, 10.754148, 10.975124, 11.196099, 11.417075, 
+        11.638051, 11.859026, 12.080002, 12.300978, 12.521953, 
+        12.742929, 13.037563, 13.258539, 13.479514, 13.70049, 
+        13.921466, 14.2161, 14.437076, 14.658051, 14.952685, 
+        15.173661, 15.394637, 15.689271, 15.910247, 16.204881, 
+        16.425856, 16.720491, 16.941466, 17.2361, 17.457076, 
+        17.75171, 17.972686, 18.26732, 18.561954, 18.78293, 
+        19.077564, 19.372198, 19.593174, 19.887808, 20.182442, 
+        20.477077, 20.771711, 20.992686, 21.287321, 21.581955, 
+        21.876589, 22.171223, 22.465857, 22.760492, 23.055126, 
+        23.34976, 23.644394, 23.939028, 24.233663, 24.528297, 
+        24.822931, 25.117565, 25.412199, 25.706834, 26.001468, 
+        26.36976, 26.664395, 26.959029, 27.253663, 27.621956, 
+        27.91659, 28.211224, 28.505858, 28.874151, 29.168785, 
+        29.537078, 29.831712, 30.126346, 30.494639, 30.789273, 
+        31.157566, 31.4522, 31.820493, 32.115127, 32.48342, 
+        32.778054, 33.146347, 33.51464, 33.809274, 34.177567, 
+        34.545859, 34.840494, 35.208786, 35.577079, 35.945372, 
+        36.240006, 36.608299, 36.976592, 37.344884, 37.713177, 
+        38.007811, 38.376104, 38.744397, 39.112689, 39.480982, 
+        39.849275, 40.217568, 40.58586, 40.954153, 41.322446, 
+        41.690739, 42.059031, 42.500983, 42.869275, 43.237568, 
+        43.605861, 43.974154, 44.342446, 44.784398, 45.15269, 
+        45.520983, 45.962934, 46.331227, 46.69952, 47.141471, 
+        47.509764, 47.878057, 48.320008, 48.688301, 49.130252, 
+        49.498545, 49.866838, 50.308789, 50.677082, 51.119033, 
+        51.560984, 51.929277, 52.371228, 52.739521, 53.181472, 
+        53.623424, 53.991716, 54.433668, 54.875619, 55.243912, 
+        55.685863, 56.127814, 56.569765, 56.938058, 57.38001, 
+        57.821961, 58.263912, 58.705863, 59.147815, 59.589766, 
+        59.958059, 60.40001, 60.841961, 61.283913, 61.725864, 
+        62.167815, 62.609766, 63.051718, 63.493669, 63.93562, 
+        64.45123, 64.893182, 65.335133, 65.777084, 66.219035, 
+        66.660987, 67.102938, 67.618548, 68.060499, 68.50245, 
+        68.944402, 69.460012, 69.901963, 70.343914, 70.859524, 
+        71.301475, 71.743427, 72.259036, 72.700988, 73.216598, 
+        73.658549, 74.1005, 74.61611, 75.058061, 75.352695, 
+        0, 0, 0.12541802, 0.18812703, 0.25083604, 
+        0.31354505, 0.43896307, 0.50167207, 0.56438108, 0.62709009, 
+        0.75250811, 0.81521712, 0.94063514, 1.0033441, 1.0660532, 
+        1.1914712, 1.2541802, 1.3795982, 1.4423072, 1.5677252, 
+        1.6931433, 1.7558523, 1.8812703, 2.0066883, 2.0693973, 
+        2.1948153, 2.3202333, 2.4456514, 2.5710694, 2.6337784, 
+        2.7591964, 2.8846144, 3.0100324, 3.1354505, 3.2608685, 
+        3.3862865, 3.5117045, 3.6371225, 3.7625406, 3.9506676, 
+        4.0760856, 4.2015036, 4.3269216, 4.4523397, 4.5777577, 
+        4.7658847, 4.8913027, 5.0167207, 5.2048478, 5.3302658, 
+        5.4556838, 5.6438108, 5.7692289, 5.9573559, 6.0827739, 
+        6.2709009, 6.396319, 6.584446, 6.709864, 6.897991, 
+        7.0861181, 7.2115361, 7.3996631, 7.5877901, 7.7132081, 
+        7.9013352, 8.0894622, 8.2775892, 8.4657163, 8.5911343, 
+        8.7792613, 8.9673883, 9.1555154, 9.3436424, 9.5317694, 
+        9.7198964, 9.9080235, 10.096151, 10.284278, 10.472405, 
+        10.660532, 10.848659, 11.099495, 11.287622, 11.475749, 
+        11.663876, 11.852003, 12.102839, 12.290966, 12.479093, 
+        12.729929, 12.918056, 13.106183, 13.357019, 13.545146, 
+        13.795982, 13.984109, 14.234945, 14.423072, 14.673908, 
+        14.862035, 15.112871, 15.300998, 15.551834, 15.80267, 
+        15.990797, 16.241633, 16.492469, 16.680596, 16.931433, 
+        17.182269, 17.433105, 17.683941, 17.872068, 18.122904, 
+        18.37374, 18.624576, 18.875412, 19.126248, 19.377084, 
+        19.62792, 19.878756, 20.129592, 20.380428, 20.631264, 
+        20.8821, 21.132936, 21.383772, 21.634608, 21.885444, 
+        22.13628, 22.449825, 22.700661, 22.951497, 23.202333, 
+        23.515878, 23.766715, 24.017551, 24.268387, 24.581932, 
+        24.832768, 25.146313, 25.397149, 25.647985, 25.96153, 
+        26.212366, 26.525911, 26.776747, 27.090292, 27.341128, 
+        27.654673, 27.905509, 28.219054, 28.532599, 28.783435, 
+        29.09698, 29.410525, 29.661361, 29.974906, 30.288452, 
+        30.601997, 30.852833, 31.166378, 31.479923, 31.793468, 
+        32.107013, 32.357849, 32.671394, 32.984939, 33.298484, 
+        33.612029, 33.925574, 34.239119, 34.552664, 34.866209, 
+        35.179754, 35.493299, 35.806844, 36.183098, 36.496643, 
+        36.810188, 37.123734, 37.437279, 37.750824, 38.127078, 
+        38.440623, 38.754168, 39.130422, 39.443967, 39.757512, 
+        40.133766, 40.447311, 40.760856, 41.13711, 41.450655, 
+        41.826909, 42.140454, 42.453999, 42.830253, 43.143798, 
+        43.520052, 43.896307, 44.209852, 44.586106, 44.899651, 
+        45.275905, 45.652159, 45.965704, 46.341958, 46.718212, 
+        47.031757, 47.408011, 47.784265, 48.160519, 48.474064, 
+        48.850318, 49.226572, 49.602826, 49.97908, 50.355334, 
+        50.731589, 51.045134, 51.421388, 51.797642, 52.173896, 
+        52.55015, 52.926404, 53.302658, 53.678912, 54.055166, 
+        54.43142, 54.870383, 55.246637, 55.622891, 55.999145, 
+        56.375399, 56.751653, 57.127907, 57.566871, 57.943125, 
+        58.319379, 58.695633, 59.134596, 59.51085, 59.887104, 
+        60.326067, 60.702321, 61.078575, 61.517538, 61.893792, 
+        62.332755, 62.709009, 63.085263, 63.524226, 63.90048, 
+        64.151317, 0, 0.13401506, 0.26803012, 0.40204518, 
+        0.53606024, 0.67007529, 0.93810541, 1.0721205, 1.2061355, 
+        1.3401506, 1.6081807, 1.7421958, 2.0102259, 2.1442409, 
+        2.278256, 2.5462861, 2.6803012, 2.9483313, 3.0823464, 
+        3.3503765, 3.6184066, 3.7524216, 4.0204518, 4.2884819, 
+        4.4224969, 4.6905271, 4.9585572, 5.2265873, 5.4946174, 
+        5.6286325, 5.8966626, 6.1646927, 6.4327228, 6.7007529, 
+        6.9687831, 7.2368132, 7.5048433, 7.7728734, 8.0409035, 
+        8.4429487, 8.7109788, 8.9790089, 9.2470391, 9.5150692, 
+        9.7830993, 10.185144, 10.453175, 10.721205, 11.12325, 
+        11.39128, 11.65931, 12.061355, 12.329385, 12.731431, 
+        12.999461, 13.401506, 13.669536, 14.071581, 14.339611, 
+        14.741656, 15.143702, 15.411732, 15.813777, 16.215822, 
+        16.483852, 16.885897, 17.287943, 17.689988, 18.092033, 
+        18.360063, 18.762108, 19.164153, 19.566199, 19.968244, 
+        20.370289, 20.772334, 21.174379, 21.576424, 21.97847, 
+        22.380515, 22.78256, 23.184605, 23.720665, 24.122711, 
+        24.524756, 24.926801, 25.328846, 25.864906, 26.266952, 
+        26.668997, 27.205057, 27.607102, 28.009147, 28.545208, 
+        28.947253, 29.483313, 29.885358, 30.421418, 30.823464, 
+        31.359524, 31.761569, 32.297629, 32.699674, 33.235735, 
+        33.771795, 34.17384, 34.7099, 35.24596, 35.648006, 
+        36.184066, 36.720126, 37.256186, 37.792247, 38.194292, 
+        38.730352, 39.266412, 39.802472, 40.338533, 40.874593, 
+        41.410653, 41.946713, 42.482774, 43.018834, 43.554894, 
+        44.090954, 44.627015, 45.163075, 45.699135, 46.235195, 
+        46.771256, 47.307316, 47.977391, 48.513451, 49.049512, 
+        49.585572, 50.255647, 50.791707, 51.327768, 51.863828, 
+        52.533903, 53.069963, 53.740039, 54.276099, 54.812159, 
+        55.482234, 56.018295, 56.68837, 57.22443, 57.894505, 
+        58.430566, 59.100641, 59.636701, 60.306776, 60.976852, 
+        61.512912, 62.182987, 62.853063, 63.389123, 64.059198, 
+        64.729273, 65.399349, 65.935409, 66.605484, 67.27556, 
+        67.945635, 68.61571, 69.15177, 69.821846, 70.491921, 
+        71.161996, 71.832072, 72.502147, 73.172222, 73.842297, 
+        74.512373, 75.182448, 75.852523, 76.522599, 77.326689, 
+        77.996764, 78.66684, 79.336915, 80.00699, 80.677065, 
+        81.481156, 82.151231, 82.821306, 83.625397, 84.295472, 
+        84.965547, 85.769638, 86.439713, 87.109788, 87.913879, 
+        88.583954, 89.388044, 90.05812, 90.728195, 91.532285, 
+        92.20236, 93.006451, 93.810541, 94.480616, 95.284707, 
+        95.954782, 96.758872, 97.562963, 98.233038, 99.037128, 
+        99.841219, 100.51129, 101.31538, 102.11947, 102.92357, 
+        103.59364, 104.39773, 105.20182, 106.00591, 106.81, 
+        107.61409, 108.41818, 109.08826, 109.89235, 110.69644, 
+        111.50053, 112.30462, 113.10871, 113.9128, 114.71689, 
+        115.52098, 116.32507, 117.26318, 118.06727, 118.87136, 
+        119.67545, 120.47954, 121.28363, 122.08772, 123.02582, 
+        123.82991, 124.634, 125.4381, 126.3762, 127.18029, 
+        127.98438, 128.92249, 129.72658, 130.53067, 131.46877, 
+        132.27286, 133.21097, 134.01506, 134.81915, 135.75725, 
+        136.56134, 137.09741, 0, 0.10460836, 0.20921672, 
+        0.31382508, 0.41843344, 0.5230418, 0.73225853, 0.83686689, 
+        0.94147525, 1.0460836, 1.2553003, 1.3599087, 1.5691254, 
+        1.6737338, 1.7783421, 1.9875589, 2.0921672, 2.3013839, 
+        2.4059923, 2.615209, 2.8244257, 2.9290341, 3.1382508, 
+        3.3474675, 3.4520759, 3.6612926, 3.8705094, 4.0797261, 
+        4.2889428, 4.3935512, 4.6027679, 4.8119846, 5.0212013, 
+        5.230418, 5.4396348, 5.6488515, 5.8580682, 6.0672849, 
+        6.2765017, 6.5903267, 6.7995435, 7.0087602, 7.2179769, 
+        7.4271936, 7.6364103, 7.9502354, 8.1594522, 8.3686689, 
+        8.682494, 8.8917107, 9.1009274, 9.4147525, 9.6239692, 
+        9.9377943, 10.147011, 10.460836, 10.670053, 10.983878, 
+        11.193095, 11.50692, 11.820745, 12.029962, 12.343787, 
+        12.657612, 12.866828, 13.180653, 13.494479, 13.808304, 
+        14.122129, 14.331345, 14.645171, 14.958996, 15.272821, 
+        15.586646, 15.900471, 16.214296, 16.528121, 16.841946, 
+        17.155771, 17.469596, 17.783421, 18.097246, 18.51568, 
+        18.829505, 19.14333, 19.457155, 19.77098, 20.189414, 
+        20.503239, 20.817064, 21.235497, 21.549322, 21.863147, 
+        22.281581, 22.595406, 23.013839, 23.327664, 23.746098, 
+        24.059923, 24.478356, 24.792182, 25.210615, 25.52444, 
+        25.942874, 26.361307, 26.675132, 27.093565, 27.511999, 
+        27.825824, 28.244257, 28.662691, 29.081124, 29.499558, 
+        29.813383, 30.231816, 30.65025, 31.068683, 31.487117, 
+        31.90555, 32.323984, 32.742417, 33.16085, 33.579284, 
+        33.997717, 34.416151, 34.834584, 35.253018, 35.671451, 
+        36.089885, 36.508318, 36.926751, 37.449793, 37.868227, 
+        38.28666, 38.705094, 39.228135, 39.646569, 40.065002, 
+        40.483436, 41.006477, 41.424911, 41.947953, 42.366386, 
+        42.78482, 43.307861, 43.726295, 44.249337, 44.66777, 
+        45.190812, 45.609245, 46.132287, 46.550721, 47.073762, 
+        47.596804, 48.015238, 48.538279, 49.061321, 49.479755, 
+        50.002797, 50.525838, 51.04888, 51.467314, 51.990355, 
+        52.513397, 53.036439, 53.559481, 53.977914, 54.500956, 
+        55.023998, 55.54704, 56.070081, 56.593123, 57.116165, 
+        57.639207, 58.162249, 58.68529, 59.208332, 59.731374, 
+        60.359024, 60.882066, 61.405108, 61.92815, 62.451191, 
+        62.974233, 63.601883, 64.124925, 64.647967, 65.275617, 
+        65.798659, 66.321701, 66.949351, 67.472393, 67.995435, 
+        68.623085, 69.146127, 69.773777, 70.296819, 70.81986, 
+        71.447511, 71.970552, 72.598202, 73.225853, 73.748894, 
+        74.376545, 74.899586, 75.527237, 76.154887, 76.677929, 
+        77.305579, 77.933229, 78.456271, 79.083921, 79.711571, 
+        80.339221, 80.862263, 81.489913, 82.117563, 82.745213, 
+        83.372864, 84.000514, 84.628164, 85.151206, 85.778856, 
+        86.406506, 87.034156, 87.661806, 88.289457, 88.917107, 
+        89.544757, 90.172407, 90.800057, 91.532316, 92.159966, 
+        92.787616, 93.415266, 94.042916, 94.670567, 95.298217, 
+        96.030475, 96.658125, 97.285776, 97.913426, 98.645684, 
+        99.273335, 99.900985, 100.63324, 101.26089, 101.88854, 
+        102.6208, 103.24845, 103.98071, 104.60836, 105.23601, 
+        105.96827, 106.59592, 107.01435, 0, 0.5, 
+        1, 1.5, 2, 2.5, 3, 
+        3.5, 4, 4.5, 5, 5.5, 
+        6, 6.5, 7, 7.5, 8, 
+        8.5, 9, 9.5, 10, 10.5, 
+        11, 11.5, 12, 12.5, 13, 
+        13.5, 14, 14.5, 15, 15.5, 
+        16, 16.5, 17, 17.5, 18, 
+        18.5, 19, 19.5, 20, 20.5, 
+        21, 21.5, 22, 22.5, 23, 
+        23.5, 24, 24.5, 25, 25.5, 
+        26, 26.5, 27, 27.5, 28, 
+        28.5, 29, 29.5, 30, 30.5, 
+        31, 31.5, 32, 32.5, 33, 
+        33.5, 34, 34.5, 35, 35.5, 
+        36, 36.5, 37, 37.5, 38, 
+        38.5, 39, 39.5, 40, 40.5, 
+        41, 41.5, 42, 42.5, 43, 
+        43.5, 44, 44.5, 45, 45.5, 
+        46, 46.5, 47, 47.5, 48, 
+        48.5, 49, 49.5, 50, 50.5, 
+        51, 51.5, 52, 52.5, 53, 
+        53.5, 54, 54.5, 55, 55.5, 
+        56, 56.5, 57, 57.5, 58, 
+        58.5, 59, 59.5, 60, 60.5, 
+        61, 61.5, 62, 62.5, 63, 
+        63.5, 64, 64.5, 65, 65.5, 
+        66, 66.5, 67, 67.5, 68, 
+        68.5, 69, 69.5, 70, 70.5, 
+        71, 71.5, 72, 72.5, 73, 
+        73.5, 74, 74.5, 75, 75.5, 
+        76, 76.5, 77, 77.5, 78, 
+        78.5, 79, 79.5, 80, 80.5, 
+        81, 81.5, 82, 82.5, 83, 
+        83.5, 84, 84.5, 85, 85.5, 
+        86, 86.5, 87, 87.5, 88, 
+        88.5, 89, 89.5, 90, 90.5, 
+        91, 91.5, 92, 92.5, 93, 
+        93.5, 94, 94.5, 95, 95.5, 
+        96, 96.5, 97, 97.5, 98, 
+        98.5, 99, 99.5, 100, 100.5, 
+        101, 101.5, 102, 102.5, 103, 
+        103.5, 104, 104.5, 105, 105.5, 
+        106, 106.5, 107, 107.5, 108, 
+        108.5, 109, 109.5, 110, 110.5, 
+        111, 111.5, 112, 112.5, 113, 
+        113.5, 114, 114.5, 115, 115.5, 
+        116, 116.5, 117, 117.5, 118, 
+        118.5, 119, 119.5, 120, 120.5, 
+        121, 121.5, 122, 122.5, 123, 
+        123.5, 124, 124.5, 125, 125.5, 
+        126, 126.5, 127, 127.5, 0, 
+        0.5, 1, 1.5, 2, 2.5, 
+        3, 3.5, 4, 4.5, 5, 
+        5.5, 6, 6.5, 7, 7.5, 
+        8, 8.5, 9, 9.5, 10, 
+        10.5, 11, 11.5, 12, 12.5, 
+        13, 13.5, 14, 14.5, 15, 
+        15.5, 16, 16.5, 17, 17.5, 
+        18, 18.5, 19, 19.5, 20, 
+        20.5, 21, 21.5, 22, 22.5, 
+        23, 23.5, 24, 24.5, 25, 
+        25.5, 26, 26.5, 27, 27.5, 
+        28, 28.5, 29, 29.5, 30, 
+        30.5, 31, 31.5, 32, 32.5, 
+        33, 33.5, 34, 34.5, 35, 
+        35.5, 36, 36.5, 37, 37.5, 
+        38, 38.5, 39, 39.5, 40, 
+        40.5, 41, 41.5, 42, 42.5, 
+        43, 43.5, 44, 44.5, 45, 
+        45.5, 46, 46.5, 47, 47.5, 
+        48, 48.5, 49, 49.5, 50, 
+        50.5, 51, 51.5, 52, 52.5, 
+        53, 53.5, 54, 54.5, 55, 
+        55.5, 56, 56.5, 57, 57.5, 
+        58, 58.5, 59, 59.5, 60, 
+        60.5, 61, 61.5, 62, 62.5, 
+        63, 63.5, 64, 64.5, 65, 
+        65.5, 66, 66.5, 67, 67.5, 
+        68, 68.5, 69, 69.5, 70, 
+        70.5, 71, 71.5, 72, 72.5, 
+        73, 73.5, 74, 74.5, 75, 
+        75.5, 76, 76.5, 77, 77.5, 
+        78, 78.5, 79, 79.5, 80, 
+        80.5, 81, 81.5, 82, 82.5, 
+        83, 83.5, 84, 84.5, 85, 
+        85.5, 86, 86.5, 87, 87.5, 
+        88, 88.5, 89, 89.5, 90, 
+        90.5, 91, 91.5, 92, 92.5, 
+        93, 93.5, 94, 94.5, 95, 
+        95.5, 96, 96.5, 97, 97.5, 
+        98, 98.5, 99, 99.5, 100, 
+        100.5, 101, 101.5, 102, 102.5, 
+        103, 103.5, 104, 104.5, 105, 
+        105.5, 106, 106.5, 107, 107.5, 
+        108, 108.5, 109, 109.5, 110, 
+        110.5, 111, 111.5, 112, 112.5, 
+        113, 113.5, 114, 114.5, 115, 
+        115.5, 116, 116.5, 117, 117.5, 
+        118, 118.5, 119, 119.5, 120, 
+        120.5, 121, 121.5, 122, 122.5, 
+        123, 123.5, 124, 124.5, 125, 
+        125.5, 126, 126.5, 127, 127.5, 
+        0, 0.5, 1, 1.5, 2, 
+        2.5, 3, 3.5, 4, 4.5, 
+        5, 5.5, 6, 6.5, 7, 
+        7.5, 8, 8.5, 9, 9.5, 
+        10, 10.5, 11, 11.5, 12, 
+        12.5, 13, 13.5, 14, 14.5, 
+        15, 15.5, 16, 16.5, 17, 
+        17.5, 18, 18.5, 19, 19.5, 
+        20, 20.5, 21, 21.5, 22, 
+        22.5, 23, 23.5, 24, 24.5, 
+        25, 25.5, 26, 26.5, 27, 
+        27.5, 28, 28.5, 29, 29.5, 
+        30, 30.5, 31, 31.5, 32, 
+        32.5, 33, 33.5, 34, 34.5, 
+        35, 35.5, 36, 36.5, 37, 
+        37.5, 38, 38.5, 39, 39.5, 
+        40, 40.5, 41, 41.5, 42, 
+        42.5, 43, 43.5, 44, 44.5, 
+        45, 45.5, 46, 46.5, 47, 
+        47.5, 48, 48.5, 49, 49.5, 
+        50, 50.5, 51, 51.5, 52, 
+        52.5, 53, 53.5, 54, 54.5, 
+        55, 55.5, 56, 56.5, 57, 
+        57.5, 58, 58.5, 59, 59.5, 
+        60, 60.5, 61, 61.5, 62, 
+        62.5, 63, 63.5, 64, 64.5, 
+        65, 65.5, 66, 66.5, 67, 
+        67.5, 68, 68.5, 69, 69.5, 
+        70, 70.5, 71, 71.5, 72, 
+        72.5, 73, 73.5, 74, 74.5, 
+        75, 75.5, 76, 76.5, 77, 
+        77.5, 78, 78.5, 79, 79.5, 
+        80, 80.5, 81, 81.5, 82, 
+        82.5, 83, 83.5, 84, 84.5, 
+        85, 85.5, 86, 86.5, 87, 
+        87.5, 88, 88.5, 89, 89.5, 
+        90, 90.5, 91, 91.5, 92, 
+        92.5, 93, 93.5, 94, 94.5, 
+        95, 95.5, 96, 96.5, 97, 
+        97.5, 98, 98.5, 99, 99.5, 
+        100, 100.5, 101, 101.5, 102, 
+        102.5, 103, 103.5, 104, 104.5, 
+        105, 105.5, 106, 106.5, 107, 
+        107.5, 108, 108.5, 109, 109.5, 
+        110, 110.5, 111, 111.5, 112, 
+        112.5, 113, 113.5, 114, 114.5, 
+        115, 115.5, 116, 116.5, 117, 
+        117.5, 118, 118.5, 119, 119.5, 
+        120, 120.5, 121, 121.5, 122, 
+        122.5, 123, 123.5, 124, 124.5, 
+        125, 125.5, 126, 126.5, 127, 
+        127.5, 0, 0.5, 1, 1.5, 
+        2, 2.5, 3, 3.5, 4, 
+        4.5, 5, 5.5, 6, 6.5, 
+        7, 7.5, 8, 8.5, 9, 
+        9.5, 10, 10.5, 11, 11.5, 
+        12, 12.5, 13, 13.5, 14, 
+        14.5, 15, 15.5, 16, 16.5, 
+        17, 17.5, 18, 18.5, 19, 
+        19.5, 20, 20.5, 21, 21.5, 
+        22, 22.5, 23, 23.5, 24, 
+        24.5, 25, 25.5, 26, 26.5, 
+        27, 27.5, 28, 28.5, 29, 
+        29.5, 30, 30.5, 31, 31.5, 
+        32, 32.5, 33, 33.5, 34, 
+        34.5, 35, 35.5, 36, 36.5, 
+        37, 37.5, 38, 38.5, 39, 
+        39.5, 40, 40.5, 41, 41.5, 
+        42, 42.5, 43, 43.5, 44, 
+        44.5, 45, 45.5, 46, 46.5, 
+        47, 47.5, 48, 48.5, 49, 
+        49.5, 50, 50.5, 51, 51.5, 
+        52, 52.5, 53, 53.5, 54, 
+        54.5, 55, 55.5, 56, 56.5, 
+        57, 57.5, 58, 58.5, 59, 
+        59.5, 60, 60.5, 61, 61.5, 
+        62, 62.5, 63, 63.5, 64, 
+        64.5, 65, 65.5, 66, 66.5, 
+        67, 67.5, 68, 68.5, 69, 
+        69.5, 70, 70.5, 71, 71.5, 
+        72, 72.5, 73, 73.5, 74, 
+        74.5, 75, 75.5, 76, 76.5, 
+        77, 77.5, 78, 78.5, 79, 
+        79.5, 80, 80.5, 81, 81.5, 
+        82, 82.5, 83, 83.5, 84, 
+        84.5, 85, 85.5, 86, 86.5, 
+        87, 87.5, 88, 88.5, 89, 
+        89.5, 90, 90.5, 91, 91.5, 
+        92, 92.5, 93, 93.5, 94, 
+        94.5, 95, 95.5, 96, 96.5, 
+        97, 97.5, 98, 98.5, 99, 
+        99.5, 100, 100.5, 101, 101.5, 
+        102, 102.5, 103, 103.5, 104, 
+        104.5, 105, 105.5, 106, 106.5, 
+        107, 107.5, 108, 108.5, 109, 
+        109.5, 110, 110.5, 111, 111.5, 
+        112, 112.5, 113, 113.5, 114, 
+        114.5, 115, 115.5, 116, 116.5, 
+        117, 117.5, 118, 118.5, 119, 
+        119.5, 120, 120.5, 121, 121.5, 
+        122, 122.5, 123, 123.5, 124, 
+        124.5, 125, 125.5, 126, 126.5, 
+        127, 127.5 ) ),
+    L1HcalEtThresholdsNegativeEta = cms.vdouble( (0, 0, 0, 0, 0.70733067, 
+        0.88416334, 1.2378287, 1.4146613, 1.591494, 1.7683267, 
+        2.121992, 2.2988247, 2.65249, 2.8293227, 3.0061554, 
+        3.3598207, 3.5366534, 3.8903187, 4.0671514, 4.4208167, 
+        4.774482, 4.9513147, 5.30498, 5.6586454, 5.835478, 
+        6.1891434, 6.5428087, 6.896474, 7.2501394, 7.426972, 
+        7.7806374, 8.1343027, 8.4879681, 8.8416334, 9.1952987, 
+        9.5489641, 9.9026294, 10.256295, 10.60996, 11.140458, 
+        11.494123, 11.847789, 12.201454, 12.555119, 12.908785, 
+        13.439283, 13.792948, 14.146613, 14.677111, 15.030777, 
+        15.384442, 15.91494, 16.268605, 16.799103, 17.152769, 
+        17.683267, 18.036932, 18.56743, 18.921095, 19.451593, 
+        19.982091, 20.335757, 20.866255, 21.396753, 21.750418, 
+        22.280916, 22.811414, 23.341912, 23.87241, 24.226075, 
+        24.756573, 25.287071, 25.81757, 26.348068, 26.878566, 
+        27.409064, 27.939562, 28.47006, 29.000558, 29.531056, 
+        30.061554, 30.592052, 31.299382, 31.82988, 32.360378, 
+        32.890876, 33.421374, 34.128705, 34.659203, 35.189701, 
+        35.897032, 36.42753, 36.958028, 37.665358, 38.195856, 
+        38.903187, 39.433685, 40.141016, 40.671514, 41.378844, 
+        41.909342, 42.616673, 43.147171, 43.854502, 44.561832, 
+        45.09233, 45.799661, 46.506992, 47.03749, 47.74482, 
+        48.452151, 49.159482, 49.866812, 50.39731, 51.104641, 
+        51.811972, 52.519302, 53.226633, 53.933964, 54.641294, 
+        55.348625, 56.055956, 56.763286, 57.470617, 58.177948, 
+        58.885278, 59.592609, 60.29994, 61.00727, 61.714601, 
+        62.421932, 63.306095, 64.013426, 64.720756, 65.428087, 
+        66.31225, 67.019581, 67.726912, 68.434242, 69.318406, 
+        70.025736, 70.9099, 71.61723, 72.324561, 73.208724, 
+        73.916055, 74.800218, 75.507549, 76.391712, 77.099043, 
+        77.983207, 78.690537, 79.574701, 80.458864, 81.166195, 
+        82.050358, 82.934521, 83.641852, 84.526015, 85.410179, 
+        86.294342, 87.001673, 87.885836, 88.769999, 89.654163, 
+        90.538326, 91.245657, 92.12982, 93.013983, 93.898147, 
+        94.78231, 95.666473, 96.550637, 97.4348, 98.318963, 
+        99.203127, 100.08729, 100.97145, 102.03245, 102.91661, 
+        103.80078, 104.68494, 105.5691, 106.45327, 107.51426, 
+        108.39843, 109.28259, 110.34358, 111.22775, 112.11191, 
+        113.17291, 114.05707, 114.94123, 116.00223, 116.88639, 
+        117.94739, 118.83155, 119.71572, 120.77671, 121.66088, 
+        122.72187, 123.78287, 124.66703, 125.72803, 126.61219, 
+        127.67319, 128.73418, 129.61835, 130.67934, 131.74034, 
+        132.6245, 133.6855, 134.74649, 135.80749, 136.69165, 
+        137.75265, 138.81364, 139.87464, 140.93564, 141.99663, 
+        143.05763, 143.94179, 145.00279, 146.06378, 147.12478, 
+        148.18578, 149.24677, 150.30777, 151.36876, 152.42976, 
+        153.49076, 154.72858, 155.78958, 156.85058, 157.91157, 
+        158.97257, 160.03356, 161.09456, 162.33239, 163.39339, 
+        164.45438, 165.51538, 166.75321, 167.8142, 168.8752, 
+        170.11303, 171.17402, 172.23502, 173.47285, 174.53384, 
+        175.77167, 176.83267, 177.89366, 179.13149, 180.19249, 
+        180.89982, 0, 0, 0, 0, 
+        0.70201378, 0.87751722, 1.2285241, 1.4040276, 1.579531, 
+        1.7550344, 2.1060413, 2.2815448, 2.6325517, 2.8080551, 
+        2.9835586, 3.3345654, 3.5100689, 3.8610758, 4.0365792, 
+        4.3875861, 4.738593, 4.9140964, 5.2651033, 5.6161102, 
+        5.7916137, 6.1426205, 6.4936274, 6.8446343, 7.1956412, 
+        7.3711447, 7.7221515, 8.0731584, 8.4241653, 8.7751722, 
+        9.1261791, 9.477186, 9.8281929, 10.1792, 10.530207, 
+        11.056717, 11.407724, 11.758731, 12.109738, 12.460745, 
+        12.811751, 13.338262, 13.689269, 14.040276, 14.566786, 
+        14.917793, 15.2688, 15.79531, 16.146317, 16.672827, 
+        17.023834, 17.550344, 17.901351, 18.427862, 18.778869, 
+        19.305379, 19.831889, 20.182896, 20.709406, 21.235917, 
+        21.586924, 22.113434, 22.639944, 23.166455, 23.692965, 
+        24.043972, 24.570482, 25.096993, 25.623503, 26.150013, 
+        26.676524, 27.203034, 27.729544, 28.256055, 28.782565, 
+        29.309075, 29.835586, 30.362096, 31.06411, 31.59062, 
+        32.11713, 32.643641, 33.170151, 33.872165, 34.398675, 
+        34.925185, 35.627199, 36.153709, 36.68022, 37.382234, 
+        37.908744, 38.610758, 39.137268, 39.839282, 40.365792, 
+        41.067806, 41.594316, 42.29633, 42.82284, 43.524854, 
+        44.226868, 44.753378, 45.455392, 46.157406, 46.683916, 
+        47.38593, 48.087944, 48.789957, 49.491971, 50.018482, 
+        50.720495, 51.422509, 52.124523, 52.826537, 53.52855, 
+        54.230564, 54.932578, 55.634592, 56.336606, 57.038619, 
+        57.740633, 58.442647, 59.144661, 59.846674, 60.548688, 
+        61.250702, 61.952716, 62.830233, 63.532247, 64.234261, 
+        64.936274, 65.813792, 66.515805, 67.217819, 67.919833, 
+        68.79735, 69.499364, 70.376881, 71.078895, 71.780909, 
+        72.658426, 73.36044, 74.237957, 74.939971, 75.817488, 
+        76.519502, 77.397019, 78.099033, 78.97655, 79.854067, 
+        80.556081, 81.433598, 82.311115, 83.013129, 83.890646, 
+        84.768164, 85.645681, 86.347695, 87.225212, 88.102729, 
+        88.980246, 89.857763, 90.559777, 91.437294, 92.314812, 
+        93.192329, 94.069846, 94.947363, 95.824881, 96.702398, 
+        97.579915, 98.457432, 99.334949, 100.21247, 101.26549, 
+        102.143, 103.02052, 103.89804, 104.77556, 105.65307, 
+        106.70609, 107.58361, 108.46113, 109.51415, 110.39167, 
+        111.26918, 112.3222, 113.19972, 114.07724, 115.13026, 
+        116.00778, 117.0608, 117.93831, 118.81583, 119.86885, 
+        120.74637, 121.79939, 122.85241, 123.72993, 124.78295, 
+        125.66047, 126.71349, 127.76651, 128.64402, 129.69705, 
+        130.75007, 131.62758, 132.6806, 133.73362, 134.78665, 
+        135.66416, 136.71718, 137.7702, 138.82322, 139.87624, 
+        140.92927, 141.98229, 142.8598, 143.91282, 144.96584, 
+        146.01887, 147.07189, 148.12491, 149.17793, 150.23095, 
+        151.28397, 152.33699, 153.56551, 154.61853, 155.67155, 
+        156.72458, 157.7776, 158.83062, 159.88364, 161.11216, 
+        162.16518, 163.2182, 164.27122, 165.49975, 166.55277, 
+        167.60579, 168.83431, 169.88733, 170.94035, 172.16888, 
+        173.2219, 174.45042, 175.50344, 176.55646, 177.78499, 
+        178.83801, 179.54002, 0, 0, 0, 
+        0, 0.69157744, 0.86447181, 1.2102605, 1.3831549, 
+        1.5560492, 1.7289436, 2.0747323, 2.2476267, 2.5934154, 
+        2.7663098, 2.9392041, 3.2849929, 3.4578872, 3.8036759, 
+        3.9765703, 4.322359, 4.6681477, 4.8410421, 5.1868308, 
+        5.5326196, 5.7055139, 6.0513026, 6.3970914, 6.7428801, 
+        7.0886688, 7.2615632, 7.6073519, 7.9531406, 8.2989293, 
+        8.6447181, 8.9905068, 9.3362955, 9.6820842, 10.027873, 
+        10.373662, 10.892345, 11.238133, 11.583922, 11.929711, 
+        12.2755, 12.621288, 13.139971, 13.48576, 13.831549, 
+        14.350232, 14.696021, 15.041809, 15.560492, 15.906281, 
+        16.424964, 16.770753, 17.289436, 17.635225, 18.153908, 
+        18.499697, 19.01838, 19.537063, 19.882852, 20.401535, 
+        20.920218, 21.266006, 21.784689, 22.303373, 22.822056, 
+        23.340739, 23.686527, 24.205211, 24.723894, 25.242577, 
+        25.76126, 26.279943, 26.798626, 27.317309, 27.835992, 
+        28.354675, 28.873358, 29.392041, 29.910724, 30.602302, 
+        31.120985, 31.639668, 32.158351, 32.677034, 33.368612, 
+        33.887295, 34.405978, 35.097555, 35.616238, 36.134921, 
+        36.826499, 37.345182, 38.036759, 38.555443, 39.24702, 
+        39.765703, 40.45728, 40.975964, 41.667541, 42.186224, 
+        42.877802, 43.569379, 44.088062, 44.77964, 45.471217, 
+        45.9899, 46.681477, 47.373055, 48.064632, 48.75621, 
+        49.274893, 49.96647, 50.658048, 51.349625, 52.041203, 
+        52.73278, 53.424358, 54.115935, 54.807512, 55.49909, 
+        56.190667, 56.882245, 57.573822, 58.2654, 58.956977, 
+        59.648555, 60.340132, 61.031709, 61.896181, 62.587759, 
+        63.279336, 63.970914, 64.835385, 65.526963, 66.21854, 
+        66.910118, 67.77459, 68.466167, 69.330639, 70.022216, 
+        70.713794, 71.578265, 72.269843, 73.134315, 73.825892, 
+        74.690364, 75.381941, 76.246413, 76.937991, 77.802462, 
+        78.666934, 79.358512, 80.222984, 81.087455, 81.779033, 
+        82.643505, 83.507976, 84.372448, 85.064026, 85.928497, 
+        86.792969, 87.657441, 88.521913, 89.21349, 90.077962, 
+        90.942434, 91.806906, 92.671378, 93.535849, 94.400321, 
+        95.264793, 96.129265, 96.993737, 97.858208, 98.72268, 
+        99.760046, 100.62452, 101.48899, 102.35346, 103.21793, 
+        104.08241, 105.11977, 105.98424, 106.84872, 107.88608, 
+        108.75055, 109.61502, 110.65239, 111.51686, 112.38133, 
+        113.4187, 114.28317, 115.32054, 116.18501, 117.04948, 
+        118.08685, 118.95132, 119.98869, 121.02605, 121.89052, 
+        122.92789, 123.79236, 124.82973, 125.86709, 126.73157, 
+        127.76893, 128.8063, 129.67077, 130.70814, 131.7455, 
+        132.78287, 133.64734, 134.68471, 135.72207, 136.75944, 
+        137.79681, 138.83417, 139.87154, 140.73601, 141.77338, 
+        142.81074, 143.84811, 144.88547, 145.92284, 146.96021, 
+        147.99757, 149.03494, 150.07231, 151.28257, 152.31993, 
+        153.3573, 154.39466, 155.43203, 156.4694, 157.50676, 
+        158.71702, 159.75439, 160.79176, 161.82912, 163.03938, 
+        164.07675, 165.11411, 166.32438, 167.36174, 168.39911, 
+        169.60937, 170.64673, 171.85699, 172.89436, 173.93173, 
+        175.14199, 176.17935, 176.87093, 0, 0, 
+        0, 0, 0.67639901, 0.84549877, 1.1836983, 
+        1.352798, 1.5218978, 1.6909975, 2.029197, 2.1982968, 
+        2.5364963, 2.7055961, 2.8746958, 3.2128953, 3.3819951, 
+        3.7201946, 3.8892943, 4.2274938, 4.5656933, 4.7347931, 
+        5.0729926, 5.4111921, 5.5802919, 5.9184914, 6.2566909, 
+        6.5948904, 6.9330899, 7.1021896, 7.4403892, 7.7785887, 
+        8.1167882, 8.4549877, 8.7931872, 9.1313867, 9.4695862, 
+        9.8077857, 10.145985, 10.653284, 10.991484, 11.329683, 
+        11.667883, 12.006082, 12.344282, 12.851581, 13.189781, 
+        13.52798, 14.03528, 14.373479, 14.711679, 15.218978, 
+        15.557177, 16.064477, 16.402676, 16.909975, 17.248175, 
+        17.755474, 18.093674, 18.600973, 19.108272, 19.446472, 
+        19.953771, 20.46107, 20.79927, 21.306569, 21.813868, 
+        22.321167, 22.828467, 23.166666, 23.673965, 24.181265, 
+        24.688564, 25.195863, 25.703163, 26.210462, 26.717761, 
+        27.22506, 27.73236, 28.239659, 28.746958, 29.254257, 
+        29.930656, 30.437956, 30.945255, 31.452554, 31.959853, 
+        32.636252, 33.143552, 33.650851, 34.32725, 34.834549, 
+        35.341848, 36.018247, 36.525547, 37.201946, 37.709245, 
+        38.385644, 38.892943, 39.569342, 40.076642, 40.753041, 
+        41.26034, 41.936739, 42.613138, 43.120437, 43.796836, 
+        44.473235, 44.980534, 45.656933, 46.333332, 47.009731, 
+        47.68613, 48.19343, 48.869829, 49.546228, 50.222627, 
+        50.899026, 51.575425, 52.251824, 52.928223, 53.604622, 
+        54.281021, 54.95742, 55.633819, 56.310218, 56.986617, 
+        57.663016, 58.339415, 59.015814, 59.692213, 60.537712, 
+        61.214111, 61.89051, 62.566909, 63.412408, 64.088807, 
+        64.765206, 65.441605, 66.287103, 66.963502, 67.809001, 
+        68.4854, 69.161799, 70.007298, 70.683697, 71.529196, 
+        72.205595, 73.051094, 73.727493, 74.572991, 75.24939, 
+        76.094889, 76.940388, 77.616787, 78.462286, 79.307784, 
+        79.984183, 80.829682, 81.675181, 82.52068, 83.197079, 
+        84.042577, 84.888076, 85.733575, 86.579074, 87.255473, 
+        88.100972, 88.94647, 89.791969, 90.637468, 91.482967, 
+        92.328465, 93.173964, 94.019463, 94.864962, 95.71046, 
+        96.555959, 97.570558, 98.416057, 99.261555, 100.10705, 
+        100.95255, 101.79805, 102.81265, 103.65815, 104.50365, 
+        105.51825, 106.36374, 107.20924, 108.22384, 109.06934, 
+        109.91484, 110.92944, 111.77494, 112.78954, 113.63503, 
+        114.48053, 115.49513, 116.34063, 117.35523, 118.36983, 
+        119.21533, 120.22992, 121.07542, 122.09002, 123.10462, 
+        123.95012, 124.96472, 125.97932, 126.82482, 127.83941, 
+        128.85401, 129.86861, 130.71411, 131.72871, 132.74331, 
+        133.75791, 134.7725, 135.7871, 136.8017, 137.6472, 
+        138.6618, 139.6764, 140.69099, 141.70559, 142.72019, 
+        143.73479, 144.74939, 145.76399, 146.77859, 147.96228, 
+        148.97688, 149.99148, 151.00608, 152.02068, 153.03528, 
+        154.04988, 155.23357, 156.24817, 157.26277, 158.27737, 
+        159.46107, 160.47567, 161.49026, 162.67396, 163.68856, 
+        164.70316, 165.88686, 166.90146, 168.08515, 169.09975, 
+        170.11435, 171.29805, 172.31265, 172.98905, 0, 
+        0, 0, 0, 0.6570034, 0.82125425, 
+        1.149756, 1.3140068, 1.4782577, 1.6425085, 1.9710102, 
+        2.1352611, 2.4637628, 2.6280136, 2.7922645, 3.1207662, 
+        3.285017, 3.6135187, 3.7777696, 4.1062713, 4.434773, 
+        4.5990238, 4.9275255, 5.2560272, 5.4202781, 5.7487798, 
+        6.0772815, 6.4057832, 6.7342849, 6.8985357, 7.2270374, 
+        7.5555391, 7.8840408, 8.2125425, 8.5410442, 8.8695459, 
+        9.1980476, 9.5265493, 9.855051, 10.347804, 10.676305, 
+        11.004807, 11.333309, 11.66181, 11.990312, 12.483065, 
+        12.811566, 13.140068, 13.632821, 13.961322, 14.289824, 
+        14.782577, 15.111078, 15.603831, 15.932333, 16.425085, 
+        16.753587, 17.246339, 17.574841, 18.067594, 18.560346, 
+        18.888848, 19.3816, 19.874353, 20.202855, 20.695607, 
+        21.18836, 21.681112, 22.173865, 22.502367, 22.995119, 
+        23.487872, 23.980624, 24.473377, 24.966129, 25.458882, 
+        25.951634, 26.444387, 26.93714, 27.429892, 27.922645, 
+        28.415397, 29.072401, 29.565153, 30.057906, 30.550658, 
+        31.043411, 31.700414, 32.193167, 32.685919, 33.342923, 
+        33.835675, 34.328428, 34.985431, 35.478184, 36.135187, 
+        36.62794, 37.284943, 37.777696, 38.434699, 38.927452, 
+        39.584455, 40.077208, 40.734211, 41.391214, 41.883967, 
+        42.54097, 43.197974, 43.690726, 44.34773, 45.004733, 
+        45.661737, 46.31874, 46.811492, 47.468496, 48.125499, 
+        48.782503, 49.439506, 50.096509, 50.753513, 51.410516, 
+        52.06752, 52.724523, 53.381527, 54.03853, 54.695533, 
+        55.352537, 56.00954, 56.666544, 57.323547, 57.98055, 
+        58.801805, 59.458808, 60.115811, 60.772815, 61.594069, 
+        62.251072, 62.908076, 63.565079, 64.386334, 65.043337, 
+        65.864591, 66.521595, 67.178598, 67.999852, 68.656856, 
+        69.47811, 70.135113, 70.956368, 71.613371, 72.434625, 
+        73.091629, 73.912883, 74.734137, 75.391141, 76.212395, 
+        77.033649, 77.690652, 78.511907, 79.333161, 80.154415, 
+        80.811419, 81.632673, 82.453927, 83.275181, 84.096436, 
+        84.753439, 85.574693, 86.395948, 87.217202, 88.038456, 
+        88.85971, 89.680965, 90.502219, 91.323473, 92.144727, 
+        92.965982, 93.787236, 94.772741, 95.593995, 96.415249, 
+        97.236504, 98.057758, 98.879012, 99.864517, 100.68577, 
+        101.50703, 102.49253, 103.31379, 104.13504, 105.12054, 
+        105.9418, 106.76305, 107.74856, 108.56981, 109.55532, 
+        110.37657, 111.19783, 112.18333, 113.00459, 113.99009, 
+        114.9756, 115.79685, 116.78235, 117.60361, 118.58911, 
+        119.57462, 120.39587, 121.38138, 122.36688, 123.18814, 
+        124.17364, 125.15915, 126.14465, 126.96591, 127.95141, 
+        128.93692, 129.92242, 130.90793, 131.89343, 132.87894, 
+        133.70019, 134.6857, 135.6712, 136.65671, 137.64221, 
+        138.62772, 139.61322, 140.59873, 141.58423, 142.56974, 
+        143.71949, 144.705, 145.6905, 146.67601, 147.66151, 
+        148.64702, 149.63253, 150.78228, 151.76779, 152.75329, 
+        153.7388, 154.88855, 155.87406, 156.85956, 158.00932, 
+        158.99482, 159.98033, 161.13008, 162.11559, 163.26535, 
+        164.25085, 165.23636, 166.38611, 167.37162, 168.02862, 
+        0, 0, 0, 0, 0.63402104, 
+        0.7925263, 1.1095368, 1.2680421, 1.4265473, 1.5850526, 
+        1.9020631, 2.0605684, 2.3775789, 2.5360842, 2.6945894, 
+        3.0115999, 3.1701052, 3.4871157, 3.645621, 3.9626315, 
+        4.279642, 4.4381473, 4.7551578, 5.0721683, 5.2306736, 
+        5.5476841, 5.8646946, 6.1817051, 6.4987157, 6.6572209, 
+        6.9742314, 7.291242, 7.6082525, 7.925263, 8.2422735, 
+        8.559284, 8.8762946, 9.1933051, 9.5103156, 9.9858314, 
+        10.302842, 10.619852, 10.936863, 11.253873, 11.570884, 
+        12.0464, 12.36341, 12.680421, 13.155937, 13.472947, 
+        13.789958, 14.265473, 14.582484, 15.058, 15.37501, 
+        15.850526, 16.167537, 16.643052, 16.960063, 17.435579, 
+        17.911094, 18.228105, 18.703621, 19.179136, 19.496147, 
+        19.971663, 20.447179, 20.922694, 21.39821, 21.715221, 
+        22.190736, 22.666252, 23.141768, 23.617284, 24.092799, 
+        24.568315, 25.043831, 25.519347, 25.994863, 26.470378, 
+        26.945894, 27.42141, 28.055431, 28.530947, 29.006463, 
+        29.481978, 29.957494, 30.591515, 31.067031, 31.542547, 
+        32.176568, 32.652084, 33.127599, 33.76162, 34.237136, 
+        34.871157, 35.346673, 35.980694, 36.45621, 37.090231, 
+        37.565747, 38.199768, 38.675283, 39.309304, 39.943325, 
+        40.418841, 41.052862, 41.686883, 42.162399, 42.79642, 
+        43.430441, 44.064462, 44.698483, 45.173999, 45.80802, 
+        46.442041, 47.076062, 47.710083, 48.344104, 48.978125, 
+        49.612146, 50.246167, 50.880188, 51.514209, 52.14823, 
+        52.782252, 53.416273, 54.050294, 54.684315, 55.318336, 
+        55.952357, 56.744883, 57.378904, 58.012925, 58.646946, 
+        59.439472, 60.073493, 60.707515, 61.341536, 62.134062, 
+        62.768083, 63.560609, 64.19463, 64.828651, 65.621178, 
+        66.255199, 67.047725, 67.681746, 68.474272, 69.108293, 
+        69.90082, 70.534841, 71.327367, 72.119893, 72.753914, 
+        73.546441, 74.338967, 74.972988, 75.765514, 76.558041, 
+        77.350567, 77.984588, 78.777114, 79.56964, 80.362167, 
+        81.154693, 81.788714, 82.58124, 83.373767, 84.166293, 
+        84.958819, 85.751346, 86.543872, 87.336398, 88.128924, 
+        88.921451, 89.713977, 90.506503, 91.457535, 92.250061, 
+        93.042588, 93.835114, 94.62764, 95.420166, 96.371198, 
+        97.163724, 97.956251, 98.907282, 99.699808, 100.49233, 
+        101.44337, 102.23589, 103.02842, 103.97945, 104.77198, 
+        105.72301, 106.51553, 107.30806, 108.25909, 109.05162, 
+        110.00265, 110.95368, 111.74621, 112.69724, 113.48977, 
+        114.4408, 115.39183, 116.18436, 117.13539, 118.08642, 
+        118.87894, 119.82998, 120.78101, 121.73204, 122.52457, 
+        123.4756, 124.42663, 125.37766, 126.32869, 127.27972, 
+        128.23076, 129.02328, 129.97431, 130.92534, 131.87638, 
+        132.82741, 133.77844, 134.72947, 135.6805, 136.63153, 
+        137.58257, 138.6921, 139.64313, 140.59417, 141.5452, 
+        142.49623, 143.44726, 144.39829, 145.50783, 146.45886, 
+        147.40989, 148.36092, 149.47046, 150.42149, 151.37252, 
+        152.48206, 153.43309, 154.38412, 155.49366, 156.44469, 
+        157.55423, 158.50526, 159.45629, 160.56583, 161.51686, 
+        162.15088, 0, 0, 0, 0, 
+        0.60814195, 0.76017743, 1.0642484, 1.2162839, 1.3683194, 
+        1.5203549, 1.8244258, 1.9764613, 2.2805323, 2.4325678, 
+        2.5846033, 2.8886743, 3.0407097, 3.3447807, 3.4968162, 
+        3.8008872, 4.1049581, 4.2569936, 4.5610646, 4.8651356, 
+        5.0171711, 5.321242, 5.625313, 5.929384, 6.233455, 
+        6.3854904, 6.6895614, 6.9936324, 7.2977034, 7.6017743, 
+        7.9058453, 8.2099163, 8.5139873, 8.8180582, 9.1221292, 
+        9.5782357, 9.8823066, 10.186378, 10.490449, 10.79452, 
+        11.098591, 11.554697, 11.858768, 12.162839, 12.618945, 
+        12.923016, 13.227087, 13.683194, 13.987265, 14.443371, 
+        14.747442, 15.203549, 15.50762, 15.963726, 16.267797, 
+        16.723904, 17.18001, 17.484081, 17.940187, 18.396294, 
+        18.700365, 19.156471, 19.612578, 20.068684, 20.524791, 
+        20.828862, 21.284968, 21.741075, 22.197181, 22.653288, 
+        23.109394, 23.5655, 24.021607, 24.477713, 24.93382, 
+        25.389926, 25.846033, 26.302139, 26.910281, 27.366388, 
+        27.822494, 28.278601, 28.734707, 29.342849, 29.798955, 
+        30.255062, 30.863204, 31.31931, 31.775417, 32.383559, 
+        32.839665, 33.447807, 33.903914, 34.512056, 34.968162, 
+        35.576304, 36.03241, 36.640552, 37.096659, 37.704801, 
+        38.312943, 38.769049, 39.377191, 39.985333, 40.44144, 
+        41.049581, 41.657723, 42.265865, 42.874007, 43.330114, 
+        43.938256, 44.546398, 45.15454, 45.762682, 46.370824, 
+        46.978965, 47.587107, 48.195249, 48.803391, 49.411533, 
+        50.019675, 50.627817, 51.235959, 51.844101, 52.452243, 
+        53.060385, 53.668527, 54.428704, 55.036846, 55.644988, 
+        56.25313, 57.013308, 57.62145, 58.229591, 58.837733, 
+        59.597911, 60.206053, 60.96623, 61.574372, 62.182514, 
+        62.942692, 63.550834, 64.311011, 64.919153, 65.67933, 
+        66.287472, 67.04765, 67.655792, 68.415969, 69.176147, 
+        69.784288, 70.544466, 71.304643, 71.912785, 72.672963, 
+        73.43314, 74.193318, 74.80146, 75.561637, 76.321814, 
+        77.081992, 77.842169, 78.450311, 79.210489, 79.970666, 
+        80.730844, 81.491021, 82.251198, 83.011376, 83.771553, 
+        84.531731, 85.291908, 86.052086, 86.812263, 87.724476, 
+        88.484653, 89.244831, 90.005008, 90.765186, 91.525363, 
+        92.437576, 93.197753, 93.957931, 94.870144, 95.630321, 
+        96.390499, 97.302712, 98.062889, 98.823066, 99.735279, 
+        100.49546, 101.40767, 102.16785, 102.92802, 103.84024, 
+        104.60041, 105.51263, 106.42484, 107.18502, 108.09723, 
+        108.85741, 109.76962, 110.68183, 111.44201, 112.35422, 
+        113.26644, 114.02662, 114.93883, 115.85104, 116.76325, 
+        117.52343, 118.43564, 119.34786, 120.26007, 121.17228, 
+        122.0845, 122.99671, 123.75689, 124.6691, 125.58131, 
+        126.49353, 127.40574, 128.31795, 129.23016, 130.14238, 
+        131.05459, 131.9668, 133.03105, 133.94326, 134.85548, 
+        135.76769, 136.6799, 137.59212, 138.50433, 139.56858, 
+        140.48079, 141.393, 142.30522, 143.36946, 144.28168, 
+        145.19389, 146.25814, 147.17035, 148.08256, 149.14681, 
+        150.05903, 151.12327, 152.03549, 152.9477, 154.01195, 
+        154.92416, 155.5323, 0, 0, 0, 
+        0, 0.5800716, 0.7250895, 1.0151253, 1.1601432, 
+        1.3051611, 1.450179, 1.7402148, 1.8852327, 2.1752685, 
+        2.3202864, 2.4653043, 2.7553401, 2.900358, 3.1903938, 
+        3.3354117, 3.6254475, 3.9154833, 4.0605012, 4.350537, 
+        4.6405728, 4.7855907, 5.0756265, 5.3656623, 5.6556981, 
+        5.9457339, 6.0907518, 6.3807876, 6.6708234, 6.9608592, 
+        7.250895, 7.5409308, 7.8309666, 8.1210024, 8.4110382, 
+        8.701074, 9.1361277, 9.4261635, 9.7161993, 10.006235, 
+        10.296271, 10.586307, 11.02136, 11.311396, 11.601432, 
+        12.036486, 12.326521, 12.616557, 13.051611, 13.341647, 
+        13.7767, 14.066736, 14.50179, 14.791826, 15.226879, 
+        15.516915, 15.951969, 16.387023, 16.677058, 17.112112, 
+        17.547166, 17.837202, 18.272255, 18.707309, 19.142363, 
+        19.577416, 19.867452, 20.302506, 20.73756, 21.172613, 
+        21.607667, 22.042721, 22.477774, 22.912828, 23.347882, 
+        23.782936, 24.217989, 24.653043, 25.088097, 25.668168, 
+        26.103222, 26.538276, 26.973329, 27.408383, 27.988455, 
+        28.423508, 28.858562, 29.438634, 29.873687, 30.308741, 
+        30.888813, 31.323866, 31.903938, 32.338992, 32.919063, 
+        33.354117, 33.934189, 34.369242, 34.949314, 35.384368, 
+        35.964439, 36.544511, 36.979564, 37.559636, 38.139708, 
+        38.574761, 39.154833, 39.734905, 40.314976, 40.895048, 
+        41.330101, 41.910173, 42.490245, 43.070316, 43.650388, 
+        44.230459, 44.810531, 45.390603, 45.970674, 46.550746, 
+        47.130817, 47.710889, 48.290961, 48.871032, 49.451104, 
+        50.031175, 50.611247, 51.191319, 51.916408, 52.49648, 
+        53.076551, 53.656623, 54.381712, 54.961784, 55.541856, 
+        56.121927, 56.847017, 57.427088, 58.152178, 58.732249, 
+        59.312321, 60.037411, 60.617482, 61.342572, 61.922643, 
+        62.647733, 63.227804, 63.952894, 64.532965, 65.258055, 
+        65.983144, 66.563216, 67.288306, 68.013395, 68.593467, 
+        69.318556, 70.043646, 70.768735, 71.348807, 72.073896, 
+        72.798986, 73.524075, 74.249165, 74.829236, 75.554326, 
+        76.279415, 77.004505, 77.729594, 78.454684, 79.179773, 
+        79.904863, 80.629952, 81.355042, 82.080131, 82.805221, 
+        83.675328, 84.400418, 85.125507, 85.850597, 86.575686, 
+        87.300776, 88.170883, 88.895973, 89.621062, 90.49117, 
+        91.216259, 91.941349, 92.811456, 93.536545, 94.261635, 
+        95.131742, 95.856832, 96.726939, 97.452029, 98.177118, 
+        99.047226, 99.772315, 100.64242, 101.51253, 102.23762, 
+        103.10773, 103.83282, 104.70292, 105.57303, 106.29812, 
+        107.16823, 108.03834, 108.76342, 109.63353, 110.50364, 
+        111.37375, 112.09884, 112.96894, 113.83905, 114.70916, 
+        115.57927, 116.44937, 117.31948, 118.04457, 118.91468, 
+        119.78479, 120.65489, 121.525, 122.39511, 123.26521, 
+        124.13532, 125.00543, 125.87554, 126.89066, 127.76077, 
+        128.63088, 129.50098, 130.37109, 131.2412, 132.11131, 
+        133.12643, 133.99654, 134.86665, 135.73675, 136.75188, 
+        137.62199, 138.49209, 139.50722, 140.37733, 141.24743, 
+        142.26256, 143.13267, 144.14779, 145.0179, 145.88801, 
+        146.90313, 147.77324, 148.35331, 0, 0, 
+        0, 0, 0.55049288, 0.6881161, 0.96336254, 
+        1.1009858, 1.238609, 1.3762322, 1.6514786, 1.7891019, 
+        2.0643483, 2.2019715, 2.3395948, 2.6148412, 2.7524644, 
+        3.0277109, 3.1653341, 3.4405805, 3.715827, 3.8534502, 
+        4.1286966, 4.4039431, 4.5415663, 4.8168127, 5.0920592, 
+        5.3673056, 5.642552, 5.7801753, 6.0554217, 6.3306682, 
+        6.6059146, 6.881161, 7.1564075, 7.4316539, 7.7069004, 
+        7.9821468, 8.2573932, 8.6702629, 8.9455093, 9.2207558, 
+        9.4960022, 9.7712487, 10.046495, 10.459365, 10.734611, 
+        11.009858, 11.422727, 11.697974, 11.97322, 12.38609, 
+        12.661336, 13.074206, 13.349452, 13.762322, 14.037569, 
+        14.450438, 14.725685, 15.138554, 15.551424, 15.82667, 
+        16.23954, 16.65241, 16.927656, 17.340526, 17.753395, 
+        18.166265, 18.579135, 18.854381, 19.267251, 19.680121, 
+        20.09299, 20.50586, 20.91873, 21.331599, 21.744469, 
+        22.157339, 22.570208, 22.983078, 23.395948, 23.808817, 
+        24.35931, 24.77218, 25.185049, 25.597919, 26.010789, 
+        26.561282, 26.974151, 27.387021, 27.937514, 28.350383, 
+        28.763253, 29.313746, 29.726616, 30.277109, 30.689978, 
+        31.240471, 31.653341, 32.203834, 32.616703, 33.167196, 
+        33.580066, 34.130559, 34.681052, 35.093921, 35.644414, 
+        36.194907, 36.607777, 37.15827, 37.708762, 38.259255, 
+        38.809748, 39.222618, 39.773111, 40.323604, 40.874097, 
+        41.424589, 41.975082, 42.525575, 43.076068, 43.626561, 
+        44.177054, 44.727547, 45.27804, 45.828532, 46.379025, 
+        46.929518, 47.480011, 48.030504, 48.580997, 49.269113, 
+        49.819606, 50.370099, 50.920592, 51.608708, 52.159201, 
+        52.709694, 53.260186, 53.948302, 54.498795, 55.186911, 
+        55.737404, 56.287897, 56.976013, 57.526506, 58.214622, 
+        58.765115, 59.453231, 60.003724, 60.69184, 61.242333, 
+        61.930449, 62.618565, 63.169058, 63.857174, 64.54529, 
+        65.095783, 65.783899, 66.472016, 67.160132, 67.710625, 
+        68.398741, 69.086857, 69.774973, 70.463089, 71.013582, 
+        71.701698, 72.389814, 73.07793, 73.766046, 74.454162, 
+        75.142278, 75.830395, 76.518511, 77.206627, 77.894743, 
+        78.582859, 79.408598, 80.096714, 80.784831, 81.472947, 
+        82.161063, 82.849179, 83.674918, 84.363034, 85.05115, 
+        85.87689, 86.565006, 87.253122, 88.078861, 88.766977, 
+        89.455093, 90.280833, 90.968949, 91.794688, 92.482804, 
+        93.17092, 93.99666, 94.684776, 95.510515, 96.336254, 
+        97.024371, 97.85011, 98.538226, 99.363965, 100.1897, 
+        100.87782, 101.70356, 102.5293, 103.21742, 104.04315, 
+        104.86889, 105.69463, 106.38275, 107.20849, 108.03423, 
+        108.85997, 109.68571, 110.51145, 111.33719, 112.0253, 
+        112.85104, 113.67678, 114.50252, 115.32826, 116.154, 
+        116.97974, 117.80548, 118.63122, 119.45696, 120.42032, 
+        121.24606, 122.0718, 122.89754, 123.72328, 124.54901, 
+        125.37475, 126.33812, 127.16386, 127.9896, 128.81533, 
+        129.7787, 130.60444, 131.43018, 132.39354, 133.21928, 
+        134.04502, 135.00838, 135.83412, 136.79748, 137.62322, 
+        138.44896, 139.41232, 140.23806, 140.78855, 0, 
+        0, 0, 0, 0.52003679, 0.65004599, 
+        0.91006438, 1.0400736, 1.1700828, 1.300092, 1.5601104, 
+        1.6901196, 1.950138, 2.0801472, 2.2101564, 2.4701747, 
+        2.6001839, 2.8602023, 2.9902115, 3.2502299, 3.5102483, 
+        3.6402575, 3.9002759, 4.1602943, 4.2903035, 4.5503219, 
+        4.8103403, 5.0703587, 5.3303771, 5.4603863, 5.7204047, 
+        5.9804231, 6.2404415, 6.5004599, 6.7604782, 7.0204966, 
+        7.280515, 7.5405334, 7.8005518, 8.1905794, 8.4505978, 
+        8.7106162, 8.9706346, 9.230653, 9.4906714, 9.880699, 
+        10.140717, 10.400736, 10.790763, 11.050782, 11.3108, 
+        11.700828, 11.960846, 12.350874, 12.610892, 13.00092, 
+        13.260938, 13.650966, 13.910984, 14.301012, 14.691039, 
+        14.951058, 15.341085, 15.731113, 15.991131, 16.381159, 
+        16.771186, 17.161214, 17.551242, 17.81126, 18.201288, 
+        18.591315, 18.981343, 19.37137, 19.761398, 20.151426, 
+        20.541453, 20.931481, 21.321508, 21.711536, 22.101564, 
+        22.491591, 23.011628, 23.401655, 23.791683, 24.181711, 
+        24.571738, 25.091775, 25.481803, 25.87183, 26.391867, 
+        26.781895, 27.171922, 27.691959, 28.081987, 28.602023, 
+        28.992051, 29.512088, 29.902115, 30.422152, 30.81218, 
+        31.332216, 31.722244, 32.242281, 32.762318, 33.152345, 
+        33.672382, 34.192419, 34.582446, 35.102483, 35.62252, 
+        36.142557, 36.662594, 37.052621, 37.572658, 38.092695, 
+        38.612732, 39.132768, 39.652805, 40.172842, 40.692879, 
+        41.212915, 41.732952, 42.252989, 42.773026, 43.293063, 
+        43.813099, 44.333136, 44.853173, 45.37321, 45.893247, 
+        46.543293, 47.063329, 47.583366, 48.103403, 48.753449, 
+        49.273486, 49.793522, 50.313559, 50.963605, 51.483642, 
+        52.133688, 52.653725, 53.173762, 53.823808, 54.343844, 
+        54.99389, 55.513927, 56.163973, 56.68401, 57.334056, 
+        57.854093, 58.504139, 59.154185, 59.674221, 60.324267, 
+        60.974313, 61.49435, 62.144396, 62.794442, 63.444488, 
+        63.964525, 64.614571, 65.264617, 65.914663, 66.564709, 
+        67.084746, 67.734792, 68.384838, 69.034884, 69.68493, 
+        70.334976, 70.985022, 71.635068, 72.285114, 72.93516, 
+        73.585206, 74.235252, 75.015307, 75.665353, 76.315399, 
+        76.965445, 77.615491, 78.265537, 79.045592, 79.695638, 
+        80.345684, 81.125739, 81.775785, 82.425831, 83.205886, 
+        83.855932, 84.505978, 85.286033, 85.936079, 86.716134, 
+        87.36618, 88.016226, 88.796282, 89.446328, 90.226383, 
+        91.006438, 91.656484, 92.436539, 93.086585, 93.86664, 
+        94.646695, 95.296741, 96.076797, 96.856852, 97.506898, 
+        98.286953, 99.067008, 99.847063, 100.49711, 101.27716, 
+        102.05722, 102.83727, 103.61733, 104.39739, 105.17744, 
+        105.82749, 106.60754, 107.3876, 108.16765, 108.94771, 
+        109.72776, 110.50782, 111.28787, 112.06793, 112.84798, 
+        113.75805, 114.5381, 115.31816, 116.09821, 116.87827, 
+        117.65832, 118.43838, 119.34844, 120.1285, 120.90855, 
+        121.68861, 122.59867, 123.37873, 124.15878, 125.06885, 
+        125.8489, 126.62896, 127.53902, 128.31908, 129.22914, 
+        130.0092, 130.78925, 131.69932, 132.47937, 132.99941, 
+        0, 0, 0, 0, 0.4892627, 
+        0.61157837, 0.85620972, 0.97852539, 1.1008411, 1.2231567, 
+        1.4677881, 1.5901038, 1.8347351, 1.9570508, 2.0793665, 
+        2.3239978, 2.4463135, 2.6909448, 2.8132605, 3.0578919, 
+        3.3025232, 3.4248389, 3.6694702, 3.9141016, 4.0364172, 
+        4.2810486, 4.5256799, 4.7703113, 5.0149426, 5.1372583, 
+        5.3818897, 5.626521, 5.8711524, 6.1157837, 6.3604151, 
+        6.6050464, 6.8496778, 7.0943091, 7.3389405, 7.7058875, 
+        7.9505188, 8.1951502, 8.4397815, 8.6844129, 8.9290442, 
+        9.2959912, 9.5406226, 9.7852539, 10.152201, 10.396832, 
+        10.641464, 11.008411, 11.253042, 11.619989, 11.86462, 
+        12.231567, 12.476199, 12.843146, 13.087777, 13.454724, 
+        13.821671, 14.066303, 14.43325, 14.800197, 15.044828, 
+        15.411775, 15.778722, 16.145669, 16.512616, 16.757247, 
+        17.124194, 17.491141, 17.858088, 18.225035, 18.591982, 
+        18.95893, 19.325877, 19.692824, 20.059771, 20.426718, 
+        20.793665, 21.160612, 21.649874, 22.016821, 22.383768, 
+        22.750715, 23.117662, 23.606925, 23.973872, 24.340819, 
+        24.830082, 25.197029, 25.563976, 26.053239, 26.420186, 
+        26.909448, 27.276395, 27.765658, 28.132605, 28.621868, 
+        28.988815, 29.478077, 29.845025, 30.334287, 30.82355, 
+        31.190497, 31.67976, 32.169022, 32.535969, 33.025232, 
+        33.514495, 34.003757, 34.49302, 34.859967, 35.34923, 
+        35.838493, 36.327755, 36.817018, 37.306281, 37.795543, 
+        38.284806, 38.774069, 39.263331, 39.752594, 40.241857, 
+        40.73112, 41.220382, 41.709645, 42.198908, 42.68817, 
+        43.177433, 43.789011, 44.278274, 44.767537, 45.256799, 
+        45.868378, 46.357641, 46.846903, 47.336166, 47.947744, 
+        48.437007, 49.048585, 49.537848, 50.027111, 50.638689, 
+        51.127952, 51.73953, 52.228793, 52.840371, 53.329634, 
+        53.941212, 54.430475, 55.042053, 55.653632, 56.142894, 
+        56.754473, 57.366051, 57.855314, 58.466892, 59.078471, 
+        59.690049, 60.179312, 60.79089, 61.402468, 62.014047, 
+        62.625625, 63.114888, 63.726466, 64.338045, 64.949623, 
+        65.561201, 66.17278, 66.784358, 67.395936, 68.007515, 
+        68.619093, 69.230672, 69.84225, 70.576144, 71.187722, 
+        71.799301, 72.410879, 73.022457, 73.634036, 74.36793, 
+        74.979508, 75.591087, 76.324981, 76.936559, 77.548137, 
+        78.282031, 78.89361, 79.505188, 80.239082, 80.850661, 
+        81.584555, 82.196133, 82.807711, 83.541605, 84.153184, 
+        84.887078, 85.620972, 86.23255, 86.966444, 87.578023, 
+        88.311917, 89.045811, 89.657389, 90.391283, 91.125177, 
+        91.736756, 92.47065, 93.204544, 93.938438, 94.550016, 
+        95.28391, 96.017804, 96.751698, 97.485592, 98.219486, 
+        98.95338, 99.564959, 100.29885, 101.03275, 101.76664, 
+        102.50053, 103.23443, 103.96832, 104.70222, 105.43611, 
+        106.17001, 107.02621, 107.76011, 108.494, 109.2279, 
+        109.96179, 110.69569, 111.42958, 112.28579, 113.01968, 
+        113.75358, 114.48747, 115.34368, 116.07757, 116.81147, 
+        117.66768, 118.40157, 119.13547, 119.99168, 120.72557, 
+        121.58178, 122.31567, 123.04957, 123.90578, 124.63967, 
+        125.12893, 0, 0, 0, 0, 
+        0.45864772, 0.57330965, 0.8026335, 0.91729543, 1.0319574, 
+        1.1466193, 1.3759432, 1.4906051, 1.7199289, 1.8345909, 
+        1.9492528, 2.1785767, 2.2932386, 2.5225624, 2.6372244, 
+        2.8665482, 3.0958721, 3.210534, 3.4398579, 3.6691817, 
+        3.7838437, 4.0131675, 4.2424914, 4.4718152, 4.7011391, 
+        4.815801, 5.0451249, 5.2744487, 5.5037726, 5.7330965, 
+        5.9624203, 6.1917442, 6.421068, 6.6503919, 6.8797158, 
+        7.2237015, 7.4530254, 7.6823493, 7.9116731, 8.140997, 
+        8.3703208, 8.7143066, 8.9436305, 9.1729543, 9.5169401, 
+        9.746264, 9.9755878, 10.319574, 10.548897, 10.892883, 
+        11.122207, 11.466193, 11.695517, 12.039503, 12.268826, 
+        12.612812, 12.956798, 13.186122, 13.530108, 13.874093, 
+        14.103417, 14.447403, 14.791389, 15.135375, 15.47936, 
+        15.708684, 16.05267, 16.396656, 16.740642, 17.084627, 
+        17.428613, 17.772599, 18.116585, 18.460571, 18.804556, 
+        19.148542, 19.492528, 19.836514, 20.295161, 20.639147, 
+        20.983133, 21.327119, 21.671105, 22.129752, 22.473738, 
+        22.817724, 23.276372, 23.620357, 23.964343, 24.422991, 
+        24.766977, 25.225624, 25.56961, 26.028258, 26.372244, 
+        26.830891, 27.174877, 27.633525, 27.977511, 28.436158, 
+        28.894806, 29.238792, 29.69744, 30.156087, 30.500073, 
+        30.958721, 31.417369, 31.876016, 32.334664, 32.67865, 
+        33.137298, 33.595945, 34.054593, 34.513241, 34.971888, 
+        35.430536, 35.889184, 36.347832, 36.806479, 37.265127, 
+        37.723775, 38.182422, 38.64107, 39.099718, 39.558366, 
+        40.017013, 40.475661, 41.048971, 41.507618, 41.966266, 
+        42.424914, 42.998223, 43.456871, 43.915519, 44.374167, 
+        44.947476, 45.406124, 45.979434, 46.438081, 46.896729, 
+        47.470039, 47.928686, 48.501996, 48.960644, 49.533953, 
+        49.992601, 50.565911, 51.024558, 51.597868, 52.171178, 
+        52.629825, 53.203135, 53.776445, 54.235093, 54.808402, 
+        55.381712, 55.955021, 56.413669, 56.986979, 57.560288, 
+        58.133598, 58.706908, 59.165555, 59.738865, 60.312175, 
+        60.885484, 61.458794, 62.032104, 62.605413, 63.178723, 
+        63.752033, 64.325342, 64.898652, 65.471962, 66.159933, 
+        66.733243, 67.306552, 67.879862, 68.453172, 69.026481, 
+        69.714453, 70.287763, 70.861072, 71.549044, 72.122353, 
+        72.695663, 73.383635, 73.956944, 74.530254, 75.218226, 
+        75.791535, 76.479507, 77.052816, 77.626126, 78.314098, 
+        78.887407, 79.575379, 80.26335, 80.83666, 81.524632, 
+        82.097941, 82.785913, 83.473884, 84.047194, 84.735166, 
+        85.423137, 85.996447, 86.684418, 87.37239, 88.060362, 
+        88.633671, 89.321643, 90.009614, 90.697586, 91.385558, 
+        92.073529, 92.761501, 93.33481, 94.022782, 94.710753, 
+        95.398725, 96.086697, 96.774668, 97.46264, 98.150611, 
+        98.838583, 99.526555, 100.32919, 101.01716, 101.70513, 
+        102.3931, 103.08107, 103.76905, 104.45702, 105.25965, 
+        105.94762, 106.63559, 107.32357, 108.1262, 108.81417, 
+        109.50214, 110.30478, 110.99275, 111.68072, 112.48335, 
+        113.17132, 113.97396, 114.66193, 115.3499, 116.15253, 
+        116.84051, 117.29915, 0, 0, 0, 
+        0, 0.42858365, 0.53572957, 0.75002139, 0.85716731, 
+        0.96431322, 1.0714591, 1.285751, 1.3928969, 1.6071887, 
+        1.7143346, 1.8214805, 2.0357724, 2.1429183, 2.3572101, 
+        2.464356, 2.6786478, 2.8929397, 3.0000856, 3.2143774, 
+        3.4286692, 3.5358151, 3.750107, 3.9643988, 4.1786906, 
+        4.3929824, 4.5001284, 4.7144202, 4.928712, 5.1430038, 
+        5.3572957, 5.5715875, 5.7858793, 6.0001711, 6.214463, 
+        6.4287548, 6.7501925, 6.9644844, 7.1787762, 7.393068, 
+        7.6073598, 7.8216517, 8.1430894, 8.3573812, 8.5716731, 
+        8.8931108, 9.1074026, 9.3216945, 9.6431322, 9.857424, 
+        10.178862, 10.393154, 10.714591, 10.928883, 11.250321, 
+        11.464613, 11.78605, 12.107488, 12.32178, 12.643218, 
+        12.964656, 13.178947, 13.500385, 13.821823, 14.143261, 
+        14.464698, 14.67899, 15.000428, 15.321866, 15.643303, 
+        15.964741, 16.286179, 16.607617, 16.929054, 17.250492, 
+        17.57193, 17.893368, 18.214805, 18.536243, 18.964827, 
+        19.286264, 19.607702, 19.92914, 20.250578, 20.679161, 
+        21.000599, 21.322037, 21.75062, 22.072058, 22.393496, 
+        22.82208, 23.143517, 23.572101, 23.893539, 24.322122, 
+        24.64356, 25.072144, 25.393581, 25.822165, 26.143603, 
+        26.572186, 27.00077, 27.322208, 27.750792, 28.179375, 
+        28.500813, 28.929397, 29.35798, 29.786564, 30.215148, 
+        30.536585, 30.965169, 31.393753, 31.822336, 32.25092, 
+        32.679504, 33.108087, 33.536671, 33.965254, 34.393838, 
+        34.822422, 35.251005, 35.679589, 36.108173, 36.536756, 
+        36.96534, 37.393924, 37.822507, 38.358237, 38.786821, 
+        39.215404, 39.643988, 40.179717, 40.608301, 41.036885, 
+        41.465468, 42.001198, 42.429782, 42.965511, 43.394095, 
+        43.822679, 44.358408, 44.786992, 45.322721, 45.751305, 
+        46.287035, 46.715618, 47.251348, 47.679931, 48.215661, 
+        48.751391, 49.179974, 49.715704, 50.251433, 50.680017, 
+        51.215747, 51.751476, 52.287206, 52.715789, 53.251519, 
+        53.787248, 54.322978, 54.858708, 55.287291, 55.823021, 
+        56.35875, 56.89448, 57.430209, 57.965939, 58.501669, 
+        59.037398, 59.573128, 60.108857, 60.644587, 61.180316, 
+        61.823192, 62.358922, 62.894651, 63.430381, 63.96611, 
+        64.50184, 65.144715, 65.680445, 66.216174, 66.85905, 
+        67.394779, 67.930509, 68.573384, 69.109114, 69.644844, 
+        70.287719, 70.823449, 71.466324, 72.002054, 72.537783, 
+        73.180659, 73.716388, 74.359264, 75.002139, 75.537869, 
+        76.180744, 76.716474, 77.359349, 78.002225, 78.537954, 
+        79.18083, 79.823705, 80.359435, 81.00231, 81.645186, 
+        82.288061, 82.823791, 83.466666, 84.109542, 84.752417, 
+        85.395293, 86.038168, 86.681044, 87.216773, 87.859649, 
+        88.502524, 89.1454, 89.788275, 90.431151, 91.074026, 
+        91.716902, 92.359777, 93.002653, 93.752674, 94.39555, 
+        95.038425, 95.681301, 96.324176, 96.967051, 97.609927, 
+        98.359948, 99.002824, 99.645699, 100.28857, 101.0386, 
+        101.68147, 102.32435, 103.07437, 103.71724, 104.36012, 
+        105.11014, 105.75302, 106.50304, 107.14591, 107.78879, 
+        108.53881, 109.18169, 109.61027, 0, 0, 
+        0, 0, 0.39937975, 0.49922469, 0.69891457, 
+        0.79875951, 0.89860445, 0.99844938, 1.1981393, 1.2979842, 
+        1.4976741, 1.597519, 1.697364, 1.8970538, 1.9968988, 
+        2.1965886, 2.2964336, 2.4961235, 2.6958133, 2.7956583, 
+        2.9953482, 3.195038, 3.294883, 3.4945728, 3.6942627, 
+        3.8939526, 4.0936425, 4.1934874, 4.3931773, 4.5928672, 
+        4.792557, 4.9922469, 5.1919368, 5.3916267, 5.5913166, 
+        5.7910064, 5.9906963, 6.2902311, 6.489921, 6.6896109, 
+        6.8893008, 7.0889906, 7.2886805, 7.5882153, 7.7879052, 
+        7.9875951, 8.2871299, 8.4868198, 8.6865096, 8.9860445, 
+        9.1857343, 9.4852691, 9.684959, 9.9844938, 10.184184, 
+        10.483719, 10.683408, 10.982943, 11.282478, 11.482168, 
+        11.781703, 12.081238, 12.280927, 12.580462, 12.879997, 
+        13.179532, 13.479067, 13.678757, 13.978291, 14.277826, 
+        14.577361, 14.876896, 15.176431, 15.475965, 15.7755, 
+        16.075035, 16.37457, 16.674105, 16.97364, 17.273174, 
+        17.672554, 17.972089, 18.271624, 18.571159, 18.870693, 
+        19.270073, 19.569608, 19.869143, 20.268522, 20.568057, 
+        20.867592, 21.266972, 21.566507, 21.965886, 22.265421, 
+        22.664801, 22.964336, 23.363716, 23.66325, 24.06263, 
+        24.362165, 24.761545, 25.160924, 25.460459, 25.859839, 
+        26.259219, 26.558754, 26.958133, 27.357513, 27.756893, 
+        28.156273, 28.455807, 28.855187, 29.254567, 29.653947, 
+        30.053326, 30.452706, 30.852086, 31.251466, 31.650845, 
+        32.050225, 32.449605, 32.848985, 33.248364, 33.647744, 
+        34.047124, 34.446504, 34.845884, 35.245263, 35.744488, 
+        36.143868, 36.543247, 36.942627, 37.441852, 37.841232, 
+        38.240611, 38.639991, 39.139216, 39.538596, 40.03782, 
+        40.4372, 40.83658, 41.335805, 41.735184, 42.234409, 
+        42.633789, 43.133013, 43.532393, 44.031618, 44.430998, 
+        44.930222, 45.429447, 45.828827, 46.328051, 46.827276, 
+        47.226656, 47.725881, 48.225105, 48.72433, 49.12371, 
+        49.622934, 50.122159, 50.621384, 51.120608, 51.519988, 
+        52.019213, 52.518438, 53.017662, 53.516887, 54.016112, 
+        54.515336, 55.014561, 55.513786, 56.01301, 56.512235, 
+        57.01146, 57.610529, 58.109754, 58.608979, 59.108204, 
+        59.607428, 60.106653, 60.705723, 61.204947, 61.704172, 
+        62.303242, 62.802466, 63.301691, 63.900761, 64.399985, 
+        64.89921, 65.49828, 65.997504, 66.596574, 67.095799, 
+        67.595023, 68.194093, 68.693318, 69.292387, 69.891457, 
+        70.390682, 70.989751, 71.488976, 72.088046, 72.687115, 
+        73.18634, 73.785409, 74.384479, 74.883704, 75.482773, 
+        76.081843, 76.680913, 77.180137, 77.779207, 78.378277, 
+        78.977346, 79.576416, 80.175486, 80.774555, 81.27378, 
+        81.87285, 82.471919, 83.070989, 83.670058, 84.269128, 
+        84.868198, 85.467267, 86.066337, 86.665407, 87.364321, 
+        87.963391, 88.56246, 89.16153, 89.7606, 90.359669, 
+        90.958739, 91.657653, 92.256723, 92.855793, 93.454862, 
+        94.153777, 94.752847, 95.351916, 96.050831, 96.6499, 
+        97.24897, 97.947885, 98.546954, 99.245869, 99.844938, 
+        100.44401, 101.14292, 101.74199, 102.14137, 0, 
+        0, 0, 0, 0.37126937, 0.46408671, 
+        0.64972139, 0.74253873, 0.83535608, 0.92817342, 1.1138081, 
+        1.2066254, 1.3922601, 1.4850775, 1.5778948, 1.7635295, 
+        1.8563468, 2.0419815, 2.1347989, 2.3204335, 2.5060682, 
+        2.5988856, 2.7845203, 2.9701549, 3.0629723, 3.248607, 
+        3.4342416, 3.6198763, 3.805511, 3.8983284, 4.083963, 
+        4.2695977, 4.4552324, 4.6408671, 4.8265018, 5.0121365, 
+        5.1977711, 5.3834058, 5.5690405, 5.8474925, 6.0331272, 
+        6.2187619, 6.4043966, 6.5900313, 6.7756659, 7.054118, 
+        7.2397527, 7.4253873, 7.7038394, 7.889474, 8.0751087, 
+        8.3535608, 8.5391954, 8.8176475, 9.0032821, 9.2817342, 
+        9.4673689, 9.7458209, 9.9314556, 10.209908, 10.48836, 
+        10.673994, 10.952446, 11.230898, 11.416533, 11.694985, 
+        11.973437, 12.251889, 12.530341, 12.715976, 12.994428, 
+        13.27288, 13.551332, 13.829784, 14.108236, 14.386688, 
+        14.66514, 14.943592, 15.222044, 15.500496, 15.778948, 
+        16.0574, 16.428669, 16.707122, 16.985574, 17.264026, 
+        17.542478, 17.913747, 18.192199, 18.470651, 18.84192, 
+        19.120372, 19.398824, 19.770094, 20.048546, 20.419815, 
+        20.698267, 21.069537, 21.347989, 21.719258, 21.99771, 
+        22.368979, 22.647431, 23.018701, 23.38997, 23.668422, 
+        24.039692, 24.410961, 24.689413, 25.060682, 25.431952, 
+        25.803221, 26.17449, 26.452942, 26.824212, 27.195481, 
+        27.566751, 27.93802, 28.309289, 28.680559, 29.051828, 
+        29.423097, 29.794367, 30.165636, 30.536905, 30.908175, 
+        31.279444, 31.650714, 32.021983, 32.393252, 32.764522, 
+        33.228608, 33.599878, 33.971147, 34.342416, 34.806503, 
+        35.177773, 35.549042, 35.920311, 36.384398, 36.755667, 
+        37.219754, 37.591023, 37.962293, 38.426379, 38.797649, 
+        39.261736, 39.633005, 40.097092, 40.468361, 40.932448, 
+        41.303717, 41.767804, 42.23189, 42.60316, 43.067247, 
+        43.531333, 43.902603, 44.366689, 44.830776, 45.294863, 
+        45.666132, 46.130219, 46.594306, 47.058392, 47.522479, 
+        47.893748, 48.357835, 48.821922, 49.286008, 49.750095, 
+        50.214182, 50.678269, 51.142355, 51.606442, 52.070529, 
+        52.534615, 52.998702, 53.555606, 54.019693, 54.48378, 
+        54.947866, 55.411953, 55.87604, 56.432944, 56.89703, 
+        57.361117, 57.918021, 58.382108, 58.846195, 59.403099, 
+        59.867185, 60.331272, 60.888176, 61.352263, 61.909167, 
+        62.373254, 62.83734, 63.394244, 63.858331, 64.415235, 
+        64.972139, 65.436226, 65.99313, 66.457217, 67.014121, 
+        67.571025, 68.035112, 68.592016, 69.14892, 69.613006, 
+        70.16991, 70.726814, 71.283718, 71.747805, 72.304709, 
+        72.861613, 73.418517, 73.975421, 74.532325, 75.089229, 
+        75.553316, 76.11022, 76.667124, 77.224028, 77.780932, 
+        78.337836, 78.89474, 79.451645, 80.008549, 80.565453, 
+        81.215174, 81.772078, 82.328982, 82.885886, 83.44279, 
+        83.999694, 84.556598, 85.20632, 85.763224, 86.320128, 
+        86.877032, 87.526753, 88.083657, 88.640561, 89.290283, 
+        89.847187, 90.404091, 91.053812, 91.610716, 92.260438, 
+        92.817342, 93.374246, 94.023967, 94.580871, 94.952141, 
+        0, 0, 0, 0, 0.34441886, 
+        0.43052357, 0.602733, 0.68883772, 0.77494243, 0.86104714, 
+        1.0332566, 1.1193613, 1.2915707, 1.3776754, 1.4637801, 
+        1.6359896, 1.7220943, 1.8943037, 1.9804084, 2.1526179, 
+        2.3248273, 2.410932, 2.5831414, 2.7553509, 2.8414556, 
+        3.013665, 3.1858744, 3.3580839, 3.5302933, 3.616398, 
+        3.7886074, 3.9608169, 4.1330263, 4.3052357, 4.4774452, 
+        4.6496546, 4.821864, 4.9940734, 5.1662829, 5.424597, 
+        5.5968064, 5.7690159, 5.9412253, 6.1134347, 6.2856442, 
+        6.5439583, 6.7161677, 6.8883772, 7.1466913, 7.3189007, 
+        7.4911102, 7.7494243, 7.9216337, 8.1799479, 8.3521573, 
+        8.6104714, 8.7826809, 9.040995, 9.2132044, 9.4715186, 
+        9.7298327, 9.9020422, 10.160356, 10.41867, 10.59088, 
+        10.849194, 11.107508, 11.365822, 11.624136, 11.796346, 
+        12.05466, 12.312974, 12.571288, 12.829602, 13.087917, 
+        13.346231, 13.604545, 13.862859, 14.121173, 14.379487, 
+        14.637801, 14.896116, 15.240534, 15.498849, 15.757163, 
+        16.015477, 16.273791, 16.61821, 16.876524, 17.134838, 
+        17.479257, 17.737571, 17.995885, 18.340304, 18.598618, 
+        18.943037, 19.201351, 19.54577, 19.804084, 20.148503, 
+        20.406817, 20.751236, 21.00955, 21.353969, 21.698388, 
+        21.956702, 22.301121, 22.64554, 22.903854, 23.248273, 
+        23.592692, 23.937111, 24.281529, 24.539844, 24.884262, 
+        25.228681, 25.5731, 25.917519, 26.261938, 26.606357, 
+        26.950776, 27.295194, 27.639613, 27.984032, 28.328451, 
+        28.67287, 29.017289, 29.361708, 29.706126, 30.050545, 
+        30.394964, 30.825488, 31.169907, 31.514325, 31.858744, 
+        32.289268, 32.633687, 32.978106, 33.322524, 33.753048, 
+        34.097467, 34.52799, 34.872409, 35.216828, 35.647352, 
+        35.991771, 36.422294, 36.766713, 37.197237, 37.541656, 
+        37.972179, 38.316598, 38.747122, 39.177645, 39.522064, 
+        39.952588, 40.383111, 40.72753, 41.158054, 41.588577, 
+        42.019101, 42.36352, 42.794043, 43.224567, 43.65509, 
+        44.085614, 44.430033, 44.860556, 45.29108, 45.721603, 
+        46.152127, 46.582651, 47.013174, 47.443698, 47.874221, 
+        48.304745, 48.735268, 49.165792, 49.68242, 50.112944, 
+        50.543467, 50.973991, 51.404515, 51.835038, 52.351666, 
+        52.78219, 53.212714, 53.729342, 54.159865, 54.590389, 
+        55.107017, 55.537541, 55.968064, 56.484693, 56.915216, 
+        57.431845, 57.862368, 58.292892, 58.80952, 59.240044, 
+        59.756672, 60.2733, 60.703824, 61.220452, 61.650976, 
+        62.167604, 62.684232, 63.114756, 63.631384, 64.148012, 
+        64.578536, 65.095164, 65.611792, 66.128421, 66.558944, 
+        67.075573, 67.592201, 68.108829, 68.625457, 69.142086, 
+        69.658714, 70.089238, 70.605866, 71.122494, 71.639122, 
+        72.155751, 72.672379, 73.189007, 73.705636, 74.222264, 
+        74.738892, 75.341625, 75.858253, 76.374882, 76.89151, 
+        77.408138, 77.924767, 78.441395, 79.044128, 79.560756, 
+        80.077384, 80.594013, 81.196746, 81.713374, 82.230002, 
+        82.832735, 83.349364, 83.865992, 84.468725, 84.985353, 
+        85.588086, 86.104714, 86.621343, 87.224076, 87.740704, 
+        88.085123, 0, 0, 0, 0, 
+        0.31893747, 0.39867184, 0.55814058, 0.63787495, 0.71760932, 
+        0.79734368, 0.95681242, 1.0365468, 1.1960155, 1.2757499, 
+        1.3554843, 1.514953, 1.5946874, 1.7541561, 1.8338905, 
+        1.9933592, 2.1528279, 2.2325623, 2.3920311, 2.5514998, 
+        2.6312342, 2.7907029, 2.9501716, 3.1096404, 3.2691091, 
+        3.3488435, 3.5083122, 3.6677809, 3.8272497, 3.9867184, 
+        4.1461872, 4.3056559, 4.4651246, 4.6245934, 4.7840621, 
+        5.0232652, 5.182734, 5.3422027, 5.5016714, 5.6611402, 
+        5.8206089, 6.059812, 6.2192807, 6.3787495, 6.6179526, 
+        6.7774213, 6.9368901, 7.1760932, 7.3355619, 7.574765, 
+        7.7342337, 7.9734368, 8.1329056, 8.3721087, 8.5315774, 
+        8.7707805, 9.0099836, 9.1694524, 9.4086555, 9.6478586, 
+        9.8073273, 10.04653, 10.285734, 10.524937, 10.76414, 
+        10.923608, 11.162812, 11.402015, 11.641218, 11.880421, 
+        12.119624, 12.358827, 12.59803, 12.837233, 13.076436, 
+        13.31564, 13.554843, 13.794046, 14.112983, 14.352186, 
+        14.591389, 14.830593, 15.069796, 15.388733, 15.627936, 
+        15.867139, 16.186077, 16.42528, 16.664483, 16.98342, 
+        17.222624, 17.541561, 17.780764, 18.099702, 18.338905, 
+        18.657842, 18.897045, 19.215983, 19.455186, 19.774123, 
+        20.093061, 20.332264, 20.651201, 20.970139, 21.209342, 
+        21.528279, 21.847217, 22.166154, 22.485092, 22.724295, 
+        23.043232, 23.36217, 23.681107, 24.000045, 24.318982, 
+        24.63792, 24.956857, 25.275795, 25.594732, 25.91367, 
+        26.232607, 26.551545, 26.870482, 27.18942, 27.508357, 
+        27.827295, 28.146232, 28.544904, 28.863841, 29.182779, 
+        29.501716, 29.900388, 30.219326, 30.538263, 30.857201, 
+        31.255872, 31.57481, 31.973482, 32.292419, 32.611357, 
+        33.010029, 33.328966, 33.727638, 34.046575, 34.445247, 
+        34.764185, 35.162856, 35.481794, 35.880466, 36.279138, 
+        36.598075, 36.996747, 37.395419, 37.714356, 38.113028, 
+        38.5117, 38.910372, 39.229309, 39.627981, 40.026653, 
+        40.425325, 40.823997, 41.142934, 41.541606, 41.940278, 
+        42.33895, 42.737621, 43.136293, 43.534965, 43.933637, 
+        44.332309, 44.730981, 45.129653, 45.528324, 46.006731, 
+        46.405402, 46.804074, 47.202746, 47.601418, 48.00009, 
+        48.478496, 48.877168, 49.27584, 49.754246, 50.152918, 
+        50.55159, 51.029996, 51.428668, 51.82734, 52.305746, 
+        52.704418, 53.182824, 53.581496, 53.980167, 54.458574, 
+        54.857246, 55.335652, 55.814058, 56.21273, 56.691136, 
+        57.089808, 57.568214, 58.04662, 58.445292, 58.923698, 
+        59.402105, 59.800776, 60.279183, 60.757589, 61.235995, 
+        61.634667, 62.113073, 62.591479, 63.069885, 63.548292, 
+        64.026698, 64.505104, 64.903776, 65.382182, 65.860588, 
+        66.338995, 66.817401, 67.295807, 67.774213, 68.252619, 
+        68.731026, 69.209432, 69.767572, 70.245979, 70.724385, 
+        71.202791, 71.681197, 72.159603, 72.63801, 73.19615, 
+        73.674556, 74.152963, 74.631369, 75.189509, 75.667916, 
+        76.146322, 76.704462, 77.182869, 77.661275, 78.219415, 
+        78.697822, 79.255962, 79.734368, 80.212775, 80.770915, 
+        81.249321, 81.568259, 0, 0, 0.29488721, 
+        0.44233082, 0.58977443, 0.73721804, 1.0321053, 1.1795489, 
+        1.3269925, 1.4744361, 1.7693233, 1.9167669, 2.2116541, 
+        2.3590977, 2.5065413, 2.8014285, 2.9488721, 3.2437594, 
+        3.391203, 3.6860902, 3.9809774, 4.128421, 4.4233082, 
+        4.7181954, 4.865639, 5.1605263, 5.4554135, 5.7503007, 
+        6.0451879, 6.1926315, 6.4875187, 6.7824059, 7.0772932, 
+        7.3721804, 7.6670676, 7.9619548, 8.256842, 8.5517292, 
+        8.8466164, 9.2889473, 9.5838345, 9.8787217, 10.173609, 
+        10.468496, 10.763383, 11.205714, 11.500601, 11.795489, 
+        12.237819, 12.532707, 12.827594, 13.269925, 13.564812, 
+        14.007143, 14.30203, 14.744361, 15.039248, 15.481579, 
+        15.776466, 16.218797, 16.661128, 16.956015, 17.398346, 
+        17.840677, 18.135564, 18.577895, 19.020225, 19.462556, 
+        19.904887, 20.199774, 20.642105, 21.084436, 21.526767, 
+        21.969098, 22.411428, 22.853759, 23.29609, 23.738421, 
+        24.180752, 24.623082, 25.065413, 25.507744, 26.097519, 
+        26.539849, 26.98218, 27.424511, 27.866842, 28.456616, 
+        28.898947, 29.341278, 29.931052, 30.373383, 30.815714, 
+        31.405488, 31.847819, 32.437594, 32.879924, 33.469699, 
+        33.91203, 34.501804, 34.944135, 35.533909, 35.97624, 
+        36.566015, 37.155789, 37.59812, 38.187894, 38.777669, 
+        39.22, 39.809774, 40.399548, 40.989323, 41.579097, 
+        42.021428, 42.611203, 43.200977, 43.790751, 44.380526, 
+        44.9703, 45.560075, 46.149849, 46.739624, 47.329398, 
+        47.919172, 48.508947, 49.098721, 49.688496, 50.27827, 
+        50.868045, 51.457819, 52.047593, 52.784811, 53.374586, 
+        53.96436, 54.554135, 55.291353, 55.881127, 56.470902, 
+        57.060676, 57.797894, 58.387669, 59.124887, 59.714661, 
+        60.304435, 61.041653, 61.631428, 62.368646, 62.95842, 
+        63.695638, 64.285413, 65.022631, 65.612405, 66.349623, 
+        67.086841, 67.676616, 68.413834, 69.151052, 69.740826, 
+        70.478044, 71.215262, 71.95248, 72.542255, 73.279473, 
+        74.016691, 74.753909, 75.491127, 76.080901, 76.818119, 
+        77.555338, 78.292556, 79.029774, 79.766992, 80.50421, 
+        81.241428, 81.978646, 82.715864, 83.453082, 84.1903, 
+        85.074962, 85.81218, 86.549398, 87.286616, 88.023834, 
+        88.761052, 89.645713, 90.382931, 91.120149, 92.004811, 
+        92.742029, 93.479247, 94.363909, 95.101127, 95.838345, 
+        96.723007, 97.460225, 98.344886, 99.082104, 99.819322, 
+        100.70398, 101.4412, 102.32586, 103.21053, 103.94774, 
+        104.8324, 105.56962, 106.45428, 107.33895, 108.07616, 
+        108.96083, 109.84549, 110.58271, 111.46737, 112.35203, 
+        113.23669, 113.97391, 114.85857, 115.74323, 116.62789, 
+        117.51256, 118.39722, 119.28188, 120.0191, 120.90376, 
+        121.78842, 122.67308, 123.55774, 124.4424, 125.32707, 
+        126.21173, 127.09639, 127.98105, 129.01316, 129.89782, 
+        130.78248, 131.66714, 132.5518, 133.43646, 134.32113, 
+        135.35323, 136.23789, 137.12255, 138.00722, 139.03932, 
+        139.92398, 140.80865, 141.84075, 142.72541, 143.61007, 
+        144.64218, 145.52684, 146.55895, 147.44361, 148.32827, 
+        149.36037, 150.24504, 150.83481, 0, 0, 
+        0.27229209, 0.40843813, 0.54458417, 0.68073022, 0.9530223, 
+        1.0891683, 1.2253144, 1.3614604, 1.6337525, 1.7698986, 
+        2.0421906, 2.1783367, 2.3144827, 2.5867748, 2.7229209, 
+        2.9952129, 3.131359, 3.4036511, 3.6759432, 3.8120892, 
+        4.0843813, 4.3566734, 4.4928194, 4.7651115, 5.0374036, 
+        5.3096957, 5.5819878, 5.7181338, 5.9904259, 6.262718, 
+        6.5350101, 6.8073022, 7.0795942, 7.3518863, 7.6241784, 
+        7.8964705, 8.1687626, 8.5772007, 8.8494928, 9.1217849, 
+        9.394077, 9.6663691, 9.9386611, 10.347099, 10.619391, 
+        10.891683, 11.300122, 11.572414, 11.844706, 12.253144, 
+        12.525436, 12.933874, 13.206166, 13.614604, 13.886896, 
+        14.295335, 14.567627, 14.976065, 15.384503, 15.656795, 
+        16.065233, 16.473671, 16.745963, 17.154401, 17.56284, 
+        17.971278, 18.379716, 18.652008, 19.060446, 19.468884, 
+        19.877322, 20.28576, 20.694199, 21.102637, 21.511075, 
+        21.919513, 22.327951, 22.736389, 23.144827, 23.553265, 
+        24.09785, 24.506288, 24.914726, 25.323164, 25.731602, 
+        26.276186, 26.684624, 27.093063, 27.637647, 28.046085, 
+        28.454523, 28.999107, 29.407545, 29.952129, 30.360568, 
+        30.905152, 31.31359, 31.858174, 32.266612, 32.811196, 
+        33.219635, 33.764219, 34.308803, 34.717241, 35.261825, 
+        35.806409, 36.214847, 36.759432, 37.304016, 37.8486, 
+        38.393184, 38.801622, 39.346206, 39.890791, 40.435375, 
+        40.979959, 41.524543, 42.069127, 42.613712, 43.158296, 
+        43.70288, 44.247464, 44.792048, 45.336632, 45.881217, 
+        46.425801, 46.970385, 47.514969, 48.059553, 48.740283, 
+        49.284868, 49.829452, 50.374036, 51.054766, 51.59935, 
+        52.143935, 52.688519, 53.369249, 53.913833, 54.594563, 
+        55.139147, 55.683732, 56.364462, 56.909046, 57.589776, 
+        58.13436, 58.815091, 59.359675, 60.040405, 60.584989, 
+        61.265719, 61.94645, 62.491034, 63.171764, 63.852494, 
+        64.397078, 65.077809, 65.758539, 66.439269, 66.983853, 
+        67.664583, 68.345314, 69.026044, 69.706774, 70.251358, 
+        70.932088, 71.612819, 72.293549, 72.974279, 73.655009, 
+        74.33574, 75.01647, 75.6972, 76.37793, 77.05866, 
+        77.739391, 78.556267, 79.236997, 79.917727, 80.598458, 
+        81.279188, 81.959918, 82.776794, 83.457524, 84.138255, 
+        84.955131, 85.635861, 86.316591, 87.133468, 87.814198, 
+        88.494928, 89.311804, 89.992535, 90.809411, 91.490141, 
+        92.170871, 92.987747, 93.668478, 94.485354, 95.30223, 
+        95.98296, 96.799837, 97.480567, 98.297443, 99.114319, 
+        99.79505, 100.61193, 101.4288, 102.10953, 102.92641, 
+        103.74328, 104.56016, 105.24089, 106.05777, 106.87464, 
+        107.69152, 108.5084, 109.32527, 110.14215, 110.82288, 
+        111.63976, 112.45663, 113.27351, 114.09038, 114.90726, 
+        115.72414, 116.54101, 117.35789, 118.17477, 119.12779, 
+        119.94466, 120.76154, 121.57842, 122.39529, 123.21217, 
+        124.02905, 124.98207, 125.79894, 126.61582, 127.4327, 
+        128.38572, 129.20259, 130.01947, 130.97249, 131.78937, 
+        132.60625, 133.55927, 134.37614, 135.32917, 136.14604, 
+        136.96292, 137.91594, 138.73282, 139.2774, 0, 
+        0, 0.25114638, 0.37671957, 0.50229277, 0.62786596, 
+        0.87901234, 1.0045855, 1.1301587, 1.2557319, 1.5068783, 
+        1.6324515, 1.8835979, 2.0091711, 2.1347443, 2.3858906, 
+        2.5114638, 2.7626102, 2.8881834, 3.1393298, 3.3904762, 
+        3.5160494, 3.7671957, 4.0183421, 4.1439153, 4.3950617, 
+        4.6462081, 4.8973545, 5.1485009, 5.274074, 5.5252204, 
+        5.7763668, 6.0275132, 6.2786596, 6.529806, 6.7809523, 
+        7.0320987, 7.2832451, 7.5343915, 7.9111111, 8.1622574, 
+        8.4134038, 8.6645502, 8.9156966, 9.166843, 9.5435626, 
+        9.7947089, 10.045855, 10.422575, 10.673721, 10.924868, 
+        11.301587, 11.552734, 11.929453, 12.1806, 12.557319, 
+        12.808466, 13.185185, 13.436331, 13.813051, 14.189771, 
+        14.440917, 14.817637, 15.194356, 15.445503, 15.822222, 
+        16.198942, 16.575661, 16.952381, 17.203527, 17.580247, 
+        17.956966, 18.333686, 18.710406, 19.087125, 19.463845, 
+        19.840564, 20.217284, 20.594003, 20.970723, 21.347443, 
+        21.724162, 22.226455, 22.603174, 22.979894, 23.356614, 
+        23.733333, 24.235626, 24.612346, 24.989065, 25.491358, 
+        25.868077, 26.244797, 26.74709, 27.123809, 27.626102, 
+        28.002822, 28.505114, 28.881834, 29.384127, 29.760846, 
+        30.263139, 30.639859, 31.142151, 31.644444, 32.021164, 
+        32.523457, 33.025749, 33.402469, 33.904762, 34.407054, 
+        34.909347, 35.41164, 35.78836, 36.290652, 36.792945, 
+        37.295238, 37.797531, 38.299823, 38.802116, 39.304409, 
+        39.806702, 40.308994, 40.811287, 41.31358, 41.815873, 
+        42.318166, 42.820458, 43.322751, 43.825044, 44.327337, 
+        44.955203, 45.457495, 45.959788, 46.462081, 47.089947, 
+        47.59224, 48.094532, 48.596825, 49.224691, 49.726984, 
+        50.35485, 50.857143, 51.359435, 51.987301, 52.489594, 
+        53.11746, 53.619753, 54.247619, 54.749911, 55.377777, 
+        55.88007, 56.507936, 57.135802, 57.638095, 58.265961, 
+        58.893827, 59.39612, 60.023986, 60.651851, 61.279717, 
+        61.78201, 62.409876, 63.037742, 63.665608, 64.293474, 
+        64.795767, 65.423633, 66.051499, 66.679365, 67.307231, 
+        67.935097, 68.562963, 69.190829, 69.818694, 70.44656, 
+        71.074426, 71.702292, 72.455731, 73.083597, 73.711463, 
+        74.339329, 74.967195, 75.595061, 76.3485, 76.976366, 
+        77.604232, 78.357671, 78.985537, 79.613403, 80.366843, 
+        80.994709, 81.622574, 82.376014, 83.00388, 83.757319, 
+        84.385185, 85.013051, 85.76649, 86.394356, 87.147795, 
+        87.901234, 88.5291, 89.282539, 89.910405, 90.663844, 
+        91.417283, 92.045149, 92.798589, 93.552028, 94.179894, 
+        94.933333, 95.686772, 96.440211, 97.068077, 97.821516, 
+        98.574955, 99.328394, 100.08183, 100.83527, 101.58871, 
+        102.21658, 102.97002, 103.72346, 104.4769, 105.23033, 
+        105.98377, 106.73721, 107.49065, 108.24409, 108.99753, 
+        109.87654, 110.62998, 111.38342, 112.13686, 112.8903, 
+        113.64374, 114.39718, 115.27619, 116.02963, 116.78307, 
+        117.53651, 118.41552, 119.16896, 119.9224, 120.80141, 
+        121.55485, 122.30829, 123.1873, 123.94074, 124.81975, 
+        125.57319, 126.32663, 127.20564, 127.95908, 128.46137, 
+        0, 0, 0.23109399, 0.34664098, 0.46218798, 
+        0.57773497, 0.80882896, 0.92437596, 1.039923, 1.1554699, 
+        1.3865639, 1.5021109, 1.7332049, 1.8487519, 1.9642989, 
+        2.1953929, 2.3109399, 2.5420339, 2.6575809, 2.8886749, 
+        3.1197689, 3.2353159, 3.4664098, 3.6975038, 3.8130508, 
+        4.0441448, 4.2752388, 4.5063328, 4.7374268, 4.8529738, 
+        5.0840678, 5.3151618, 5.5462558, 5.7773497, 6.0084437, 
+        6.2395377, 6.4706317, 6.7017257, 6.9328197, 7.2794607, 
+        7.5105547, 7.7416487, 7.9727426, 8.2038366, 8.4349306, 
+        8.7815716, 9.0126656, 9.2437596, 9.5904006, 9.8214946, 
+        10.052589, 10.39923, 10.630324, 10.976965, 11.208059, 
+        11.554699, 11.785793, 12.132434, 12.363528, 12.710169, 
+        13.05681, 13.287904, 13.634545, 13.981186, 14.21228, 
+        14.558921, 14.905562, 15.252203, 15.598844, 15.829938, 
+        16.176579, 16.52322, 16.869861, 17.216502, 17.563143, 
+        17.909784, 18.256425, 18.603066, 18.949707, 19.296348, 
+        19.642989, 19.98963, 20.451818, 20.798459, 21.1451, 
+        21.491741, 21.838382, 22.30057, 22.647211, 22.993852, 
+        23.45604, 23.802681, 24.149322, 24.61151, 24.958151, 
+        25.420339, 25.76698, 26.229168, 26.575809, 27.037997, 
+        27.384638, 27.846826, 28.193467, 28.655655, 29.117843, 
+        29.464484, 29.926672, 30.38886, 30.735501, 31.197689, 
+        31.659877, 32.122065, 32.584253, 32.930894, 33.393082, 
+        33.85527, 34.317457, 34.779645, 35.241833, 35.704021, 
+        36.166209, 36.628397, 37.090585, 37.552773, 38.014961, 
+        38.477149, 38.939337, 39.401525, 39.863713, 40.325901, 
+        40.788089, 41.365824, 41.828012, 42.2902, 42.752388, 
+        43.330123, 43.792311, 44.254499, 44.716687, 45.294422, 
+        45.75661, 46.334345, 46.796533, 47.258721, 47.836456, 
+        48.298644, 48.876379, 49.338567, 49.916302, 50.37849, 
+        50.956225, 51.418413, 51.996148, 52.573883, 53.036071, 
+        53.613806, 54.191541, 54.653729, 55.231464, 55.809199, 
+        56.386934, 56.849121, 57.426856, 58.004591, 58.582326, 
+        59.160061, 59.622249, 60.199984, 60.777719, 61.355454, 
+        61.933189, 62.510924, 63.088659, 63.666394, 64.244129, 
+        64.821864, 65.399599, 65.977334, 66.670616, 67.248351, 
+        67.826086, 68.403821, 68.981556, 69.559291, 70.252573, 
+        70.830308, 71.408043, 72.101325, 72.67906, 73.256795, 
+        73.950077, 74.527812, 75.105547, 75.798829, 76.376564, 
+        77.069846, 77.647581, 78.225316, 78.918598, 79.496332, 
+        80.189614, 80.882896, 81.460631, 82.153913, 82.731648, 
+        83.42493, 84.118212, 84.695947, 85.389229, 86.082511, 
+        86.660246, 87.353528, 88.04681, 88.740092, 89.317827, 
+        90.011109, 90.704391, 91.397673, 92.090955, 92.784237, 
+        93.477519, 94.055254, 94.748536, 95.441818, 96.1351, 
+        96.828382, 97.521664, 98.214946, 98.908228, 99.60151, 
+        100.29479, 101.10362, 101.7969, 102.49018, 103.18347, 
+        103.87675, 104.57003, 105.26331, 106.07214, 106.76542, 
+        107.45871, 108.15199, 108.96082, 109.6541, 110.34738, 
+        111.15621, 111.84949, 112.54277, 113.3516, 114.04488, 
+        114.85371, 115.54699, 116.24028, 117.04911, 117.74239, 
+        118.20458, 0, 0, 0.2111512, 0.3167268, 
+        0.4223024, 0.527878, 0.7390292, 0.8446048, 0.9501804, 
+        1.055756, 1.2669072, 1.3724828, 1.583634, 1.6892096, 
+        1.7947852, 2.0059364, 2.111512, 2.3226632, 2.4282388, 
+        2.63939, 2.8505412, 2.9561168, 3.167268, 3.3784192, 
+        3.4839948, 3.695146, 3.9062972, 4.1174484, 4.3285996, 
+        4.4341752, 4.6453264, 4.8564776, 5.0676288, 5.27878, 
+        5.4899312, 5.7010824, 5.9122336, 6.1233848, 6.334536, 
+        6.6512628, 6.862414, 7.0735652, 7.2847164, 7.4958676, 
+        7.7070188, 8.0237456, 8.2348968, 8.446048, 8.7627748, 
+        8.973926, 9.1850772, 9.501804, 9.7129552, 10.029682, 
+        10.240833, 10.55756, 10.768711, 11.085438, 11.296589, 
+        11.613316, 11.930043, 12.141194, 12.457921, 12.774648, 
+        12.985799, 13.302526, 13.619252, 13.935979, 14.252706, 
+        14.463857, 14.780584, 15.097311, 15.414038, 15.730764, 
+        16.047491, 16.364218, 16.680945, 16.997672, 17.314398, 
+        17.631125, 17.947852, 18.264579, 18.686881, 19.003608, 
+        19.320335, 19.637062, 19.953788, 20.376091, 20.692818, 
+        21.009544, 21.431847, 21.748574, 22.0653, 22.487603, 
+        22.80433, 23.226632, 23.543359, 23.965661, 24.282388, 
+        24.70469, 25.021417, 25.44372, 25.760446, 26.182749, 
+        26.605051, 26.921778, 27.34408, 27.766383, 28.08311, 
+        28.505412, 28.927714, 29.350017, 29.772319, 30.089046, 
+        30.511348, 30.933651, 31.355953, 31.778256, 32.200558, 
+        32.62286, 33.045163, 33.467465, 33.889768, 34.31207, 
+        34.734372, 35.156675, 35.578977, 36.00128, 36.423582, 
+        36.845884, 37.268187, 37.796065, 38.218367, 38.64067, 
+        39.062972, 39.59085, 40.013152, 40.435455, 40.857757, 
+        41.385635, 41.807938, 42.335816, 42.758118, 43.18042, 
+        43.708298, 44.130601, 44.658479, 45.080781, 45.608659, 
+        46.030962, 46.55884, 46.981142, 47.50902, 48.036898, 
+        48.4592, 48.987078, 49.514956, 49.937259, 50.465137, 
+        50.993015, 51.520893, 51.943195, 52.471073, 52.998951, 
+        53.526829, 54.054707, 54.47701, 55.004888, 55.532766, 
+        56.060644, 56.588522, 57.1164, 57.644278, 58.172156, 
+        58.700034, 59.227912, 59.75579, 60.283668, 60.917121, 
+        61.444999, 61.972877, 62.500755, 63.028633, 63.556511, 
+        64.189965, 64.717843, 65.245721, 65.879174, 66.407052, 
+        66.93493, 67.568384, 68.096262, 68.62414, 69.257594, 
+        69.785472, 70.418925, 70.946803, 71.474681, 72.108135, 
+        72.636013, 73.269466, 73.90292, 74.430798, 75.064252, 
+        75.59213, 76.225583, 76.859037, 77.386915, 78.020368, 
+        78.653822, 79.1817, 79.815154, 80.448607, 81.082061, 
+        81.609939, 82.243392, 82.876846, 83.5103, 84.143753, 
+        84.777207, 85.41066, 85.938538, 86.571992, 87.205446, 
+        87.838899, 88.472353, 89.105806, 89.73926, 90.372714, 
+        91.006167, 91.639621, 92.37865, 93.012104, 93.645557, 
+        94.279011, 94.912464, 95.545918, 96.179372, 96.918401, 
+        97.551854, 98.185308, 98.818762, 99.557791, 100.19124, 
+        100.8247, 101.56373, 102.19718, 102.83063, 103.56966, 
+        104.20312, 104.94215, 105.5756, 106.20905, 106.94808, 
+        107.58154, 108.00384, 0, 0, 0.19065189, 
+        0.28597784, 0.38130379, 0.47662974, 0.66728163, 0.76260758, 
+        0.85793353, 0.95325947, 1.1439114, 1.2392373, 1.4298892, 
+        1.5252152, 1.6205411, 1.811193, 1.9065189, 2.0971708, 
+        2.1924968, 2.3831487, 2.5738006, 2.6691265, 2.8597784, 
+        3.0504303, 3.1457563, 3.3364082, 3.5270601, 3.7177119, 
+        3.9083638, 4.0036898, 4.1943417, 4.3849936, 4.5756455, 
+        4.7662974, 4.9569493, 5.1476012, 5.3382531, 5.5289049, 
+        5.7195568, 6.0055347, 6.1961866, 6.3868385, 6.5774904, 
+        6.7681423, 6.9587942, 7.244772, 7.4354239, 7.6260758, 
+        7.9120536, 8.1027055, 8.2933574, 8.5793353, 8.7699872, 
+        9.055965, 9.2466169, 9.5325947, 9.7232466, 10.009224, 
+        10.199876, 10.485854, 10.771832, 10.962484, 11.248462, 
+        11.53444, 11.725092, 12.011069, 12.297047, 12.583025, 
+        12.869003, 13.059655, 13.345633, 13.63161, 13.917588, 
+        14.203566, 14.489544, 14.775522, 15.0615, 15.347478, 
+        15.633455, 15.919433, 16.205411, 16.491389, 16.872693, 
+        17.158671, 17.444648, 17.730626, 18.016604, 18.397908, 
+        18.683886, 18.969864, 19.351167, 19.637145, 19.923123, 
+        20.304427, 20.590405, 20.971708, 21.257686, 21.63899, 
+        21.924968, 22.306272, 22.59225, 22.973553, 23.259531, 
+        23.640835, 24.022139, 24.308117, 24.68942, 25.070724, 
+        25.356702, 25.738006, 26.11931, 26.500613, 26.881917, 
+        27.167895, 27.549199, 27.930503, 28.311806, 28.69311, 
+        29.074414, 29.455718, 29.837022, 30.218325, 30.599629, 
+        30.980933, 31.362237, 31.74354, 32.124844, 32.506148, 
+        32.887452, 33.268756, 33.650059, 34.126689, 34.507993, 
+        34.889297, 35.270601, 35.74723, 36.128534, 36.509838, 
+        36.891142, 37.367771, 37.749075, 38.225705, 38.607009, 
+        38.988312, 39.464942, 39.846246, 40.322876, 40.70418, 
+        41.180809, 41.562113, 42.038743, 42.420047, 42.896676, 
+        43.373306, 43.75461, 44.23124, 44.707869, 45.089173, 
+        45.565803, 46.042433, 46.519062, 46.900366, 47.376996, 
+        47.853626, 48.330255, 48.806885, 49.188189, 49.664819, 
+        50.141448, 50.618078, 51.094708, 51.571338, 52.047967, 
+        52.524597, 53.001227, 53.477856, 53.954486, 54.431116, 
+        55.003072, 55.479701, 55.956331, 56.432961, 56.909591, 
+        57.38622, 57.958176, 58.434806, 58.911435, 59.483391, 
+        59.960021, 60.436651, 61.008606, 61.485236, 61.961866, 
+        62.533821, 63.010451, 63.582407, 64.059037, 64.535666, 
+        65.107622, 65.584252, 66.156207, 66.728163, 67.204793, 
+        67.776749, 68.253378, 68.825334, 69.39729, 69.873919, 
+        70.445875, 71.017831, 71.494461, 72.066416, 72.638372, 
+        73.210328, 73.686957, 74.258913, 74.830869, 75.402824, 
+        75.97478, 76.546736, 77.118691, 77.595321, 78.167277, 
+        78.739233, 79.311188, 79.883144, 80.4551, 81.027055, 
+        81.599011, 82.170967, 82.742922, 83.410204, 83.98216, 
+        84.554115, 85.126071, 85.698027, 86.269982, 86.841938, 
+        87.50922, 88.081175, 88.653131, 89.225087, 89.892368, 
+        90.464324, 91.03628, 91.703561, 92.275517, 92.847473, 
+        93.514754, 94.08671, 94.753992, 95.325947, 95.897903, 
+        96.565185, 97.13714, 97.518444, 0, 0, 
+        0.16959733, 0.254396, 0.33919467, 0.42399333, 0.59359067, 
+        0.67838933, 0.763188, 0.84798667, 1.017584, 1.1023827, 
+        1.27198, 1.3567787, 1.4415773, 1.6111747, 1.6959733, 
+        1.8655707, 1.9503693, 2.1199667, 2.289564, 2.3743627, 
+        2.54396, 2.7135573, 2.798356, 2.9679533, 3.1375507, 
+        3.307148, 3.4767453, 3.561544, 3.7311413, 3.9007387, 
+        4.070336, 4.2399333, 4.4095307, 4.579128, 4.7487253, 
+        4.9183227, 5.08792, 5.342316, 5.5119133, 5.6815107, 
+        5.851108, 6.0207053, 6.1903027, 6.4446987, 6.614296, 
+        6.7838933, 7.0382893, 7.2078867, 7.377484, 7.63188, 
+        7.8014773, 8.0558733, 8.2254707, 8.4798667, 8.649464, 
+        8.90386, 9.0734573, 9.3278533, 9.5822493, 9.7518467, 
+        10.006243, 10.260639, 10.430236, 10.684632, 10.939028, 
+        11.193424, 11.44782, 11.617417, 11.871813, 12.126209, 
+        12.380605, 12.635001, 12.889397, 13.143793, 13.398189, 
+        13.652585, 13.906981, 14.161377, 14.415773, 14.670169, 
+        15.009364, 15.26376, 15.518156, 15.772552, 16.026948, 
+        16.366143, 16.620539, 16.874935, 17.214129, 17.468525, 
+        17.722921, 18.062116, 18.316512, 18.655707, 18.910103, 
+        19.249297, 19.503693, 19.842888, 20.097284, 20.436479, 
+        20.690875, 21.030069, 21.369264, 21.62366, 21.962855, 
+        22.302049, 22.556445, 22.89564, 23.234835, 23.574029, 
+        23.913224, 24.16762, 24.506815, 24.846009, 25.185204, 
+        25.524399, 25.863593, 26.202788, 26.541983, 26.881177, 
+        27.220372, 27.559567, 27.898761, 28.237956, 28.577151, 
+        28.916345, 29.25554, 29.594735, 29.933929, 30.357923, 
+        30.697117, 31.036312, 31.375507, 31.7995, 32.138695, 
+        32.477889, 32.817084, 33.241077, 33.580272, 34.004265, 
+        34.34346, 34.682655, 35.106648, 35.445843, 35.869836, 
+        36.209031, 36.633024, 36.972219, 37.396212, 37.735407, 
+        38.1594, 38.583393, 38.922588, 39.346581, 39.770575, 
+        40.109769, 40.533763, 40.957756, 41.381749, 41.720944, 
+        42.144937, 42.568931, 42.992924, 43.416917, 43.756112, 
+        44.180105, 44.604099, 45.028092, 45.452085, 45.876079, 
+        46.300072, 46.724065, 47.148059, 47.572052, 47.996045, 
+        48.420039, 48.928831, 49.352824, 49.776817, 50.200811, 
+        50.624804, 51.048797, 51.557589, 51.981583, 52.405576, 
+        52.914368, 53.338361, 53.762355, 54.271147, 54.69514, 
+        55.119133, 55.627925, 56.051919, 56.560711, 56.984704, 
+        57.408697, 57.917489, 58.341483, 58.850275, 59.359067, 
+        59.78306, 60.291852, 60.715845, 61.224637, 61.733429, 
+        62.157423, 62.666215, 63.175007, 63.599, 64.107792, 
+        64.616584, 65.125376, 65.549369, 66.058161, 66.566953, 
+        67.075745, 67.584537, 68.093329, 68.602121, 69.026115, 
+        69.534907, 70.043699, 70.552491, 71.061283, 71.570075, 
+        72.078867, 72.587659, 73.096451, 73.605243, 74.198833, 
+        74.707625, 75.216417, 75.725209, 76.234001, 76.742793, 
+        77.251585, 77.845176, 78.353968, 78.86276, 79.371552, 
+        79.965143, 80.473935, 80.982727, 81.576317, 82.085109, 
+        82.593901, 83.187492, 83.696284, 84.289875, 84.798667, 
+        85.307459, 85.901049, 86.409841, 86.749036, 0, 
+        0, 0.1473171, 0.22097565, 0.2946342, 0.36829274, 
+        0.51560984, 0.58926839, 0.66292694, 0.73658549, 0.88390259, 
+        0.95756113, 1.1048782, 1.1785368, 1.2521953, 1.3995124, 
+        1.473171, 1.6204881, 1.6941466, 1.8414637, 1.9887808, 
+        2.0624394, 2.2097565, 2.3570736, 2.4307321, 2.5780492, 
+        2.7253663, 2.8726834, 3.0200005, 3.0936591, 3.2409761, 
+        3.3882932, 3.5356103, 3.6829274, 3.8302445, 3.9775616, 
+        4.1248787, 4.2721958, 4.4195129, 4.6404886, 4.7878057, 
+        4.9351228, 5.0824399, 5.229757, 5.3770741, 5.5980497, 
+        5.7453668, 5.8926839, 6.1136596, 6.2609766, 6.4082937, 
+        6.6292694, 6.7765865, 6.9975621, 7.1448792, 7.3658549, 
+        7.513172, 7.7341476, 7.8814647, 8.1024404, 8.323416, 
+        8.4707331, 8.6917088, 8.9126844, 9.0600015, 9.2809772, 
+        9.5019528, 9.7229284, 9.9439041, 10.091221, 10.312197, 
+        10.533172, 10.754148, 10.975124, 11.196099, 11.417075, 
+        11.638051, 11.859026, 12.080002, 12.300978, 12.521953, 
+        12.742929, 13.037563, 13.258539, 13.479514, 13.70049, 
+        13.921466, 14.2161, 14.437076, 14.658051, 14.952685, 
+        15.173661, 15.394637, 15.689271, 15.910247, 16.204881, 
+        16.425856, 16.720491, 16.941466, 17.2361, 17.457076, 
+        17.75171, 17.972686, 18.26732, 18.561954, 18.78293, 
+        19.077564, 19.372198, 19.593174, 19.887808, 20.182442, 
+        20.477077, 20.771711, 20.992686, 21.287321, 21.581955, 
+        21.876589, 22.171223, 22.465857, 22.760492, 23.055126, 
+        23.34976, 23.644394, 23.939028, 24.233663, 24.528297, 
+        24.822931, 25.117565, 25.412199, 25.706834, 26.001468, 
+        26.36976, 26.664395, 26.959029, 27.253663, 27.621956, 
+        27.91659, 28.211224, 28.505858, 28.874151, 29.168785, 
+        29.537078, 29.831712, 30.126346, 30.494639, 30.789273, 
+        31.157566, 31.4522, 31.820493, 32.115127, 32.48342, 
+        32.778054, 33.146347, 33.51464, 33.809274, 34.177567, 
+        34.545859, 34.840494, 35.208786, 35.577079, 35.945372, 
+        36.240006, 36.608299, 36.976592, 37.344884, 37.713177, 
+        38.007811, 38.376104, 38.744397, 39.112689, 39.480982, 
+        39.849275, 40.217568, 40.58586, 40.954153, 41.322446, 
+        41.690739, 42.059031, 42.500983, 42.869275, 43.237568, 
+        43.605861, 43.974154, 44.342446, 44.784398, 45.15269, 
+        45.520983, 45.962934, 46.331227, 46.69952, 47.141471, 
+        47.509764, 47.878057, 48.320008, 48.688301, 49.130252, 
+        49.498545, 49.866838, 50.308789, 50.677082, 51.119033, 
+        51.560984, 51.929277, 52.371228, 52.739521, 53.181472, 
+        53.623424, 53.991716, 54.433668, 54.875619, 55.243912, 
+        55.685863, 56.127814, 56.569765, 56.938058, 57.38001, 
+        57.821961, 58.263912, 58.705863, 59.147815, 59.589766, 
+        59.958059, 60.40001, 60.841961, 61.283913, 61.725864, 
+        62.167815, 62.609766, 63.051718, 63.493669, 63.93562, 
+        64.45123, 64.893182, 65.335133, 65.777084, 66.219035, 
+        66.660987, 67.102938, 67.618548, 68.060499, 68.50245, 
+        68.944402, 69.460012, 69.901963, 70.343914, 70.859524, 
+        71.301475, 71.743427, 72.259036, 72.700988, 73.216598, 
+        73.658549, 74.1005, 74.61611, 75.058061, 75.352695, 
+        0, 0, 0.12541802, 0.18812703, 0.25083604, 
+        0.31354505, 0.43896307, 0.50167207, 0.56438108, 0.62709009, 
+        0.75250811, 0.81521712, 0.94063514, 1.0033441, 1.0660532, 
+        1.1914712, 1.2541802, 1.3795982, 1.4423072, 1.5677252, 
+        1.6931433, 1.7558523, 1.8812703, 2.0066883, 2.0693973, 
+        2.1948153, 2.3202333, 2.4456514, 2.5710694, 2.6337784, 
+        2.7591964, 2.8846144, 3.0100324, 3.1354505, 3.2608685, 
+        3.3862865, 3.5117045, 3.6371225, 3.7625406, 3.9506676, 
+        4.0760856, 4.2015036, 4.3269216, 4.4523397, 4.5777577, 
+        4.7658847, 4.8913027, 5.0167207, 5.2048478, 5.3302658, 
+        5.4556838, 5.6438108, 5.7692289, 5.9573559, 6.0827739, 
+        6.2709009, 6.396319, 6.584446, 6.709864, 6.897991, 
+        7.0861181, 7.2115361, 7.3996631, 7.5877901, 7.7132081, 
+        7.9013352, 8.0894622, 8.2775892, 8.4657163, 8.5911343, 
+        8.7792613, 8.9673883, 9.1555154, 9.3436424, 9.5317694, 
+        9.7198964, 9.9080235, 10.096151, 10.284278, 10.472405, 
+        10.660532, 10.848659, 11.099495, 11.287622, 11.475749, 
+        11.663876, 11.852003, 12.102839, 12.290966, 12.479093, 
+        12.729929, 12.918056, 13.106183, 13.357019, 13.545146, 
+        13.795982, 13.984109, 14.234945, 14.423072, 14.673908, 
+        14.862035, 15.112871, 15.300998, 15.551834, 15.80267, 
+        15.990797, 16.241633, 16.492469, 16.680596, 16.931433, 
+        17.182269, 17.433105, 17.683941, 17.872068, 18.122904, 
+        18.37374, 18.624576, 18.875412, 19.126248, 19.377084, 
+        19.62792, 19.878756, 20.129592, 20.380428, 20.631264, 
+        20.8821, 21.132936, 21.383772, 21.634608, 21.885444, 
+        22.13628, 22.449825, 22.700661, 22.951497, 23.202333, 
+        23.515878, 23.766715, 24.017551, 24.268387, 24.581932, 
+        24.832768, 25.146313, 25.397149, 25.647985, 25.96153, 
+        26.212366, 26.525911, 26.776747, 27.090292, 27.341128, 
+        27.654673, 27.905509, 28.219054, 28.532599, 28.783435, 
+        29.09698, 29.410525, 29.661361, 29.974906, 30.288452, 
+        30.601997, 30.852833, 31.166378, 31.479923, 31.793468, 
+        32.107013, 32.357849, 32.671394, 32.984939, 33.298484, 
+        33.612029, 33.925574, 34.239119, 34.552664, 34.866209, 
+        35.179754, 35.493299, 35.806844, 36.183098, 36.496643, 
+        36.810188, 37.123734, 37.437279, 37.750824, 38.127078, 
+        38.440623, 38.754168, 39.130422, 39.443967, 39.757512, 
+        40.133766, 40.447311, 40.760856, 41.13711, 41.450655, 
+        41.826909, 42.140454, 42.453999, 42.830253, 43.143798, 
+        43.520052, 43.896307, 44.209852, 44.586106, 44.899651, 
+        45.275905, 45.652159, 45.965704, 46.341958, 46.718212, 
+        47.031757, 47.408011, 47.784265, 48.160519, 48.474064, 
+        48.850318, 49.226572, 49.602826, 49.97908, 50.355334, 
+        50.731589, 51.045134, 51.421388, 51.797642, 52.173896, 
+        52.55015, 52.926404, 53.302658, 53.678912, 54.055166, 
+        54.43142, 54.870383, 55.246637, 55.622891, 55.999145, 
+        56.375399, 56.751653, 57.127907, 57.566871, 57.943125, 
+        58.319379, 58.695633, 59.134596, 59.51085, 59.887104, 
+        60.326067, 60.702321, 61.078575, 61.517538, 61.893792, 
+        62.332755, 62.709009, 63.085263, 63.524226, 63.90048, 
+        64.151317, 0, 0.13401506, 0.26803012, 0.40204518, 
+        0.53606024, 0.67007529, 0.93810541, 1.0721205, 1.2061355, 
+        1.3401506, 1.6081807, 1.7421958, 2.0102259, 2.1442409, 
+        2.278256, 2.5462861, 2.6803012, 2.9483313, 3.0823464, 
+        3.3503765, 3.6184066, 3.7524216, 4.0204518, 4.2884819, 
+        4.4224969, 4.6905271, 4.9585572, 5.2265873, 5.4946174, 
+        5.6286325, 5.8966626, 6.1646927, 6.4327228, 6.7007529, 
+        6.9687831, 7.2368132, 7.5048433, 7.7728734, 8.0409035, 
+        8.4429487, 8.7109788, 8.9790089, 9.2470391, 9.5150692, 
+        9.7830993, 10.185144, 10.453175, 10.721205, 11.12325, 
+        11.39128, 11.65931, 12.061355, 12.329385, 12.731431, 
+        12.999461, 13.401506, 13.669536, 14.071581, 14.339611, 
+        14.741656, 15.143702, 15.411732, 15.813777, 16.215822, 
+        16.483852, 16.885897, 17.287943, 17.689988, 18.092033, 
+        18.360063, 18.762108, 19.164153, 19.566199, 19.968244, 
+        20.370289, 20.772334, 21.174379, 21.576424, 21.97847, 
+        22.380515, 22.78256, 23.184605, 23.720665, 24.122711, 
+        24.524756, 24.926801, 25.328846, 25.864906, 26.266952, 
+        26.668997, 27.205057, 27.607102, 28.009147, 28.545208, 
+        28.947253, 29.483313, 29.885358, 30.421418, 30.823464, 
+        31.359524, 31.761569, 32.297629, 32.699674, 33.235735, 
+        33.771795, 34.17384, 34.7099, 35.24596, 35.648006, 
+        36.184066, 36.720126, 37.256186, 37.792247, 38.194292, 
+        38.730352, 39.266412, 39.802472, 40.338533, 40.874593, 
+        41.410653, 41.946713, 42.482774, 43.018834, 43.554894, 
+        44.090954, 44.627015, 45.163075, 45.699135, 46.235195, 
+        46.771256, 47.307316, 47.977391, 48.513451, 49.049512, 
+        49.585572, 50.255647, 50.791707, 51.327768, 51.863828, 
+        52.533903, 53.069963, 53.740039, 54.276099, 54.812159, 
+        55.482234, 56.018295, 56.68837, 57.22443, 57.894505, 
+        58.430566, 59.100641, 59.636701, 60.306776, 60.976852, 
+        61.512912, 62.182987, 62.853063, 63.389123, 64.059198, 
+        64.729273, 65.399349, 65.935409, 66.605484, 67.27556, 
+        67.945635, 68.61571, 69.15177, 69.821846, 70.491921, 
+        71.161996, 71.832072, 72.502147, 73.172222, 73.842297, 
+        74.512373, 75.182448, 75.852523, 76.522599, 77.326689, 
+        77.996764, 78.66684, 79.336915, 80.00699, 80.677065, 
+        81.481156, 82.151231, 82.821306, 83.625397, 84.295472, 
+        84.965547, 85.769638, 86.439713, 87.109788, 87.913879, 
+        88.583954, 89.388044, 90.05812, 90.728195, 91.532285, 
+        92.20236, 93.006451, 93.810541, 94.480616, 95.284707, 
+        95.954782, 96.758872, 97.562963, 98.233038, 99.037128, 
+        99.841219, 100.51129, 101.31538, 102.11947, 102.92357, 
+        103.59364, 104.39773, 105.20182, 106.00591, 106.81, 
+        107.61409, 108.41818, 109.08826, 109.89235, 110.69644, 
+        111.50053, 112.30462, 113.10871, 113.9128, 114.71689, 
+        115.52098, 116.32507, 117.26318, 118.06727, 118.87136, 
+        119.67545, 120.47954, 121.28363, 122.08772, 123.02582, 
+        123.82991, 124.634, 125.4381, 126.3762, 127.18029, 
+        127.98438, 128.92249, 129.72658, 130.53067, 131.46877, 
+        132.27286, 133.21097, 134.01506, 134.81915, 135.75725, 
+        136.56134, 137.09741, 0, 0.10460836, 0.20921672, 
+        0.31382508, 0.41843344, 0.5230418, 0.73225853, 0.83686689, 
+        0.94147525, 1.0460836, 1.2553003, 1.3599087, 1.5691254, 
+        1.6737338, 1.7783421, 1.9875589, 2.0921672, 2.3013839, 
+        2.4059923, 2.615209, 2.8244257, 2.9290341, 3.1382508, 
+        3.3474675, 3.4520759, 3.6612926, 3.8705094, 4.0797261, 
+        4.2889428, 4.3935512, 4.6027679, 4.8119846, 5.0212013, 
+        5.230418, 5.4396348, 5.6488515, 5.8580682, 6.0672849, 
+        6.2765017, 6.5903267, 6.7995435, 7.0087602, 7.2179769, 
+        7.4271936, 7.6364103, 7.9502354, 8.1594522, 8.3686689, 
+        8.682494, 8.8917107, 9.1009274, 9.4147525, 9.6239692, 
+        9.9377943, 10.147011, 10.460836, 10.670053, 10.983878, 
+        11.193095, 11.50692, 11.820745, 12.029962, 12.343787, 
+        12.657612, 12.866828, 13.180653, 13.494479, 13.808304, 
+        14.122129, 14.331345, 14.645171, 14.958996, 15.272821, 
+        15.586646, 15.900471, 16.214296, 16.528121, 16.841946, 
+        17.155771, 17.469596, 17.783421, 18.097246, 18.51568, 
+        18.829505, 19.14333, 19.457155, 19.77098, 20.189414, 
+        20.503239, 20.817064, 21.235497, 21.549322, 21.863147, 
+        22.281581, 22.595406, 23.013839, 23.327664, 23.746098, 
+        24.059923, 24.478356, 24.792182, 25.210615, 25.52444, 
+        25.942874, 26.361307, 26.675132, 27.093565, 27.511999, 
+        27.825824, 28.244257, 28.662691, 29.081124, 29.499558, 
+        29.813383, 30.231816, 30.65025, 31.068683, 31.487117, 
+        31.90555, 32.323984, 32.742417, 33.16085, 33.579284, 
+        33.997717, 34.416151, 34.834584, 35.253018, 35.671451, 
+        36.089885, 36.508318, 36.926751, 37.449793, 37.868227, 
+        38.28666, 38.705094, 39.228135, 39.646569, 40.065002, 
+        40.483436, 41.006477, 41.424911, 41.947953, 42.366386, 
+        42.78482, 43.307861, 43.726295, 44.249337, 44.66777, 
+        45.190812, 45.609245, 46.132287, 46.550721, 47.073762, 
+        47.596804, 48.015238, 48.538279, 49.061321, 49.479755, 
+        50.002797, 50.525838, 51.04888, 51.467314, 51.990355, 
+        52.513397, 53.036439, 53.559481, 53.977914, 54.500956, 
+        55.023998, 55.54704, 56.070081, 56.593123, 57.116165, 
+        57.639207, 58.162249, 58.68529, 59.208332, 59.731374, 
+        60.359024, 60.882066, 61.405108, 61.92815, 62.451191, 
+        62.974233, 63.601883, 64.124925, 64.647967, 65.275617, 
+        65.798659, 66.321701, 66.949351, 67.472393, 67.995435, 
+        68.623085, 69.146127, 69.773777, 70.296819, 70.81986, 
+        71.447511, 71.970552, 72.598202, 73.225853, 73.748894, 
+        74.376545, 74.899586, 75.527237, 76.154887, 76.677929, 
+        77.305579, 77.933229, 78.456271, 79.083921, 79.711571, 
+        80.339221, 80.862263, 81.489913, 82.117563, 82.745213, 
+        83.372864, 84.000514, 84.628164, 85.151206, 85.778856, 
+        86.406506, 87.034156, 87.661806, 88.289457, 88.917107, 
+        89.544757, 90.172407, 90.800057, 91.532316, 92.159966, 
+        92.787616, 93.415266, 94.042916, 94.670567, 95.298217, 
+        96.030475, 96.658125, 97.285776, 97.913426, 98.645684, 
+        99.273335, 99.900985, 100.63324, 101.26089, 101.88854, 
+        102.6208, 103.24845, 103.98071, 104.60836, 105.23601, 
+        105.96827, 106.59592, 107.01435, 0, 0.5, 
+        1, 1.5, 2, 2.5, 3, 
+        3.5, 4, 4.5, 5, 5.5, 
+        6, 6.5, 7, 7.5, 8, 
+        8.5, 9, 9.5, 10, 10.5, 
+        11, 11.5, 12, 12.5, 13, 
+        13.5, 14, 14.5, 15, 15.5, 
+        16, 16.5, 17, 17.5, 18, 
+        18.5, 19, 19.5, 20, 20.5, 
+        21, 21.5, 22, 22.5, 23, 
+        23.5, 24, 24.5, 25, 25.5, 
+        26, 26.5, 27, 27.5, 28, 
+        28.5, 29, 29.5, 30, 30.5, 
+        31, 31.5, 32, 32.5, 33, 
+        33.5, 34, 34.5, 35, 35.5, 
+        36, 36.5, 37, 37.5, 38, 
+        38.5, 39, 39.5, 40, 40.5, 
+        41, 41.5, 42, 42.5, 43, 
+        43.5, 44, 44.5, 45, 45.5, 
+        46, 46.5, 47, 47.5, 48, 
+        48.5, 49, 49.5, 50, 50.5, 
+        51, 51.5, 52, 52.5, 53, 
+        53.5, 54, 54.5, 55, 55.5, 
+        56, 56.5, 57, 57.5, 58, 
+        58.5, 59, 59.5, 60, 60.5, 
+        61, 61.5, 62, 62.5, 63, 
+        63.5, 64, 64.5, 65, 65.5, 
+        66, 66.5, 67, 67.5, 68, 
+        68.5, 69, 69.5, 70, 70.5, 
+        71, 71.5, 72, 72.5, 73, 
+        73.5, 74, 74.5, 75, 75.5, 
+        76, 76.5, 77, 77.5, 78, 
+        78.5, 79, 79.5, 80, 80.5, 
+        81, 81.5, 82, 82.5, 83, 
+        83.5, 84, 84.5, 85, 85.5, 
+        86, 86.5, 87, 87.5, 88, 
+        88.5, 89, 89.5, 90, 90.5, 
+        91, 91.5, 92, 92.5, 93, 
+        93.5, 94, 94.5, 95, 95.5, 
+        96, 96.5, 97, 97.5, 98, 
+        98.5, 99, 99.5, 100, 100.5, 
+        101, 101.5, 102, 102.5, 103, 
+        103.5, 104, 104.5, 105, 105.5, 
+        106, 106.5, 107, 107.5, 108, 
+        108.5, 109, 109.5, 110, 110.5, 
+        111, 111.5, 112, 112.5, 113, 
+        113.5, 114, 114.5, 115, 115.5, 
+        116, 116.5, 117, 117.5, 118, 
+        118.5, 119, 119.5, 120, 120.5, 
+        121, 121.5, 122, 122.5, 123, 
+        123.5, 124, 124.5, 125, 125.5, 
+        126, 126.5, 127, 127.5, 0, 
+        0.5, 1, 1.5, 2, 2.5, 
+        3, 3.5, 4, 4.5, 5, 
+        5.5, 6, 6.5, 7, 7.5, 
+        8, 8.5, 9, 9.5, 10, 
+        10.5, 11, 11.5, 12, 12.5, 
+        13, 13.5, 14, 14.5, 15, 
+        15.5, 16, 16.5, 17, 17.5, 
+        18, 18.5, 19, 19.5, 20, 
+        20.5, 21, 21.5, 22, 22.5, 
+        23, 23.5, 24, 24.5, 25, 
+        25.5, 26, 26.5, 27, 27.5, 
+        28, 28.5, 29, 29.5, 30, 
+        30.5, 31, 31.5, 32, 32.5, 
+        33, 33.5, 34, 34.5, 35, 
+        35.5, 36, 36.5, 37, 37.5, 
+        38, 38.5, 39, 39.5, 40, 
+        40.5, 41, 41.5, 42, 42.5, 
+        43, 43.5, 44, 44.5, 45, 
+        45.5, 46, 46.5, 47, 47.5, 
+        48, 48.5, 49, 49.5, 50, 
+        50.5, 51, 51.5, 52, 52.5, 
+        53, 53.5, 54, 54.5, 55, 
+        55.5, 56, 56.5, 57, 57.5, 
+        58, 58.5, 59, 59.5, 60, 
+        60.5, 61, 61.5, 62, 62.5, 
+        63, 63.5, 64, 64.5, 65, 
+        65.5, 66, 66.5, 67, 67.5, 
+        68, 68.5, 69, 69.5, 70, 
+        70.5, 71, 71.5, 72, 72.5, 
+        73, 73.5, 74, 74.5, 75, 
+        75.5, 76, 76.5, 77, 77.5, 
+        78, 78.5, 79, 79.5, 80, 
+        80.5, 81, 81.5, 82, 82.5, 
+        83, 83.5, 84, 84.5, 85, 
+        85.5, 86, 86.5, 87, 87.5, 
+        88, 88.5, 89, 89.5, 90, 
+        90.5, 91, 91.5, 92, 92.5, 
+        93, 93.5, 94, 94.5, 95, 
+        95.5, 96, 96.5, 97, 97.5, 
+        98, 98.5, 99, 99.5, 100, 
+        100.5, 101, 101.5, 102, 102.5, 
+        103, 103.5, 104, 104.5, 105, 
+        105.5, 106, 106.5, 107, 107.5, 
+        108, 108.5, 109, 109.5, 110, 
+        110.5, 111, 111.5, 112, 112.5, 
+        113, 113.5, 114, 114.5, 115, 
+        115.5, 116, 116.5, 117, 117.5, 
+        118, 118.5, 119, 119.5, 120, 
+        120.5, 121, 121.5, 122, 122.5, 
+        123, 123.5, 124, 124.5, 125, 
+        125.5, 126, 126.5, 127, 127.5, 
+        0, 0.5, 1, 1.5, 2, 
+        2.5, 3, 3.5, 4, 4.5, 
+        5, 5.5, 6, 6.5, 7, 
+        7.5, 8, 8.5, 9, 9.5, 
+        10, 10.5, 11, 11.5, 12, 
+        12.5, 13, 13.5, 14, 14.5, 
+        15, 15.5, 16, 16.5, 17, 
+        17.5, 18, 18.5, 19, 19.5, 
+        20, 20.5, 21, 21.5, 22, 
+        22.5, 23, 23.5, 24, 24.5, 
+        25, 25.5, 26, 26.5, 27, 
+        27.5, 28, 28.5, 29, 29.5, 
+        30, 30.5, 31, 31.5, 32, 
+        32.5, 33, 33.5, 34, 34.5, 
+        35, 35.5, 36, 36.5, 37, 
+        37.5, 38, 38.5, 39, 39.5, 
+        40, 40.5, 41, 41.5, 42, 
+        42.5, 43, 43.5, 44, 44.5, 
+        45, 45.5, 46, 46.5, 47, 
+        47.5, 48, 48.5, 49, 49.5, 
+        50, 50.5, 51, 51.5, 52, 
+        52.5, 53, 53.5, 54, 54.5, 
+        55, 55.5, 56, 56.5, 57, 
+        57.5, 58, 58.5, 59, 59.5, 
+        60, 60.5, 61, 61.5, 62, 
+        62.5, 63, 63.5, 64, 64.5, 
+        65, 65.5, 66, 66.5, 67, 
+        67.5, 68, 68.5, 69, 69.5, 
+        70, 70.5, 71, 71.5, 72, 
+        72.5, 73, 73.5, 74, 74.5, 
+        75, 75.5, 76, 76.5, 77, 
+        77.5, 78, 78.5, 79, 79.5, 
+        80, 80.5, 81, 81.5, 82, 
+        82.5, 83, 83.5, 84, 84.5, 
+        85, 85.5, 86, 86.5, 87, 
+        87.5, 88, 88.5, 89, 89.5, 
+        90, 90.5, 91, 91.5, 92, 
+        92.5, 93, 93.5, 94, 94.5, 
+        95, 95.5, 96, 96.5, 97, 
+        97.5, 98, 98.5, 99, 99.5, 
+        100, 100.5, 101, 101.5, 102, 
+        102.5, 103, 103.5, 104, 104.5, 
+        105, 105.5, 106, 106.5, 107, 
+        107.5, 108, 108.5, 109, 109.5, 
+        110, 110.5, 111, 111.5, 112, 
+        112.5, 113, 113.5, 114, 114.5, 
+        115, 115.5, 116, 116.5, 117, 
+        117.5, 118, 118.5, 119, 119.5, 
+        120, 120.5, 121, 121.5, 122, 
+        122.5, 123, 123.5, 124, 124.5, 
+        125, 125.5, 126, 126.5, 127, 
+        127.5, 0, 0.5, 1, 1.5, 
+        2, 2.5, 3, 3.5, 4, 
+        4.5, 5, 5.5, 6, 6.5, 
+        7, 7.5, 8, 8.5, 9, 
+        9.5, 10, 10.5, 11, 11.5, 
+        12, 12.5, 13, 13.5, 14, 
+        14.5, 15, 15.5, 16, 16.5, 
+        17, 17.5, 18, 18.5, 19, 
+        19.5, 20, 20.5, 21, 21.5, 
+        22, 22.5, 23, 23.5, 24, 
+        24.5, 25, 25.5, 26, 26.5, 
+        27, 27.5, 28, 28.5, 29, 
+        29.5, 30, 30.5, 31, 31.5, 
+        32, 32.5, 33, 33.5, 34, 
+        34.5, 35, 35.5, 36, 36.5, 
+        37, 37.5, 38, 38.5, 39, 
+        39.5, 40, 40.5, 41, 41.5, 
+        42, 42.5, 43, 43.5, 44, 
+        44.5, 45, 45.5, 46, 46.5, 
+        47, 47.5, 48, 48.5, 49, 
+        49.5, 50, 50.5, 51, 51.5, 
+        52, 52.5, 53, 53.5, 54, 
+        54.5, 55, 55.5, 56, 56.5, 
+        57, 57.5, 58, 58.5, 59, 
+        59.5, 60, 60.5, 61, 61.5, 
+        62, 62.5, 63, 63.5, 64, 
+        64.5, 65, 65.5, 66, 66.5, 
+        67, 67.5, 68, 68.5, 69, 
+        69.5, 70, 70.5, 71, 71.5, 
+        72, 72.5, 73, 73.5, 74, 
+        74.5, 75, 75.5, 76, 76.5, 
+        77, 77.5, 78, 78.5, 79, 
+        79.5, 80, 80.5, 81, 81.5, 
+        82, 82.5, 83, 83.5, 84, 
+        84.5, 85, 85.5, 86, 86.5, 
+        87, 87.5, 88, 88.5, 89, 
+        89.5, 90, 90.5, 91, 91.5, 
+        92, 92.5, 93, 93.5, 94, 
+        94.5, 95, 95.5, 96, 96.5, 
+        97, 97.5, 98, 98.5, 99, 
+        99.5, 100, 100.5, 101, 101.5, 
+        102, 102.5, 103, 103.5, 104, 
+        104.5, 105, 105.5, 106, 106.5, 
+        107, 107.5, 108, 108.5, 109, 
+        109.5, 110, 110.5, 111, 111.5, 
+        112, 112.5, 113, 113.5, 114, 
+        114.5, 115, 115.5, 116, 116.5, 
+        117, 117.5, 118, 118.5, 119, 
+        119.5, 120, 120.5, 121, 121.5, 
+        122, 122.5, 123, 123.5, 124, 
+        124.5, 125, 125.5, 126, 126.5, 
+        127, 127.5 ) ),
+    L1EcalEtThresholdsNegativeEta = cms.vdouble( (0, 0.5, 1, 1.5, 2, 
+        2.5, 3, 3.5, 4, 4.5, 
+        5, 5.5, 6, 6.5, 7, 
+        7.5, 8, 8.5, 9, 9.5, 
+        10, 10.5, 11, 11.5, 12, 
+        12.5, 13, 13.5, 14, 14.5, 
+        15, 15.5, 16, 16.5, 17, 
+        17.5, 18, 18.5, 19, 19.5, 
+        20, 20.5, 21, 21.5, 22, 
+        22.5, 23, 23.5, 24, 24.5, 
+        25, 25.5, 26, 26.5, 27, 
+        27.5, 28, 28.5, 29, 29.5, 
+        30, 30.5, 31, 31.5, 32, 
+        32.5, 33, 33.5, 34, 34.5, 
+        35, 35.5, 36, 36.5, 37, 
+        37.5, 38, 38.5, 39, 39.5, 
+        40, 40.5, 41, 41.5, 42, 
+        42.5, 43, 43.5, 44, 44.5, 
+        45, 45.5, 46, 46.5, 47, 
+        47.5, 48, 48.5, 49, 49.5, 
+        50, 50.5, 51, 51.5, 52, 
+        52.5, 53, 53.5, 54, 54.5, 
+        55, 55.5, 56, 56.5, 57, 
+        57.5, 58, 58.5, 59, 59.5, 
+        60, 60.5, 61, 61.5, 62, 
+        62.5, 63, 63.5, 64, 64.5, 
+        65, 65.5, 66, 66.5, 67, 
+        67.5, 68, 68.5, 69, 69.5, 
+        70, 70.5, 71, 71.5, 72, 
+        72.5, 73, 73.5, 74, 74.5, 
+        75, 75.5, 76, 76.5, 77, 
+        77.5, 78, 78.5, 79, 79.5, 
+        80, 80.5, 81, 81.5, 82, 
+        82.5, 83, 83.5, 84, 84.5, 
+        85, 85.5, 86, 86.5, 87, 
+        87.5, 88, 88.5, 89, 89.5, 
+        90, 90.5, 91, 91.5, 92, 
+        92.5, 93, 93.5, 94, 94.5, 
+        95, 95.5, 96, 96.5, 97, 
+        97.5, 98, 98.5, 99, 99.5, 
+        100, 100.5, 101, 101.5, 102, 
+        102.5, 103, 103.5, 104, 104.5, 
+        105, 105.5, 106, 106.5, 107, 
+        107.5, 108, 108.5, 109, 109.5, 
+        110, 110.5, 111, 111.5, 112, 
+        112.5, 113, 113.5, 114, 114.5, 
+        115, 115.5, 116, 116.5, 117, 
+        117.5, 118, 118.5, 119, 119.5, 
+        120, 120.5, 121, 121.5, 122, 
+        122.5, 123, 123.5, 124, 124.5, 
+        125, 125.5, 126, 126.5, 127, 
+        127.5, 0, 0.5, 1, 1.5, 
+        2, 2.5, 3, 3.5, 4, 
+        4.5, 5, 5.5, 6, 6.5, 
+        7, 7.5, 8, 8.5, 9, 
+        9.5, 10, 10.5, 11, 11.5, 
+        12, 12.5, 13, 13.5, 14, 
+        14.5, 15, 15.5, 16, 16.5, 
+        17, 17.5, 18, 18.5, 19, 
+        19.5, 20, 20.5, 21, 21.5, 
+        22, 22.5, 23, 23.5, 24, 
+        24.5, 25, 25.5, 26, 26.5, 
+        27, 27.5, 28, 28.5, 29, 
+        29.5, 30, 30.5, 31, 31.5, 
+        32, 32.5, 33, 33.5, 34, 
+        34.5, 35, 35.5, 36, 36.5, 
+        37, 37.5, 38, 38.5, 39, 
+        39.5, 40, 40.5, 41, 41.5, 
+        42, 42.5, 43, 43.5, 44, 
+        44.5, 45, 45.5, 46, 46.5, 
+        47, 47.5, 48, 48.5, 49, 
+        49.5, 50, 50.5, 51, 51.5, 
+        52, 52.5, 53, 53.5, 54, 
+        54.5, 55, 55.5, 56, 56.5, 
+        57, 57.5, 58, 58.5, 59, 
+        59.5, 60, 60.5, 61, 61.5, 
+        62, 62.5, 63, 63.5, 64, 
+        64.5, 65, 65.5, 66, 66.5, 
+        67, 67.5, 68, 68.5, 69, 
+        69.5, 70, 70.5, 71, 71.5, 
+        72, 72.5, 73, 73.5, 74, 
+        74.5, 75, 75.5, 76, 76.5, 
+        77, 77.5, 78, 78.5, 79, 
+        79.5, 80, 80.5, 81, 81.5, 
+        82, 82.5, 83, 83.5, 84, 
+        84.5, 85, 85.5, 86, 86.5, 
+        87, 87.5, 88, 88.5, 89, 
+        89.5, 90, 90.5, 91, 91.5, 
+        92, 92.5, 93, 93.5, 94, 
+        94.5, 95, 95.5, 96, 96.5, 
+        97, 97.5, 98, 98.5, 99, 
+        99.5, 100, 100.5, 101, 101.5, 
+        102, 102.5, 103, 103.5, 104, 
+        104.5, 105, 105.5, 106, 106.5, 
+        107, 107.5, 108, 108.5, 109, 
+        109.5, 110, 110.5, 111, 111.5, 
+        112, 112.5, 113, 113.5, 114, 
+        114.5, 115, 115.5, 116, 116.5, 
+        117, 117.5, 118, 118.5, 119, 
+        119.5, 120, 120.5, 121, 121.5, 
+        122, 122.5, 123, 123.5, 124, 
+        124.5, 125, 125.5, 126, 126.5, 
+        127, 127.5, 0, 0.5, 1, 
+        1.5, 2, 2.5, 3, 3.5, 
+        4, 4.5, 5, 5.5, 6, 
+        6.5, 7, 7.5, 8, 8.5, 
+        9, 9.5, 10, 10.5, 11, 
+        11.5, 12, 12.5, 13, 13.5, 
+        14, 14.5, 15, 15.5, 16, 
+        16.5, 17, 17.5, 18, 18.5, 
+        19, 19.5, 20, 20.5, 21, 
+        21.5, 22, 22.5, 23, 23.5, 
+        24, 24.5, 25, 25.5, 26, 
+        26.5, 27, 27.5, 28, 28.5, 
+        29, 29.5, 30, 30.5, 31, 
+        31.5, 32, 32.5, 33, 33.5, 
+        34, 34.5, 35, 35.5, 36, 
+        36.5, 37, 37.5, 38, 38.5, 
+        39, 39.5, 40, 40.5, 41, 
+        41.5, 42, 42.5, 43, 43.5, 
+        44, 44.5, 45, 45.5, 46, 
+        46.5, 47, 47.5, 48, 48.5, 
+        49, 49.5, 50, 50.5, 51, 
+        51.5, 52, 52.5, 53, 53.5, 
+        54, 54.5, 55, 55.5, 56, 
+        56.5, 57, 57.5, 58, 58.5, 
+        59, 59.5, 60, 60.5, 61, 
+        61.5, 62, 62.5, 63, 63.5, 
+        64, 64.5, 65, 65.5, 66, 
+        66.5, 67, 67.5, 68, 68.5, 
+        69, 69.5, 70, 70.5, 71, 
+        71.5, 72, 72.5, 73, 73.5, 
+        74, 74.5, 75, 75.5, 76, 
+        76.5, 77, 77.5, 78, 78.5, 
+        79, 79.5, 80, 80.5, 81, 
+        81.5, 82, 82.5, 83, 83.5, 
+        84, 84.5, 85, 85.5, 86, 
+        86.5, 87, 87.5, 88, 88.5, 
+        89, 89.5, 90, 90.5, 91, 
+        91.5, 92, 92.5, 93, 93.5, 
+        94, 94.5, 95, 95.5, 96, 
+        96.5, 97, 97.5, 98, 98.5, 
+        99, 99.5, 100, 100.5, 101, 
+        101.5, 102, 102.5, 103, 103.5, 
+        104, 104.5, 105, 105.5, 106, 
+        106.5, 107, 107.5, 108, 108.5, 
+        109, 109.5, 110, 110.5, 111, 
+        111.5, 112, 112.5, 113, 113.5, 
+        114, 114.5, 115, 115.5, 116, 
+        116.5, 117, 117.5, 118, 118.5, 
+        119, 119.5, 120, 120.5, 121, 
+        121.5, 122, 122.5, 123, 123.5, 
+        124, 124.5, 125, 125.5, 126, 
+        126.5, 127, 127.5, 0, 0.5, 
+        1, 1.5, 2, 2.5, 3, 
+        3.5, 4, 4.5, 5, 5.5, 
+        6, 6.5, 7, 7.5, 8, 
+        8.5, 9, 9.5, 10, 10.5, 
+        11, 11.5, 12, 12.5, 13, 
+        13.5, 14, 14.5, 15, 15.5, 
+        16, 16.5, 17, 17.5, 18, 
+        18.5, 19, 19.5, 20, 20.5, 
+        21, 21.5, 22, 22.5, 23, 
+        23.5, 24, 24.5, 25, 25.5, 
+        26, 26.5, 27, 27.5, 28, 
+        28.5, 29, 29.5, 30, 30.5, 
+        31, 31.5, 32, 32.5, 33, 
+        33.5, 34, 34.5, 35, 35.5, 
+        36, 36.5, 37, 37.5, 38, 
+        38.5, 39, 39.5, 40, 40.5, 
+        41, 41.5, 42, 42.5, 43, 
+        43.5, 44, 44.5, 45, 45.5, 
+        46, 46.5, 47, 47.5, 48, 
+        48.5, 49, 49.5, 50, 50.5, 
+        51, 51.5, 52, 52.5, 53, 
+        53.5, 54, 54.5, 55, 55.5, 
+        56, 56.5, 57, 57.5, 58, 
+        58.5, 59, 59.5, 60, 60.5, 
+        61, 61.5, 62, 62.5, 63, 
+        63.5, 64, 64.5, 65, 65.5, 
+        66, 66.5, 67, 67.5, 68, 
+        68.5, 69, 69.5, 70, 70.5, 
+        71, 71.5, 72, 72.5, 73, 
+        73.5, 74, 74.5, 75, 75.5, 
+        76, 76.5, 77, 77.5, 78, 
+        78.5, 79, 79.5, 80, 80.5, 
+        81, 81.5, 82, 82.5, 83, 
+        83.5, 84, 84.5, 85, 85.5, 
+        86, 86.5, 87, 87.5, 88, 
+        88.5, 89, 89.5, 90, 90.5, 
+        91, 91.5, 92, 92.5, 93, 
+        93.5, 94, 94.5, 95, 95.5, 
+        96, 96.5, 97, 97.5, 98, 
+        98.5, 99, 99.5, 100, 100.5, 
+        101, 101.5, 102, 102.5, 103, 
+        103.5, 104, 104.5, 105, 105.5, 
+        106, 106.5, 107, 107.5, 108, 
+        108.5, 109, 109.5, 110, 110.5, 
+        111, 111.5, 112, 112.5, 113, 
+        113.5, 114, 114.5, 115, 115.5, 
+        116, 116.5, 117, 117.5, 118, 
+        118.5, 119, 119.5, 120, 120.5, 
+        121, 121.5, 122, 122.5, 123, 
+        123.5, 124, 124.5, 125, 125.5, 
+        126, 126.5, 127, 127.5, 0, 
+        0.5, 1, 1.5, 2, 2.5, 
+        3, 3.5, 4, 4.5, 5, 
+        5.5, 6, 6.5, 7, 7.5, 
+        8, 8.5, 9, 9.5, 10, 
+        10.5, 11, 11.5, 12, 12.5, 
+        13, 13.5, 14, 14.5, 15, 
+        15.5, 16, 16.5, 17, 17.5, 
+        18, 18.5, 19, 19.5, 20, 
+        20.5, 21, 21.5, 22, 22.5, 
+        23, 23.5, 24, 24.5, 25, 
+        25.5, 26, 26.5, 27, 27.5, 
+        28, 28.5, 29, 29.5, 30, 
+        30.5, 31, 31.5, 32, 32.5, 
+        33, 33.5, 34, 34.5, 35, 
+        35.5, 36, 36.5, 37, 37.5, 
+        38, 38.5, 39, 39.5, 40, 
+        40.5, 41, 41.5, 42, 42.5, 
+        43, 43.5, 44, 44.5, 45, 
+        45.5, 46, 46.5, 47, 47.5, 
+        48, 48.5, 49, 49.5, 50, 
+        50.5, 51, 51.5, 52, 52.5, 
+        53, 53.5, 54, 54.5, 55, 
+        55.5, 56, 56.5, 57, 57.5, 
+        58, 58.5, 59, 59.5, 60, 
+        60.5, 61, 61.5, 62, 62.5, 
+        63, 63.5, 64, 64.5, 65, 
+        65.5, 66, 66.5, 67, 67.5, 
+        68, 68.5, 69, 69.5, 70, 
+        70.5, 71, 71.5, 72, 72.5, 
+        73, 73.5, 74, 74.5, 75, 
+        75.5, 76, 76.5, 77, 77.5, 
+        78, 78.5, 79, 79.5, 80, 
+        80.5, 81, 81.5, 82, 82.5, 
+        83, 83.5, 84, 84.5, 85, 
+        85.5, 86, 86.5, 87, 87.5, 
+        88, 88.5, 89, 89.5, 90, 
+        90.5, 91, 91.5, 92, 92.5, 
+        93, 93.5, 94, 94.5, 95, 
+        95.5, 96, 96.5, 97, 97.5, 
+        98, 98.5, 99, 99.5, 100, 
+        100.5, 101, 101.5, 102, 102.5, 
+        103, 103.5, 104, 104.5, 105, 
+        105.5, 106, 106.5, 107, 107.5, 
+        108, 108.5, 109, 109.5, 110, 
+        110.5, 111, 111.5, 112, 112.5, 
+        113, 113.5, 114, 114.5, 115, 
+        115.5, 116, 116.5, 117, 117.5, 
+        118, 118.5, 119, 119.5, 120, 
+        120.5, 121, 121.5, 122, 122.5, 
+        123, 123.5, 124, 124.5, 125, 
+        125.5, 126, 126.5, 127, 127.5, 
+        0, 0.5, 1, 1.5, 2, 
+        2.5, 3, 3.5, 4, 4.5, 
+        5, 5.5, 6, 6.5, 7, 
+        7.5, 8, 8.5, 9, 9.5, 
+        10, 10.5, 11, 11.5, 12, 
+        12.5, 13, 13.5, 14, 14.5, 
+        15, 15.5, 16, 16.5, 17, 
+        17.5, 18, 18.5, 19, 19.5, 
+        20, 20.5, 21, 21.5, 22, 
+        22.5, 23, 23.5, 24, 24.5, 
+        25, 25.5, 26, 26.5, 27, 
+        27.5, 28, 28.5, 29, 29.5, 
+        30, 30.5, 31, 31.5, 32, 
+        32.5, 33, 33.5, 34, 34.5, 
+        35, 35.5, 36, 36.5, 37, 
+        37.5, 38, 38.5, 39, 39.5, 
+        40, 40.5, 41, 41.5, 42, 
+        42.5, 43, 43.5, 44, 44.5, 
+        45, 45.5, 46, 46.5, 47, 
+        47.5, 48, 48.5, 49, 49.5, 
+        50, 50.5, 51, 51.5, 52, 
+        52.5, 53, 53.5, 54, 54.5, 
+        55, 55.5, 56, 56.5, 57, 
+        57.5, 58, 58.5, 59, 59.5, 
+        60, 60.5, 61, 61.5, 62, 
+        62.5, 63, 63.5, 64, 64.5, 
+        65, 65.5, 66, 66.5, 67, 
+        67.5, 68, 68.5, 69, 69.5, 
+        70, 70.5, 71, 71.5, 72, 
+        72.5, 73, 73.5, 74, 74.5, 
+        75, 75.5, 76, 76.5, 77, 
+        77.5, 78, 78.5, 79, 79.5, 
+        80, 80.5, 81, 81.5, 82, 
+        82.5, 83, 83.5, 84, 84.5, 
+        85, 85.5, 86, 86.5, 87, 
+        87.5, 88, 88.5, 89, 89.5, 
+        90, 90.5, 91, 91.5, 92, 
+        92.5, 93, 93.5, 94, 94.5, 
+        95, 95.5, 96, 96.5, 97, 
+        97.5, 98, 98.5, 99, 99.5, 
+        100, 100.5, 101, 101.5, 102, 
+        102.5, 103, 103.5, 104, 104.5, 
+        105, 105.5, 106, 106.5, 107, 
+        107.5, 108, 108.5, 109, 109.5, 
+        110, 110.5, 111, 111.5, 112, 
+        112.5, 113, 113.5, 114, 114.5, 
+        115, 115.5, 116, 116.5, 117, 
+        117.5, 118, 118.5, 119, 119.5, 
+        120, 120.5, 121, 121.5, 122, 
+        122.5, 123, 123.5, 124, 124.5, 
+        125, 125.5, 126, 126.5, 127, 
+        127.5, 0, 0.5, 1, 1.5, 
+        2, 2.5, 3, 3.5, 4, 
+        4.5, 5, 5.5, 6, 6.5, 
+        7, 7.5, 8, 8.5, 9, 
+        9.5, 10, 10.5, 11, 11.5, 
+        12, 12.5, 13, 13.5, 14, 
+        14.5, 15, 15.5, 16, 16.5, 
+        17, 17.5, 18, 18.5, 19, 
+        19.5, 20, 20.5, 21, 21.5, 
+        22, 22.5, 23, 23.5, 24, 
+        24.5, 25, 25.5, 26, 26.5, 
+        27, 27.5, 28, 28.5, 29, 
+        29.5, 30, 30.5, 31, 31.5, 
+        32, 32.5, 33, 33.5, 34, 
+        34.5, 35, 35.5, 36, 36.5, 
+        37, 37.5, 38, 38.5, 39, 
+        39.5, 40, 40.5, 41, 41.5, 
+        42, 42.5, 43, 43.5, 44, 
+        44.5, 45, 45.5, 46, 46.5, 
+        47, 47.5, 48, 48.5, 49, 
+        49.5, 50, 50.5, 51, 51.5, 
+        52, 52.5, 53, 53.5, 54, 
+        54.5, 55, 55.5, 56, 56.5, 
+        57, 57.5, 58, 58.5, 59, 
+        59.5, 60, 60.5, 61, 61.5, 
+        62, 62.5, 63, 63.5, 64, 
+        64.5, 65, 65.5, 66, 66.5, 
+        67, 67.5, 68, 68.5, 69, 
+        69.5, 70, 70.5, 71, 71.5, 
+        72, 72.5, 73, 73.5, 74, 
+        74.5, 75, 75.5, 76, 76.5, 
+        77, 77.5, 78, 78.5, 79, 
+        79.5, 80, 80.5, 81, 81.5, 
+        82, 82.5, 83, 83.5, 84, 
+        84.5, 85, 85.5, 86, 86.5, 
+        87, 87.5, 88, 88.5, 89, 
+        89.5, 90, 90.5, 91, 91.5, 
+        92, 92.5, 93, 93.5, 94, 
+        94.5, 95, 95.5, 96, 96.5, 
+        97, 97.5, 98, 98.5, 99, 
+        99.5, 100, 100.5, 101, 101.5, 
+        102, 102.5, 103, 103.5, 104, 
+        104.5, 105, 105.5, 106, 106.5, 
+        107, 107.5, 108, 108.5, 109, 
+        109.5, 110, 110.5, 111, 111.5, 
+        112, 112.5, 113, 113.5, 114, 
+        114.5, 115, 115.5, 116, 116.5, 
+        117, 117.5, 118, 118.5, 119, 
+        119.5, 120, 120.5, 121, 121.5, 
+        122, 122.5, 123, 123.5, 124, 
+        124.5, 125, 125.5, 126, 126.5, 
+        127, 127.5, 0, 0.5, 1, 
+        1.5, 2, 2.5, 3, 3.5, 
+        4, 4.5, 5, 5.5, 6, 
+        6.5, 7, 7.5, 8, 8.5, 
+        9, 9.5, 10, 10.5, 11, 
+        11.5, 12, 12.5, 13, 13.5, 
+        14, 14.5, 15, 15.5, 16, 
+        16.5, 17, 17.5, 18, 18.5, 
+        19, 19.5, 20, 20.5, 21, 
+        21.5, 22, 22.5, 23, 23.5, 
+        24, 24.5, 25, 25.5, 26, 
+        26.5, 27, 27.5, 28, 28.5, 
+        29, 29.5, 30, 30.5, 31, 
+        31.5, 32, 32.5, 33, 33.5, 
+        34, 34.5, 35, 35.5, 36, 
+        36.5, 37, 37.5, 38, 38.5, 
+        39, 39.5, 40, 40.5, 41, 
+        41.5, 42, 42.5, 43, 43.5, 
+        44, 44.5, 45, 45.5, 46, 
+        46.5, 47, 47.5, 48, 48.5, 
+        49, 49.5, 50, 50.5, 51, 
+        51.5, 52, 52.5, 53, 53.5, 
+        54, 54.5, 55, 55.5, 56, 
+        56.5, 57, 57.5, 58, 58.5, 
+        59, 59.5, 60, 60.5, 61, 
+        61.5, 62, 62.5, 63, 63.5, 
+        64, 64.5, 65, 65.5, 66, 
+        66.5, 67, 67.5, 68, 68.5, 
+        69, 69.5, 70, 70.5, 71, 
+        71.5, 72, 72.5, 73, 73.5, 
+        74, 74.5, 75, 75.5, 76, 
+        76.5, 77, 77.5, 78, 78.5, 
+        79, 79.5, 80, 80.5, 81, 
+        81.5, 82, 82.5, 83, 83.5, 
+        84, 84.5, 85, 85.5, 86, 
+        86.5, 87, 87.5, 88, 88.5, 
+        89, 89.5, 90, 90.5, 91, 
+        91.5, 92, 92.5, 93, 93.5, 
+        94, 94.5, 95, 95.5, 96, 
+        96.5, 97, 97.5, 98, 98.5, 
+        99, 99.5, 100, 100.5, 101, 
+        101.5, 102, 102.5, 103, 103.5, 
+        104, 104.5, 105, 105.5, 106, 
+        106.5, 107, 107.5, 108, 108.5, 
+        109, 109.5, 110, 110.5, 111, 
+        111.5, 112, 112.5, 113, 113.5, 
+        114, 114.5, 115, 115.5, 116, 
+        116.5, 117, 117.5, 118, 118.5, 
+        119, 119.5, 120, 120.5, 121, 
+        121.5, 122, 122.5, 123, 123.5, 
+        124, 124.5, 125, 125.5, 126, 
+        126.5, 127, 127.5, 0, 0.5, 
+        1, 1.5, 2, 2.5, 3, 
+        3.5, 4, 4.5, 5, 5.5, 
+        6, 6.5, 7, 7.5, 8, 
+        8.5, 9, 9.5, 10, 10.5, 
+        11, 11.5, 12, 12.5, 13, 
+        13.5, 14, 14.5, 15, 15.5, 
+        16, 16.5, 17, 17.5, 18, 
+        18.5, 19, 19.5, 20, 20.5, 
+        21, 21.5, 22, 22.5, 23, 
+        23.5, 24, 24.5, 25, 25.5, 
+        26, 26.5, 27, 27.5, 28, 
+        28.5, 29, 29.5, 30, 30.5, 
+        31, 31.5, 32, 32.5, 33, 
+        33.5, 34, 34.5, 35, 35.5, 
+        36, 36.5, 37, 37.5, 38, 
+        38.5, 39, 39.5, 40, 40.5, 
+        41, 41.5, 42, 42.5, 43, 
+        43.5, 44, 44.5, 45, 45.5, 
+        46, 46.5, 47, 47.5, 48, 
+        48.5, 49, 49.5, 50, 50.5, 
+        51, 51.5, 52, 52.5, 53, 
+        53.5, 54, 54.5, 55, 55.5, 
+        56, 56.5, 57, 57.5, 58, 
+        58.5, 59, 59.5, 60, 60.5, 
+        61, 61.5, 62, 62.5, 63, 
+        63.5, 64, 64.5, 65, 65.5, 
+        66, 66.5, 67, 67.5, 68, 
+        68.5, 69, 69.5, 70, 70.5, 
+        71, 71.5, 72, 72.5, 73, 
+        73.5, 74, 74.5, 75, 75.5, 
+        76, 76.5, 77, 77.5, 78, 
+        78.5, 79, 79.5, 80, 80.5, 
+        81, 81.5, 82, 82.5, 83, 
+        83.5, 84, 84.5, 85, 85.5, 
+        86, 86.5, 87, 87.5, 88, 
+        88.5, 89, 89.5, 90, 90.5, 
+        91, 91.5, 92, 92.5, 93, 
+        93.5, 94, 94.5, 95, 95.5, 
+        96, 96.5, 97, 97.5, 98, 
+        98.5, 99, 99.5, 100, 100.5, 
+        101, 101.5, 102, 102.5, 103, 
+        103.5, 104, 104.5, 105, 105.5, 
+        106, 106.5, 107, 107.5, 108, 
+        108.5, 109, 109.5, 110, 110.5, 
+        111, 111.5, 112, 112.5, 113, 
+        113.5, 114, 114.5, 115, 115.5, 
+        116, 116.5, 117, 117.5, 118, 
+        118.5, 119, 119.5, 120, 120.5, 
+        121, 121.5, 122, 122.5, 123, 
+        123.5, 124, 124.5, 125, 125.5, 
+        126, 126.5, 127, 127.5, 0, 
+        0.5, 1, 1.5, 2, 2.5, 
+        3, 3.5, 4, 4.5, 5, 
+        5.5, 6, 6.5, 7, 7.5, 
+        8, 8.5, 9, 9.5, 10, 
+        10.5, 11, 11.5, 12, 12.5, 
+        13, 13.5, 14, 14.5, 15, 
+        15.5, 16, 16.5, 17, 17.5, 
+        18, 18.5, 19, 19.5, 20, 
+        20.5, 21, 21.5, 22, 22.5, 
+        23, 23.5, 24, 24.5, 25, 
+        25.5, 26, 26.5, 27, 27.5, 
+        28, 28.5, 29, 29.5, 30, 
+        30.5, 31, 31.5, 32, 32.5, 
+        33, 33.5, 34, 34.5, 35, 
+        35.5, 36, 36.5, 37, 37.5, 
+        38, 38.5, 39, 39.5, 40, 
+        40.5, 41, 41.5, 42, 42.5, 
+        43, 43.5, 44, 44.5, 45, 
+        45.5, 46, 46.5, 47, 47.5, 
+        48, 48.5, 49, 49.5, 50, 
+        50.5, 51, 51.5, 52, 52.5, 
+        53, 53.5, 54, 54.5, 55, 
+        55.5, 56, 56.5, 57, 57.5, 
+        58, 58.5, 59, 59.5, 60, 
+        60.5, 61, 61.5, 62, 62.5, 
+        63, 63.5, 64, 64.5, 65, 
+        65.5, 66, 66.5, 67, 67.5, 
+        68, 68.5, 69, 69.5, 70, 
+        70.5, 71, 71.5, 72, 72.5, 
+        73, 73.5, 74, 74.5, 75, 
+        75.5, 76, 76.5, 77, 77.5, 
+        78, 78.5, 79, 79.5, 80, 
+        80.5, 81, 81.5, 82, 82.5, 
+        83, 83.5, 84, 84.5, 85, 
+        85.5, 86, 86.5, 87, 87.5, 
+        88, 88.5, 89, 89.5, 90, 
+        90.5, 91, 91.5, 92, 92.5, 
+        93, 93.5, 94, 94.5, 95, 
+        95.5, 96, 96.5, 97, 97.5, 
+        98, 98.5, 99, 99.5, 100, 
+        100.5, 101, 101.5, 102, 102.5, 
+        103, 103.5, 104, 104.5, 105, 
+        105.5, 106, 106.5, 107, 107.5, 
+        108, 108.5, 109, 109.5, 110, 
+        110.5, 111, 111.5, 112, 112.5, 
+        113, 113.5, 114, 114.5, 115, 
+        115.5, 116, 116.5, 117, 117.5, 
+        118, 118.5, 119, 119.5, 120, 
+        120.5, 121, 121.5, 122, 122.5, 
+        123, 123.5, 124, 124.5, 125, 
+        125.5, 126, 126.5, 127, 127.5, 
+        0, 0.5, 1, 1.5, 2, 
+        2.5, 3, 3.5, 4, 4.5, 
+        5, 5.5, 6, 6.5, 7, 
+        7.5, 8, 8.5, 9, 9.5, 
+        10, 10.5, 11, 11.5, 12, 
+        12.5, 13, 13.5, 14, 14.5, 
+        15, 15.5, 16, 16.5, 17, 
+        17.5, 18, 18.5, 19, 19.5, 
+        20, 20.5, 21, 21.5, 22, 
+        22.5, 23, 23.5, 24, 24.5, 
+        25, 25.5, 26, 26.5, 27, 
+        27.5, 28, 28.5, 29, 29.5, 
+        30, 30.5, 31, 31.5, 32, 
+        32.5, 33, 33.5, 34, 34.5, 
+        35, 35.5, 36, 36.5, 37, 
+        37.5, 38, 38.5, 39, 39.5, 
+        40, 40.5, 41, 41.5, 42, 
+        42.5, 43, 43.5, 44, 44.5, 
+        45, 45.5, 46, 46.5, 47, 
+        47.5, 48, 48.5, 49, 49.5, 
+        50, 50.5, 51, 51.5, 52, 
+        52.5, 53, 53.5, 54, 54.5, 
+        55, 55.5, 56, 56.5, 57, 
+        57.5, 58, 58.5, 59, 59.5, 
+        60, 60.5, 61, 61.5, 62, 
+        62.5, 63, 63.5, 64, 64.5, 
+        65, 65.5, 66, 66.5, 67, 
+        67.5, 68, 68.5, 69, 69.5, 
+        70, 70.5, 71, 71.5, 72, 
+        72.5, 73, 73.5, 74, 74.5, 
+        75, 75.5, 76, 76.5, 77, 
+        77.5, 78, 78.5, 79, 79.5, 
+        80, 80.5, 81, 81.5, 82, 
+        82.5, 83, 83.5, 84, 84.5, 
+        85, 85.5, 86, 86.5, 87, 
+        87.5, 88, 88.5, 89, 89.5, 
+        90, 90.5, 91, 91.5, 92, 
+        92.5, 93, 93.5, 94, 94.5, 
+        95, 95.5, 96, 96.5, 97, 
+        97.5, 98, 98.5, 99, 99.5, 
+        100, 100.5, 101, 101.5, 102, 
+        102.5, 103, 103.5, 104, 104.5, 
+        105, 105.5, 106, 106.5, 107, 
+        107.5, 108, 108.5, 109, 109.5, 
+        110, 110.5, 111, 111.5, 112, 
+        112.5, 113, 113.5, 114, 114.5, 
+        115, 115.5, 116, 116.5, 117, 
+        117.5, 118, 118.5, 119, 119.5, 
+        120, 120.5, 121, 121.5, 122, 
+        122.5, 123, 123.5, 124, 124.5, 
+        125, 125.5, 126, 126.5, 127, 
+        127.5, 0, 0.5, 1, 1.5, 
+        2, 2.5, 3, 3.5, 4, 
+        4.5, 5, 5.5, 6, 6.5, 
+        7, 7.5, 8, 8.5, 9, 
+        9.5, 10, 10.5, 11, 11.5, 
+        12, 12.5, 13, 13.5, 14, 
+        14.5, 15, 15.5, 16, 16.5, 
+        17, 17.5, 18, 18.5, 19, 
+        19.5, 20, 20.5, 21, 21.5, 
+        22, 22.5, 23, 23.5, 24, 
+        24.5, 25, 25.5, 26, 26.5, 
+        27, 27.5, 28, 28.5, 29, 
+        29.5, 30, 30.5, 31, 31.5, 
+        32, 32.5, 33, 33.5, 34, 
+        34.5, 35, 35.5, 36, 36.5, 
+        37, 37.5, 38, 38.5, 39, 
+        39.5, 40, 40.5, 41, 41.5, 
+        42, 42.5, 43, 43.5, 44, 
+        44.5, 45, 45.5, 46, 46.5, 
+        47, 47.5, 48, 48.5, 49, 
+        49.5, 50, 50.5, 51, 51.5, 
+        52, 52.5, 53, 53.5, 54, 
+        54.5, 55, 55.5, 56, 56.5, 
+        57, 57.5, 58, 58.5, 59, 
+        59.5, 60, 60.5, 61, 61.5, 
+        62, 62.5, 63, 63.5, 64, 
+        64.5, 65, 65.5, 66, 66.5, 
+        67, 67.5, 68, 68.5, 69, 
+        69.5, 70, 70.5, 71, 71.5, 
+        72, 72.5, 73, 73.5, 74, 
+        74.5, 75, 75.5, 76, 76.5, 
+        77, 77.5, 78, 78.5, 79, 
+        79.5, 80, 80.5, 81, 81.5, 
+        82, 82.5, 83, 83.5, 84, 
+        84.5, 85, 85.5, 86, 86.5, 
+        87, 87.5, 88, 88.5, 89, 
+        89.5, 90, 90.5, 91, 91.5, 
+        92, 92.5, 93, 93.5, 94, 
+        94.5, 95, 95.5, 96, 96.5, 
+        97, 97.5, 98, 98.5, 99, 
+        99.5, 100, 100.5, 101, 101.5, 
+        102, 102.5, 103, 103.5, 104, 
+        104.5, 105, 105.5, 106, 106.5, 
+        107, 107.5, 108, 108.5, 109, 
+        109.5, 110, 110.5, 111, 111.5, 
+        112, 112.5, 113, 113.5, 114, 
+        114.5, 115, 115.5, 116, 116.5, 
+        117, 117.5, 118, 118.5, 119, 
+        119.5, 120, 120.5, 121, 121.5, 
+        122, 122.5, 123, 123.5, 124, 
+        124.5, 125, 125.5, 126, 126.5, 
+        127, 127.5, 0, 0.5, 1, 
+        1.5, 2, 2.5, 3, 3.5, 
+        4, 4.5, 5, 5.5, 6, 
+        6.5, 7, 7.5, 8, 8.5, 
+        9, 9.5, 10, 10.5, 11, 
+        11.5, 12, 12.5, 13, 13.5, 
+        14, 14.5, 15, 15.5, 16, 
+        16.5, 17, 17.5, 18, 18.5, 
+        19, 19.5, 20, 20.5, 21, 
+        21.5, 22, 22.5, 23, 23.5, 
+        24, 24.5, 25, 25.5, 26, 
+        26.5, 27, 27.5, 28, 28.5, 
+        29, 29.5, 30, 30.5, 31, 
+        31.5, 32, 32.5, 33, 33.5, 
+        34, 34.5, 35, 35.5, 36, 
+        36.5, 37, 37.5, 38, 38.5, 
+        39, 39.5, 40, 40.5, 41, 
+        41.5, 42, 42.5, 43, 43.5, 
+        44, 44.5, 45, 45.5, 46, 
+        46.5, 47, 47.5, 48, 48.5, 
+        49, 49.5, 50, 50.5, 51, 
+        51.5, 52, 52.5, 53, 53.5, 
+        54, 54.5, 55, 55.5, 56, 
+        56.5, 57, 57.5, 58, 58.5, 
+        59, 59.5, 60, 60.5, 61, 
+        61.5, 62, 62.5, 63, 63.5, 
+        64, 64.5, 65, 65.5, 66, 
+        66.5, 67, 67.5, 68, 68.5, 
+        69, 69.5, 70, 70.5, 71, 
+        71.5, 72, 72.5, 73, 73.5, 
+        74, 74.5, 75, 75.5, 76, 
+        76.5, 77, 77.5, 78, 78.5, 
+        79, 79.5, 80, 80.5, 81, 
+        81.5, 82, 82.5, 83, 83.5, 
+        84, 84.5, 85, 85.5, 86, 
+        86.5, 87, 87.5, 88, 88.5, 
+        89, 89.5, 90, 90.5, 91, 
+        91.5, 92, 92.5, 93, 93.5, 
+        94, 94.5, 95, 95.5, 96, 
+        96.5, 97, 97.5, 98, 98.5, 
+        99, 99.5, 100, 100.5, 101, 
+        101.5, 102, 102.5, 103, 103.5, 
+        104, 104.5, 105, 105.5, 106, 
+        106.5, 107, 107.5, 108, 108.5, 
+        109, 109.5, 110, 110.5, 111, 
+        111.5, 112, 112.5, 113, 113.5, 
+        114, 114.5, 115, 115.5, 116, 
+        116.5, 117, 117.5, 118, 118.5, 
+        119, 119.5, 120, 120.5, 121, 
+        121.5, 122, 122.5, 123, 123.5, 
+        124, 124.5, 125, 125.5, 126, 
+        126.5, 127, 127.5, 0, 0.5, 
+        1, 1.5, 2, 2.5, 3, 
+        3.5, 4, 4.5, 5, 5.5, 
+        6, 6.5, 7, 7.5, 8, 
+        8.5, 9, 9.5, 10, 10.5, 
+        11, 11.5, 12, 12.5, 13, 
+        13.5, 14, 14.5, 15, 15.5, 
+        16, 16.5, 17, 17.5, 18, 
+        18.5, 19, 19.5, 20, 20.5, 
+        21, 21.5, 22, 22.5, 23, 
+        23.5, 24, 24.5, 25, 25.5, 
+        26, 26.5, 27, 27.5, 28, 
+        28.5, 29, 29.5, 30, 30.5, 
+        31, 31.5, 32, 32.5, 33, 
+        33.5, 34, 34.5, 35, 35.5, 
+        36, 36.5, 37, 37.5, 38, 
+        38.5, 39, 39.5, 40, 40.5, 
+        41, 41.5, 42, 42.5, 43, 
+        43.5, 44, 44.5, 45, 45.5, 
+        46, 46.5, 47, 47.5, 48, 
+        48.5, 49, 49.5, 50, 50.5, 
+        51, 51.5, 52, 52.5, 53, 
+        53.5, 54, 54.5, 55, 55.5, 
+        56, 56.5, 57, 57.5, 58, 
+        58.5, 59, 59.5, 60, 60.5, 
+        61, 61.5, 62, 62.5, 63, 
+        63.5, 64, 64.5, 65, 65.5, 
+        66, 66.5, 67, 67.5, 68, 
+        68.5, 69, 69.5, 70, 70.5, 
+        71, 71.5, 72, 72.5, 73, 
+        73.5, 74, 74.5, 75, 75.5, 
+        76, 76.5, 77, 77.5, 78, 
+        78.5, 79, 79.5, 80, 80.5, 
+        81, 81.5, 82, 82.5, 83, 
+        83.5, 84, 84.5, 85, 85.5, 
+        86, 86.5, 87, 87.5, 88, 
+        88.5, 89, 89.5, 90, 90.5, 
+        91, 91.5, 92, 92.5, 93, 
+        93.5, 94, 94.5, 95, 95.5, 
+        96, 96.5, 97, 97.5, 98, 
+        98.5, 99, 99.5, 100, 100.5, 
+        101, 101.5, 102, 102.5, 103, 
+        103.5, 104, 104.5, 105, 105.5, 
+        106, 106.5, 107, 107.5, 108, 
+        108.5, 109, 109.5, 110, 110.5, 
+        111, 111.5, 112, 112.5, 113, 
+        113.5, 114, 114.5, 115, 115.5, 
+        116, 116.5, 117, 117.5, 118, 
+        118.5, 119, 119.5, 120, 120.5, 
+        121, 121.5, 122, 122.5, 123, 
+        123.5, 124, 124.5, 125, 125.5, 
+        126, 126.5, 127, 127.5, 0, 
+        0.5, 1, 1.5, 2, 2.5, 
+        3, 3.5, 4, 4.5, 5, 
+        5.5, 6, 6.5, 7, 7.5, 
+        8, 8.5, 9, 9.5, 10, 
+        10.5, 11, 11.5, 12, 12.5, 
+        13, 13.5, 14, 14.5, 15, 
+        15.5, 16, 16.5, 17, 17.5, 
+        18, 18.5, 19, 19.5, 20, 
+        20.5, 21, 21.5, 22, 22.5, 
+        23, 23.5, 24, 24.5, 25, 
+        25.5, 26, 26.5, 27, 27.5, 
+        28, 28.5, 29, 29.5, 30, 
+        30.5, 31, 31.5, 32, 32.5, 
+        33, 33.5, 34, 34.5, 35, 
+        35.5, 36, 36.5, 37, 37.5, 
+        38, 38.5, 39, 39.5, 40, 
+        40.5, 41, 41.5, 42, 42.5, 
+        43, 43.5, 44, 44.5, 45, 
+        45.5, 46, 46.5, 47, 47.5, 
+        48, 48.5, 49, 49.5, 50, 
+        50.5, 51, 51.5, 52, 52.5, 
+        53, 53.5, 54, 54.5, 55, 
+        55.5, 56, 56.5, 57, 57.5, 
+        58, 58.5, 59, 59.5, 60, 
+        60.5, 61, 61.5, 62, 62.5, 
+        63, 63.5, 64, 64.5, 65, 
+        65.5, 66, 66.5, 67, 67.5, 
+        68, 68.5, 69, 69.5, 70, 
+        70.5, 71, 71.5, 72, 72.5, 
+        73, 73.5, 74, 74.5, 75, 
+        75.5, 76, 76.5, 77, 77.5, 
+        78, 78.5, 79, 79.5, 80, 
+        80.5, 81, 81.5, 82, 82.5, 
+        83, 83.5, 84, 84.5, 85, 
+        85.5, 86, 86.5, 87, 87.5, 
+        88, 88.5, 89, 89.5, 90, 
+        90.5, 91, 91.5, 92, 92.5, 
+        93, 93.5, 94, 94.5, 95, 
+        95.5, 96, 96.5, 97, 97.5, 
+        98, 98.5, 99, 99.5, 100, 
+        100.5, 101, 101.5, 102, 102.5, 
+        103, 103.5, 104, 104.5, 105, 
+        105.5, 106, 106.5, 107, 107.5, 
+        108, 108.5, 109, 109.5, 110, 
+        110.5, 111, 111.5, 112, 112.5, 
+        113, 113.5, 114, 114.5, 115, 
+        115.5, 116, 116.5, 117, 117.5, 
+        118, 118.5, 119, 119.5, 120, 
+        120.5, 121, 121.5, 122, 122.5, 
+        123, 123.5, 124, 124.5, 125, 
+        125.5, 126, 126.5, 127, 127.5, 
+        0, 0.5, 1, 1.5, 2, 
+        2.5, 3, 3.5, 4, 4.5, 
+        5, 5.5, 6, 6.5, 7, 
+        7.5, 8, 8.5, 9, 9.5, 
+        10, 10.5, 11, 11.5, 12, 
+        12.5, 13, 13.5, 14, 14.5, 
+        15, 15.5, 16, 16.5, 17, 
+        17.5, 18, 18.5, 19, 19.5, 
+        20, 20.5, 21, 21.5, 22, 
+        22.5, 23, 23.5, 24, 24.5, 
+        25, 25.5, 26, 26.5, 27, 
+        27.5, 28, 28.5, 29, 29.5, 
+        30, 30.5, 31, 31.5, 32, 
+        32.5, 33, 33.5, 34, 34.5, 
+        35, 35.5, 36, 36.5, 37, 
+        37.5, 38, 38.5, 39, 39.5, 
+        40, 40.5, 41, 41.5, 42, 
+        42.5, 43, 43.5, 44, 44.5, 
+        45, 45.5, 46, 46.5, 47, 
+        47.5, 48, 48.5, 49, 49.5, 
+        50, 50.5, 51, 51.5, 52, 
+        52.5, 53, 53.5, 54, 54.5, 
+        55, 55.5, 56, 56.5, 57, 
+        57.5, 58, 58.5, 59, 59.5, 
+        60, 60.5, 61, 61.5, 62, 
+        62.5, 63, 63.5, 64, 64.5, 
+        65, 65.5, 66, 66.5, 67, 
+        67.5, 68, 68.5, 69, 69.5, 
+        70, 70.5, 71, 71.5, 72, 
+        72.5, 73, 73.5, 74, 74.5, 
+        75, 75.5, 76, 76.5, 77, 
+        77.5, 78, 78.5, 79, 79.5, 
+        80, 80.5, 81, 81.5, 82, 
+        82.5, 83, 83.5, 84, 84.5, 
+        85, 85.5, 86, 86.5, 87, 
+        87.5, 88, 88.5, 89, 89.5, 
+        90, 90.5, 91, 91.5, 92, 
+        92.5, 93, 93.5, 94, 94.5, 
+        95, 95.5, 96, 96.5, 97, 
+        97.5, 98, 98.5, 99, 99.5, 
+        100, 100.5, 101, 101.5, 102, 
+        102.5, 103, 103.5, 104, 104.5, 
+        105, 105.5, 106, 106.5, 107, 
+        107.5, 108, 108.5, 109, 109.5, 
+        110, 110.5, 111, 111.5, 112, 
+        112.5, 113, 113.5, 114, 114.5, 
+        115, 115.5, 116, 116.5, 117, 
+        117.5, 118, 118.5, 119, 119.5, 
+        120, 120.5, 121, 121.5, 122, 
+        122.5, 123, 123.5, 124, 124.5, 
+        125, 125.5, 126, 126.5, 127, 
+        127.5, 0, 0.5, 1, 1.5, 
+        2, 2.5, 3, 3.5, 4, 
+        4.5, 5, 5.5, 6, 6.5, 
+        7, 7.5, 8, 8.5, 9, 
+        9.5, 10, 10.5, 11, 11.5, 
+        12, 12.5, 13, 13.5, 14, 
+        14.5, 15, 15.5, 16, 16.5, 
+        17, 17.5, 18, 18.5, 19, 
+        19.5, 20, 20.5, 21, 21.5, 
+        22, 22.5, 23, 23.5, 24, 
+        24.5, 25, 25.5, 26, 26.5, 
+        27, 27.5, 28, 28.5, 29, 
+        29.5, 30, 30.5, 31, 31.5, 
+        32, 32.5, 33, 33.5, 34, 
+        34.5, 35, 35.5, 36, 36.5, 
+        37, 37.5, 38, 38.5, 39, 
+        39.5, 40, 40.5, 41, 41.5, 
+        42, 42.5, 43, 43.5, 44, 
+        44.5, 45, 45.5, 46, 46.5, 
+        47, 47.5, 48, 48.5, 49, 
+        49.5, 50, 50.5, 51, 51.5, 
+        52, 52.5, 53, 53.5, 54, 
+        54.5, 55, 55.5, 56, 56.5, 
+        57, 57.5, 58, 58.5, 59, 
+        59.5, 60, 60.5, 61, 61.5, 
+        62, 62.5, 63, 63.5, 64, 
+        64.5, 65, 65.5, 66, 66.5, 
+        67, 67.5, 68, 68.5, 69, 
+        69.5, 70, 70.5, 71, 71.5, 
+        72, 72.5, 73, 73.5, 74, 
+        74.5, 75, 75.5, 76, 76.5, 
+        77, 77.5, 78, 78.5, 79, 
+        79.5, 80, 80.5, 81, 81.5, 
+        82, 82.5, 83, 83.5, 84, 
+        84.5, 85, 85.5, 86, 86.5, 
+        87, 87.5, 88, 88.5, 89, 
+        89.5, 90, 90.5, 91, 91.5, 
+        92, 92.5, 93, 93.5, 94, 
+        94.5, 95, 95.5, 96, 96.5, 
+        97, 97.5, 98, 98.5, 99, 
+        99.5, 100, 100.5, 101, 101.5, 
+        102, 102.5, 103, 103.5, 104, 
+        104.5, 105, 105.5, 106, 106.5, 
+        107, 107.5, 108, 108.5, 109, 
+        109.5, 110, 110.5, 111, 111.5, 
+        112, 112.5, 113, 113.5, 114, 
+        114.5, 115, 115.5, 116, 116.5, 
+        117, 117.5, 118, 118.5, 119, 
+        119.5, 120, 120.5, 121, 121.5, 
+        122, 122.5, 123, 123.5, 124, 
+        124.5, 125, 125.5, 126, 126.5, 
+        127, 127.5, 0, 0.5, 1, 
+        1.5, 2, 2.5, 3, 3.5, 
+        4, 4.5, 5, 5.5, 6, 
+        6.5, 7, 7.5, 8, 8.5, 
+        9, 9.5, 10, 10.5, 11, 
+        11.5, 12, 12.5, 13, 13.5, 
+        14, 14.5, 15, 15.5, 16, 
+        16.5, 17, 17.5, 18, 18.5, 
+        19, 19.5, 20, 20.5, 21, 
+        21.5, 22, 22.5, 23, 23.5, 
+        24, 24.5, 25, 25.5, 26, 
+        26.5, 27, 27.5, 28, 28.5, 
+        29, 29.5, 30, 30.5, 31, 
+        31.5, 32, 32.5, 33, 33.5, 
+        34, 34.5, 35, 35.5, 36, 
+        36.5, 37, 37.5, 38, 38.5, 
+        39, 39.5, 40, 40.5, 41, 
+        41.5, 42, 42.5, 43, 43.5, 
+        44, 44.5, 45, 45.5, 46, 
+        46.5, 47, 47.5, 48, 48.5, 
+        49, 49.5, 50, 50.5, 51, 
+        51.5, 52, 52.5, 53, 53.5, 
+        54, 54.5, 55, 55.5, 56, 
+        56.5, 57, 57.5, 58, 58.5, 
+        59, 59.5, 60, 60.5, 61, 
+        61.5, 62, 62.5, 63, 63.5, 
+        64, 64.5, 65, 65.5, 66, 
+        66.5, 67, 67.5, 68, 68.5, 
+        69, 69.5, 70, 70.5, 71, 
+        71.5, 72, 72.5, 73, 73.5, 
+        74, 74.5, 75, 75.5, 76, 
+        76.5, 77, 77.5, 78, 78.5, 
+        79, 79.5, 80, 80.5, 81, 
+        81.5, 82, 82.5, 83, 83.5, 
+        84, 84.5, 85, 85.5, 86, 
+        86.5, 87, 87.5, 88, 88.5, 
+        89, 89.5, 90, 90.5, 91, 
+        91.5, 92, 92.5, 93, 93.5, 
+        94, 94.5, 95, 95.5, 96, 
+        96.5, 97, 97.5, 98, 98.5, 
+        99, 99.5, 100, 100.5, 101, 
+        101.5, 102, 102.5, 103, 103.5, 
+        104, 104.5, 105, 105.5, 106, 
+        106.5, 107, 107.5, 108, 108.5, 
+        109, 109.5, 110, 110.5, 111, 
+        111.5, 112, 112.5, 113, 113.5, 
+        114, 114.5, 115, 115.5, 116, 
+        116.5, 117, 117.5, 118, 118.5, 
+        119, 119.5, 120, 120.5, 121, 
+        121.5, 122, 122.5, 123, 123.5, 
+        124, 124.5, 125, 125.5, 126, 
+        126.5, 127, 127.5, 0, 0.5, 
+        1, 1.5, 2, 2.5, 3, 
+        3.5, 4, 4.5, 5, 5.5, 
+        6, 6.5, 7, 7.5, 8, 
+        8.5, 9, 9.5, 10, 10.5, 
+        11, 11.5, 12, 12.5, 13, 
+        13.5, 14, 14.5, 15, 15.5, 
+        16, 16.5, 17, 17.5, 18, 
+        18.5, 19, 19.5, 20, 20.5, 
+        21, 21.5, 22, 22.5, 23, 
+        23.5, 24, 24.5, 25, 25.5, 
+        26, 26.5, 27, 27.5, 28, 
+        28.5, 29, 29.5, 30, 30.5, 
+        31, 31.5, 32, 32.5, 33, 
+        33.5, 34, 34.5, 35, 35.5, 
+        36, 36.5, 37, 37.5, 38, 
+        38.5, 39, 39.5, 40, 40.5, 
+        41, 41.5, 42, 42.5, 43, 
+        43.5, 44, 44.5, 45, 45.5, 
+        46, 46.5, 47, 47.5, 48, 
+        48.5, 49, 49.5, 50, 50.5, 
+        51, 51.5, 52, 52.5, 53, 
+        53.5, 54, 54.5, 55, 55.5, 
+        56, 56.5, 57, 57.5, 58, 
+        58.5, 59, 59.5, 60, 60.5, 
+        61, 61.5, 62, 62.5, 63, 
+        63.5, 64, 64.5, 65, 65.5, 
+        66, 66.5, 67, 67.5, 68, 
+        68.5, 69, 69.5, 70, 70.5, 
+        71, 71.5, 72, 72.5, 73, 
+        73.5, 74, 74.5, 75, 75.5, 
+        76, 76.5, 77, 77.5, 78, 
+        78.5, 79, 79.5, 80, 80.5, 
+        81, 81.5, 82, 82.5, 83, 
+        83.5, 84, 84.5, 85, 85.5, 
+        86, 86.5, 87, 87.5, 88, 
+        88.5, 89, 89.5, 90, 90.5, 
+        91, 91.5, 92, 92.5, 93, 
+        93.5, 94, 94.5, 95, 95.5, 
+        96, 96.5, 97, 97.5, 98, 
+        98.5, 99, 99.5, 100, 100.5, 
+        101, 101.5, 102, 102.5, 103, 
+        103.5, 104, 104.5, 105, 105.5, 
+        106, 106.5, 107, 107.5, 108, 
+        108.5, 109, 109.5, 110, 110.5, 
+        111, 111.5, 112, 112.5, 113, 
+        113.5, 114, 114.5, 115, 115.5, 
+        116, 116.5, 117, 117.5, 118, 
+        118.5, 119, 119.5, 120, 120.5, 
+        121, 121.5, 122, 122.5, 123, 
+        123.5, 124, 124.5, 125, 125.5, 
+        126, 126.5, 127, 127.5, 0, 
+        0.5, 1, 1.5, 2, 2.5, 
+        3, 3.5, 4, 4.5, 5, 
+        5.5, 6, 6.5, 7, 7.5, 
+        8, 8.5, 9, 9.5, 10, 
+        10.5, 11, 11.5, 12, 12.5, 
+        13, 13.5, 14, 14.5, 15, 
+        15.5, 16, 16.5, 17, 17.5, 
+        18, 18.5, 19, 19.5, 20, 
+        20.5, 21, 21.5, 22, 22.5, 
+        23, 23.5, 24, 24.5, 25, 
+        25.5, 26, 26.5, 27, 27.5, 
+        28, 28.5, 29, 29.5, 30, 
+        30.5, 31, 31.5, 32, 32.5, 
+        33, 33.5, 34, 34.5, 35, 
+        35.5, 36, 36.5, 37, 37.5, 
+        38, 38.5, 39, 39.5, 40, 
+        40.5, 41, 41.5, 42, 42.5, 
+        43, 43.5, 44, 44.5, 45, 
+        45.5, 46, 46.5, 47, 47.5, 
+        48, 48.5, 49, 49.5, 50, 
+        50.5, 51, 51.5, 52, 52.5, 
+        53, 53.5, 54, 54.5, 55, 
+        55.5, 56, 56.5, 57, 57.5, 
+        58, 58.5, 59, 59.5, 60, 
+        60.5, 61, 61.5, 62, 62.5, 
+        63, 63.5, 64, 64.5, 65, 
+        65.5, 66, 66.5, 67, 67.5, 
+        68, 68.5, 69, 69.5, 70, 
+        70.5, 71, 71.5, 72, 72.5, 
+        73, 73.5, 74, 74.5, 75, 
+        75.5, 76, 76.5, 77, 77.5, 
+        78, 78.5, 79, 79.5, 80, 
+        80.5, 81, 81.5, 82, 82.5, 
+        83, 83.5, 84, 84.5, 85, 
+        85.5, 86, 86.5, 87, 87.5, 
+        88, 88.5, 89, 89.5, 90, 
+        90.5, 91, 91.5, 92, 92.5, 
+        93, 93.5, 94, 94.5, 95, 
+        95.5, 96, 96.5, 97, 97.5, 
+        98, 98.5, 99, 99.5, 100, 
+        100.5, 101, 101.5, 102, 102.5, 
+        103, 103.5, 104, 104.5, 105, 
+        105.5, 106, 106.5, 107, 107.5, 
+        108, 108.5, 109, 109.5, 110, 
+        110.5, 111, 111.5, 112, 112.5, 
+        113, 113.5, 114, 114.5, 115, 
+        115.5, 116, 116.5, 117, 117.5, 
+        118, 118.5, 119, 119.5, 120, 
+        120.5, 121, 121.5, 122, 122.5, 
+        123, 123.5, 124, 124.5, 125, 
+        125.5, 126, 126.5, 127, 127.5, 
+        0, 0.5, 1, 1.5, 2, 
+        2.5, 3, 3.5, 4, 4.5, 
+        5, 5.5, 6, 6.5, 7, 
+        7.5, 8, 8.5, 9, 9.5, 
+        10, 10.5, 11, 11.5, 12, 
+        12.5, 13, 13.5, 14, 14.5, 
+        15, 15.5, 16, 16.5, 17, 
+        17.5, 18, 18.5, 19, 19.5, 
+        20, 20.5, 21, 21.5, 22, 
+        22.5, 23, 23.5, 24, 24.5, 
+        25, 25.5, 26, 26.5, 27, 
+        27.5, 28, 28.5, 29, 29.5, 
+        30, 30.5, 31, 31.5, 32, 
+        32.5, 33, 33.5, 34, 34.5, 
+        35, 35.5, 36, 36.5, 37, 
+        37.5, 38, 38.5, 39, 39.5, 
+        40, 40.5, 41, 41.5, 42, 
+        42.5, 43, 43.5, 44, 44.5, 
+        45, 45.5, 46, 46.5, 47, 
+        47.5, 48, 48.5, 49, 49.5, 
+        50, 50.5, 51, 51.5, 52, 
+        52.5, 53, 53.5, 54, 54.5, 
+        55, 55.5, 56, 56.5, 57, 
+        57.5, 58, 58.5, 59, 59.5, 
+        60, 60.5, 61, 61.5, 62, 
+        62.5, 63, 63.5, 64, 64.5, 
+        65, 65.5, 66, 66.5, 67, 
+        67.5, 68, 68.5, 69, 69.5, 
+        70, 70.5, 71, 71.5, 72, 
+        72.5, 73, 73.5, 74, 74.5, 
+        75, 75.5, 76, 76.5, 77, 
+        77.5, 78, 78.5, 79, 79.5, 
+        80, 80.5, 81, 81.5, 82, 
+        82.5, 83, 83.5, 84, 84.5, 
+        85, 85.5, 86, 86.5, 87, 
+        87.5, 88, 88.5, 89, 89.5, 
+        90, 90.5, 91, 91.5, 92, 
+        92.5, 93, 93.5, 94, 94.5, 
+        95, 95.5, 96, 96.5, 97, 
+        97.5, 98, 98.5, 99, 99.5, 
+        100, 100.5, 101, 101.5, 102, 
+        102.5, 103, 103.5, 104, 104.5, 
+        105, 105.5, 106, 106.5, 107, 
+        107.5, 108, 108.5, 109, 109.5, 
+        110, 110.5, 111, 111.5, 112, 
+        112.5, 113, 113.5, 114, 114.5, 
+        115, 115.5, 116, 116.5, 117, 
+        117.5, 118, 118.5, 119, 119.5, 
+        120, 120.5, 121, 121.5, 122, 
+        122.5, 123, 123.5, 124, 124.5, 
+        125, 125.5, 126, 126.5, 127, 
+        127.5, 0, 0.5, 1, 1.5, 
+        2, 2.5, 3, 3.5, 4, 
+        4.5, 5, 5.5, 6, 6.5, 
+        7, 7.5, 8, 8.5, 9, 
+        9.5, 10, 10.5, 11, 11.5, 
+        12, 12.5, 13, 13.5, 14, 
+        14.5, 15, 15.5, 16, 16.5, 
+        17, 17.5, 18, 18.5, 19, 
+        19.5, 20, 20.5, 21, 21.5, 
+        22, 22.5, 23, 23.5, 24, 
+        24.5, 25, 25.5, 26, 26.5, 
+        27, 27.5, 28, 28.5, 29, 
+        29.5, 30, 30.5, 31, 31.5, 
+        32, 32.5, 33, 33.5, 34, 
+        34.5, 35, 35.5, 36, 36.5, 
+        37, 37.5, 38, 38.5, 39, 
+        39.5, 40, 40.5, 41, 41.5, 
+        42, 42.5, 43, 43.5, 44, 
+        44.5, 45, 45.5, 46, 46.5, 
+        47, 47.5, 48, 48.5, 49, 
+        49.5, 50, 50.5, 51, 51.5, 
+        52, 52.5, 53, 53.5, 54, 
+        54.5, 55, 55.5, 56, 56.5, 
+        57, 57.5, 58, 58.5, 59, 
+        59.5, 60, 60.5, 61, 61.5, 
+        62, 62.5, 63, 63.5, 64, 
+        64.5, 65, 65.5, 66, 66.5, 
+        67, 67.5, 68, 68.5, 69, 
+        69.5, 70, 70.5, 71, 71.5, 
+        72, 72.5, 73, 73.5, 74, 
+        74.5, 75, 75.5, 76, 76.5, 
+        77, 77.5, 78, 78.5, 79, 
+        79.5, 80, 80.5, 81, 81.5, 
+        82, 82.5, 83, 83.5, 84, 
+        84.5, 85, 85.5, 86, 86.5, 
+        87, 87.5, 88, 88.5, 89, 
+        89.5, 90, 90.5, 91, 91.5, 
+        92, 92.5, 93, 93.5, 94, 
+        94.5, 95, 95.5, 96, 96.5, 
+        97, 97.5, 98, 98.5, 99, 
+        99.5, 100, 100.5, 101, 101.5, 
+        102, 102.5, 103, 103.5, 104, 
+        104.5, 105, 105.5, 106, 106.5, 
+        107, 107.5, 108, 108.5, 109, 
+        109.5, 110, 110.5, 111, 111.5, 
+        112, 112.5, 113, 113.5, 114, 
+        114.5, 115, 115.5, 116, 116.5, 
+        117, 117.5, 118, 118.5, 119, 
+        119.5, 120, 120.5, 121, 121.5, 
+        122, 122.5, 123, 123.5, 124, 
+        124.5, 125, 125.5, 126, 126.5, 
+        127, 127.5, 0, 0.5, 1, 
+        1.5, 2, 2.5, 3, 3.5, 
+        4, 4.5, 5, 5.5, 6, 
+        6.5, 7, 7.5, 8, 8.5, 
+        9, 9.5, 10, 10.5, 11, 
+        11.5, 12, 12.5, 13, 13.5, 
+        14, 14.5, 15, 15.5, 16, 
+        16.5, 17, 17.5, 18, 18.5, 
+        19, 19.5, 20, 20.5, 21, 
+        21.5, 22, 22.5, 23, 23.5, 
+        24, 24.5, 25, 25.5, 26, 
+        26.5, 27, 27.5, 28, 28.5, 
+        29, 29.5, 30, 30.5, 31, 
+        31.5, 32, 32.5, 33, 33.5, 
+        34, 34.5, 35, 35.5, 36, 
+        36.5, 37, 37.5, 38, 38.5, 
+        39, 39.5, 40, 40.5, 41, 
+        41.5, 42, 42.5, 43, 43.5, 
+        44, 44.5, 45, 45.5, 46, 
+        46.5, 47, 47.5, 48, 48.5, 
+        49, 49.5, 50, 50.5, 51, 
+        51.5, 52, 52.5, 53, 53.5, 
+        54, 54.5, 55, 55.5, 56, 
+        56.5, 57, 57.5, 58, 58.5, 
+        59, 59.5, 60, 60.5, 61, 
+        61.5, 62, 62.5, 63, 63.5, 
+        64, 64.5, 65, 65.5, 66, 
+        66.5, 67, 67.5, 68, 68.5, 
+        69, 69.5, 70, 70.5, 71, 
+        71.5, 72, 72.5, 73, 73.5, 
+        74, 74.5, 75, 75.5, 76, 
+        76.5, 77, 77.5, 78, 78.5, 
+        79, 79.5, 80, 80.5, 81, 
+        81.5, 82, 82.5, 83, 83.5, 
+        84, 84.5, 85, 85.5, 86, 
+        86.5, 87, 87.5, 88, 88.5, 
+        89, 89.5, 90, 90.5, 91, 
+        91.5, 92, 92.5, 93, 93.5, 
+        94, 94.5, 95, 95.5, 96, 
+        96.5, 97, 97.5, 98, 98.5, 
+        99, 99.5, 100, 100.5, 101, 
+        101.5, 102, 102.5, 103, 103.5, 
+        104, 104.5, 105, 105.5, 106, 
+        106.5, 107, 107.5, 108, 108.5, 
+        109, 109.5, 110, 110.5, 111, 
+        111.5, 112, 112.5, 113, 113.5, 
+        114, 114.5, 115, 115.5, 116, 
+        116.5, 117, 117.5, 118, 118.5, 
+        119, 119.5, 120, 120.5, 121, 
+        121.5, 122, 122.5, 123, 123.5, 
+        124, 124.5, 125, 125.5, 126, 
+        126.5, 127, 127.5, 0, 0.5, 
+        1, 1.5, 2, 2.5, 3, 
+        3.5, 4, 4.5, 5, 5.5, 
+        6, 6.5, 7, 7.5, 8, 
+        8.5, 9, 9.5, 10, 10.5, 
+        11, 11.5, 12, 12.5, 13, 
+        13.5, 14, 14.5, 15, 15.5, 
+        16, 16.5, 17, 17.5, 18, 
+        18.5, 19, 19.5, 20, 20.5, 
+        21, 21.5, 22, 22.5, 23, 
+        23.5, 24, 24.5, 25, 25.5, 
+        26, 26.5, 27, 27.5, 28, 
+        28.5, 29, 29.5, 30, 30.5, 
+        31, 31.5, 32, 32.5, 33, 
+        33.5, 34, 34.5, 35, 35.5, 
+        36, 36.5, 37, 37.5, 38, 
+        38.5, 39, 39.5, 40, 40.5, 
+        41, 41.5, 42, 42.5, 43, 
+        43.5, 44, 44.5, 45, 45.5, 
+        46, 46.5, 47, 47.5, 48, 
+        48.5, 49, 49.5, 50, 50.5, 
+        51, 51.5, 52, 52.5, 53, 
+        53.5, 54, 54.5, 55, 55.5, 
+        56, 56.5, 57, 57.5, 58, 
+        58.5, 59, 59.5, 60, 60.5, 
+        61, 61.5, 62, 62.5, 63, 
+        63.5, 64, 64.5, 65, 65.5, 
+        66, 66.5, 67, 67.5, 68, 
+        68.5, 69, 69.5, 70, 70.5, 
+        71, 71.5, 72, 72.5, 73, 
+        73.5, 74, 74.5, 75, 75.5, 
+        76, 76.5, 77, 77.5, 78, 
+        78.5, 79, 79.5, 80, 80.5, 
+        81, 81.5, 82, 82.5, 83, 
+        83.5, 84, 84.5, 85, 85.5, 
+        86, 86.5, 87, 87.5, 88, 
+        88.5, 89, 89.5, 90, 90.5, 
+        91, 91.5, 92, 92.5, 93, 
+        93.5, 94, 94.5, 95, 95.5, 
+        96, 96.5, 97, 97.5, 98, 
+        98.5, 99, 99.5, 100, 100.5, 
+        101, 101.5, 102, 102.5, 103, 
+        103.5, 104, 104.5, 105, 105.5, 
+        106, 106.5, 107, 107.5, 108, 
+        108.5, 109, 109.5, 110, 110.5, 
+        111, 111.5, 112, 112.5, 113, 
+        113.5, 114, 114.5, 115, 115.5, 
+        116, 116.5, 117, 117.5, 118, 
+        118.5, 119, 119.5, 120, 120.5, 
+        121, 121.5, 122, 122.5, 123, 
+        123.5, 124, 124.5, 125, 125.5, 
+        126, 126.5, 127, 127.5, 0, 
+        0.5, 1, 1.5, 2, 2.5, 
+        3, 3.5, 4, 4.5, 5, 
+        5.5, 6, 6.5, 7, 7.5, 
+        8, 8.5, 9, 9.5, 10, 
+        10.5, 11, 11.5, 12, 12.5, 
+        13, 13.5, 14, 14.5, 15, 
+        15.5, 16, 16.5, 17, 17.5, 
+        18, 18.5, 19, 19.5, 20, 
+        20.5, 21, 21.5, 22, 22.5, 
+        23, 23.5, 24, 24.5, 25, 
+        25.5, 26, 26.5, 27, 27.5, 
+        28, 28.5, 29, 29.5, 30, 
+        30.5, 31, 31.5, 32, 32.5, 
+        33, 33.5, 34, 34.5, 35, 
+        35.5, 36, 36.5, 37, 37.5, 
+        38, 38.5, 39, 39.5, 40, 
+        40.5, 41, 41.5, 42, 42.5, 
+        43, 43.5, 44, 44.5, 45, 
+        45.5, 46, 46.5, 47, 47.5, 
+        48, 48.5, 49, 49.5, 50, 
+        50.5, 51, 51.5, 52, 52.5, 
+        53, 53.5, 54, 54.5, 55, 
+        55.5, 56, 56.5, 57, 57.5, 
+        58, 58.5, 59, 59.5, 60, 
+        60.5, 61, 61.5, 62, 62.5, 
+        63, 63.5, 64, 64.5, 65, 
+        65.5, 66, 66.5, 67, 67.5, 
+        68, 68.5, 69, 69.5, 70, 
+        70.5, 71, 71.5, 72, 72.5, 
+        73, 73.5, 74, 74.5, 75, 
+        75.5, 76, 76.5, 77, 77.5, 
+        78, 78.5, 79, 79.5, 80, 
+        80.5, 81, 81.5, 82, 82.5, 
+        83, 83.5, 84, 84.5, 85, 
+        85.5, 86, 86.5, 87, 87.5, 
+        88, 88.5, 89, 89.5, 90, 
+        90.5, 91, 91.5, 92, 92.5, 
+        93, 93.5, 94, 94.5, 95, 
+        95.5, 96, 96.5, 97, 97.5, 
+        98, 98.5, 99, 99.5, 100, 
+        100.5, 101, 101.5, 102, 102.5, 
+        103, 103.5, 104, 104.5, 105, 
+        105.5, 106, 106.5, 107, 107.5, 
+        108, 108.5, 109, 109.5, 110, 
+        110.5, 111, 111.5, 112, 112.5, 
+        113, 113.5, 114, 114.5, 115, 
+        115.5, 116, 116.5, 117, 117.5, 
+        118, 118.5, 119, 119.5, 120, 
+        120.5, 121, 121.5, 122, 122.5, 
+        123, 123.5, 124, 124.5, 125, 
+        125.5, 126, 126.5, 127, 127.5, 
+        0, 0.5, 1, 1.5, 2, 
+        2.5, 3, 3.5, 4, 4.5, 
+        5, 5.5, 6, 6.5, 7, 
+        7.5, 8, 8.5, 9, 9.5, 
+        10, 10.5, 11, 11.5, 12, 
+        12.5, 13, 13.5, 14, 14.5, 
+        15, 15.5, 16, 16.5, 17, 
+        17.5, 18, 18.5, 19, 19.5, 
+        20, 20.5, 21, 21.5, 22, 
+        22.5, 23, 23.5, 24, 24.5, 
+        25, 25.5, 26, 26.5, 27, 
+        27.5, 28, 28.5, 29, 29.5, 
+        30, 30.5, 31, 31.5, 32, 
+        32.5, 33, 33.5, 34, 34.5, 
+        35, 35.5, 36, 36.5, 37, 
+        37.5, 38, 38.5, 39, 39.5, 
+        40, 40.5, 41, 41.5, 42, 
+        42.5, 43, 43.5, 44, 44.5, 
+        45, 45.5, 46, 46.5, 47, 
+        47.5, 48, 48.5, 49, 49.5, 
+        50, 50.5, 51, 51.5, 52, 
+        52.5, 53, 53.5, 54, 54.5, 
+        55, 55.5, 56, 56.5, 57, 
+        57.5, 58, 58.5, 59, 59.5, 
+        60, 60.5, 61, 61.5, 62, 
+        62.5, 63, 63.5, 64, 64.5, 
+        65, 65.5, 66, 66.5, 67, 
+        67.5, 68, 68.5, 69, 69.5, 
+        70, 70.5, 71, 71.5, 72, 
+        72.5, 73, 73.5, 74, 74.5, 
+        75, 75.5, 76, 76.5, 77, 
+        77.5, 78, 78.5, 79, 79.5, 
+        80, 80.5, 81, 81.5, 82, 
+        82.5, 83, 83.5, 84, 84.5, 
+        85, 85.5, 86, 86.5, 87, 
+        87.5, 88, 88.5, 89, 89.5, 
+        90, 90.5, 91, 91.5, 92, 
+        92.5, 93, 93.5, 94, 94.5, 
+        95, 95.5, 96, 96.5, 97, 
+        97.5, 98, 98.5, 99, 99.5, 
+        100, 100.5, 101, 101.5, 102, 
+        102.5, 103, 103.5, 104, 104.5, 
+        105, 105.5, 106, 106.5, 107, 
+        107.5, 108, 108.5, 109, 109.5, 
+        110, 110.5, 111, 111.5, 112, 
+        112.5, 113, 113.5, 114, 114.5, 
+        115, 115.5, 116, 116.5, 117, 
+        117.5, 118, 118.5, 119, 119.5, 
+        120, 120.5, 121, 121.5, 122, 
+        122.5, 123, 123.5, 124, 124.5, 
+        125, 125.5, 126, 126.5, 127, 
+        127.5, 0, 0.5, 1, 1.5, 
+        2, 2.5, 3, 3.5, 4, 
+        4.5, 5, 5.5, 6, 6.5, 
+        7, 7.5, 8, 8.5, 9, 
+        9.5, 10, 10.5, 11, 11.5, 
+        12, 12.5, 13, 13.5, 14, 
+        14.5, 15, 15.5, 16, 16.5, 
+        17, 17.5, 18, 18.5, 19, 
+        19.5, 20, 20.5, 21, 21.5, 
+        22, 22.5, 23, 23.5, 24, 
+        24.5, 25, 25.5, 26, 26.5, 
+        27, 27.5, 28, 28.5, 29, 
+        29.5, 30, 30.5, 31, 31.5, 
+        32, 32.5, 33, 33.5, 34, 
+        34.5, 35, 35.5, 36, 36.5, 
+        37, 37.5, 38, 38.5, 39, 
+        39.5, 40, 40.5, 41, 41.5, 
+        42, 42.5, 43, 43.5, 44, 
+        44.5, 45, 45.5, 46, 46.5, 
+        47, 47.5, 48, 48.5, 49, 
+        49.5, 50, 50.5, 51, 51.5, 
+        52, 52.5, 53, 53.5, 54, 
+        54.5, 55, 55.5, 56, 56.5, 
+        57, 57.5, 58, 58.5, 59, 
+        59.5, 60, 60.5, 61, 61.5, 
+        62, 62.5, 63, 63.5, 64, 
+        64.5, 65, 65.5, 66, 66.5, 
+        67, 67.5, 68, 68.5, 69, 
+        69.5, 70, 70.5, 71, 71.5, 
+        72, 72.5, 73, 73.5, 74, 
+        74.5, 75, 75.5, 76, 76.5, 
+        77, 77.5, 78, 78.5, 79, 
+        79.5, 80, 80.5, 81, 81.5, 
+        82, 82.5, 83, 83.5, 84, 
+        84.5, 85, 85.5, 86, 86.5, 
+        87, 87.5, 88, 88.5, 89, 
+        89.5, 90, 90.5, 91, 91.5, 
+        92, 92.5, 93, 93.5, 94, 
+        94.5, 95, 95.5, 96, 96.5, 
+        97, 97.5, 98, 98.5, 99, 
+        99.5, 100, 100.5, 101, 101.5, 
+        102, 102.5, 103, 103.5, 104, 
+        104.5, 105, 105.5, 106, 106.5, 
+        107, 107.5, 108, 108.5, 109, 
+        109.5, 110, 110.5, 111, 111.5, 
+        112, 112.5, 113, 113.5, 114, 
+        114.5, 115, 115.5, 116, 116.5, 
+        117, 117.5, 118, 118.5, 119, 
+        119.5, 120, 120.5, 121, 121.5, 
+        122, 122.5, 123, 123.5, 124, 
+        124.5, 125, 125.5, 126, 126.5, 
+        127, 127.5, 0, 0.5, 1, 
+        1.5, 2, 2.5, 3, 3.5, 
+        4, 4.5, 5, 5.5, 6, 
+        6.5, 7, 7.5, 8, 8.5, 
+        9, 9.5, 10, 10.5, 11, 
+        11.5, 12, 12.5, 13, 13.5, 
+        14, 14.5, 15, 15.5, 16, 
+        16.5, 17, 17.5, 18, 18.5, 
+        19, 19.5, 20, 20.5, 21, 
+        21.5, 22, 22.5, 23, 23.5, 
+        24, 24.5, 25, 25.5, 26, 
+        26.5, 27, 27.5, 28, 28.5, 
+        29, 29.5, 30, 30.5, 31, 
+        31.5, 32, 32.5, 33, 33.5, 
+        34, 34.5, 35, 35.5, 36, 
+        36.5, 37, 37.5, 38, 38.5, 
+        39, 39.5, 40, 40.5, 41, 
+        41.5, 42, 42.5, 43, 43.5, 
+        44, 44.5, 45, 45.5, 46, 
+        46.5, 47, 47.5, 48, 48.5, 
+        49, 49.5, 50, 50.5, 51, 
+        51.5, 52, 52.5, 53, 53.5, 
+        54, 54.5, 55, 55.5, 56, 
+        56.5, 57, 57.5, 58, 58.5, 
+        59, 59.5, 60, 60.5, 61, 
+        61.5, 62, 62.5, 63, 63.5, 
+        64, 64.5, 65, 65.5, 66, 
+        66.5, 67, 67.5, 68, 68.5, 
+        69, 69.5, 70, 70.5, 71, 
+        71.5, 72, 72.5, 73, 73.5, 
+        74, 74.5, 75, 75.5, 76, 
+        76.5, 77, 77.5, 78, 78.5, 
+        79, 79.5, 80, 80.5, 81, 
+        81.5, 82, 82.5, 83, 83.5, 
+        84, 84.5, 85, 85.5, 86, 
+        86.5, 87, 87.5, 88, 88.5, 
+        89, 89.5, 90, 90.5, 91, 
+        91.5, 92, 92.5, 93, 93.5, 
+        94, 94.5, 95, 95.5, 96, 
+        96.5, 97, 97.5, 98, 98.5, 
+        99, 99.5, 100, 100.5, 101, 
+        101.5, 102, 102.5, 103, 103.5, 
+        104, 104.5, 105, 105.5, 106, 
+        106.5, 107, 107.5, 108, 108.5, 
+        109, 109.5, 110, 110.5, 111, 
+        111.5, 112, 112.5, 113, 113.5, 
+        114, 114.5, 115, 115.5, 116, 
+        116.5, 117, 117.5, 118, 118.5, 
+        119, 119.5, 120, 120.5, 121, 
+        121.5, 122, 122.5, 123, 123.5, 
+        124, 124.5, 125, 125.5, 126, 
+        126.5, 127, 127.5 ) ),
+    L1EcalEtThresholdsPositiveEta = cms.vdouble( (0, 0.5, 1, 1.5, 2, 
+        2.5, 3, 3.5, 4, 4.5, 
+        5, 5.5, 6, 6.5, 7, 
+        7.5, 8, 8.5, 9, 9.5, 
+        10, 10.5, 11, 11.5, 12, 
+        12.5, 13, 13.5, 14, 14.5, 
+        15, 15.5, 16, 16.5, 17, 
+        17.5, 18, 18.5, 19, 19.5, 
+        20, 20.5, 21, 21.5, 22, 
+        22.5, 23, 23.5, 24, 24.5, 
+        25, 25.5, 26, 26.5, 27, 
+        27.5, 28, 28.5, 29, 29.5, 
+        30, 30.5, 31, 31.5, 32, 
+        32.5, 33, 33.5, 34, 34.5, 
+        35, 35.5, 36, 36.5, 37, 
+        37.5, 38, 38.5, 39, 39.5, 
+        40, 40.5, 41, 41.5, 42, 
+        42.5, 43, 43.5, 44, 44.5, 
+        45, 45.5, 46, 46.5, 47, 
+        47.5, 48, 48.5, 49, 49.5, 
+        50, 50.5, 51, 51.5, 52, 
+        52.5, 53, 53.5, 54, 54.5, 
+        55, 55.5, 56, 56.5, 57, 
+        57.5, 58, 58.5, 59, 59.5, 
+        60, 60.5, 61, 61.5, 62, 
+        62.5, 63, 63.5, 64, 64.5, 
+        65, 65.5, 66, 66.5, 67, 
+        67.5, 68, 68.5, 69, 69.5, 
+        70, 70.5, 71, 71.5, 72, 
+        72.5, 73, 73.5, 74, 74.5, 
+        75, 75.5, 76, 76.5, 77, 
+        77.5, 78, 78.5, 79, 79.5, 
+        80, 80.5, 81, 81.5, 82, 
+        82.5, 83, 83.5, 84, 84.5, 
+        85, 85.5, 86, 86.5, 87, 
+        87.5, 88, 88.5, 89, 89.5, 
+        90, 90.5, 91, 91.5, 92, 
+        92.5, 93, 93.5, 94, 94.5, 
+        95, 95.5, 96, 96.5, 97, 
+        97.5, 98, 98.5, 99, 99.5, 
+        100, 100.5, 101, 101.5, 102, 
+        102.5, 103, 103.5, 104, 104.5, 
+        105, 105.5, 106, 106.5, 107, 
+        107.5, 108, 108.5, 109, 109.5, 
+        110, 110.5, 111, 111.5, 112, 
+        112.5, 113, 113.5, 114, 114.5, 
+        115, 115.5, 116, 116.5, 117, 
+        117.5, 118, 118.5, 119, 119.5, 
+        120, 120.5, 121, 121.5, 122, 
+        122.5, 123, 123.5, 124, 124.5, 
+        125, 125.5, 126, 126.5, 127, 
+        127.5, 0, 0.5, 1, 1.5, 
+        2, 2.5, 3, 3.5, 4, 
+        4.5, 5, 5.5, 6, 6.5, 
+        7, 7.5, 8, 8.5, 9, 
+        9.5, 10, 10.5, 11, 11.5, 
+        12, 12.5, 13, 13.5, 14, 
+        14.5, 15, 15.5, 16, 16.5, 
+        17, 17.5, 18, 18.5, 19, 
+        19.5, 20, 20.5, 21, 21.5, 
+        22, 22.5, 23, 23.5, 24, 
+        24.5, 25, 25.5, 26, 26.5, 
+        27, 27.5, 28, 28.5, 29, 
+        29.5, 30, 30.5, 31, 31.5, 
+        32, 32.5, 33, 33.5, 34, 
+        34.5, 35, 35.5, 36, 36.5, 
+        37, 37.5, 38, 38.5, 39, 
+        39.5, 40, 40.5, 41, 41.5, 
+        42, 42.5, 43, 43.5, 44, 
+        44.5, 45, 45.5, 46, 46.5, 
+        47, 47.5, 48, 48.5, 49, 
+        49.5, 50, 50.5, 51, 51.5, 
+        52, 52.5, 53, 53.5, 54, 
+        54.5, 55, 55.5, 56, 56.5, 
+        57, 57.5, 58, 58.5, 59, 
+        59.5, 60, 60.5, 61, 61.5, 
+        62, 62.5, 63, 63.5, 64, 
+        64.5, 65, 65.5, 66, 66.5, 
+        67, 67.5, 68, 68.5, 69, 
+        69.5, 70, 70.5, 71, 71.5, 
+        72, 72.5, 73, 73.5, 74, 
+        74.5, 75, 75.5, 76, 76.5, 
+        77, 77.5, 78, 78.5, 79, 
+        79.5, 80, 80.5, 81, 81.5, 
+        82, 82.5, 83, 83.5, 84, 
+        84.5, 85, 85.5, 86, 86.5, 
+        87, 87.5, 88, 88.5, 89, 
+        89.5, 90, 90.5, 91, 91.5, 
+        92, 92.5, 93, 93.5, 94, 
+        94.5, 95, 95.5, 96, 96.5, 
+        97, 97.5, 98, 98.5, 99, 
+        99.5, 100, 100.5, 101, 101.5, 
+        102, 102.5, 103, 103.5, 104, 
+        104.5, 105, 105.5, 106, 106.5, 
+        107, 107.5, 108, 108.5, 109, 
+        109.5, 110, 110.5, 111, 111.5, 
+        112, 112.5, 113, 113.5, 114, 
+        114.5, 115, 115.5, 116, 116.5, 
+        117, 117.5, 118, 118.5, 119, 
+        119.5, 120, 120.5, 121, 121.5, 
+        122, 122.5, 123, 123.5, 124, 
+        124.5, 125, 125.5, 126, 126.5, 
+        127, 127.5, 0, 0.5, 1, 
+        1.5, 2, 2.5, 3, 3.5, 
+        4, 4.5, 5, 5.5, 6, 
+        6.5, 7, 7.5, 8, 8.5, 
+        9, 9.5, 10, 10.5, 11, 
+        11.5, 12, 12.5, 13, 13.5, 
+        14, 14.5, 15, 15.5, 16, 
+        16.5, 17, 17.5, 18, 18.5, 
+        19, 19.5, 20, 20.5, 21, 
+        21.5, 22, 22.5, 23, 23.5, 
+        24, 24.5, 25, 25.5, 26, 
+        26.5, 27, 27.5, 28, 28.5, 
+        29, 29.5, 30, 30.5, 31, 
+        31.5, 32, 32.5, 33, 33.5, 
+        34, 34.5, 35, 35.5, 36, 
+        36.5, 37, 37.5, 38, 38.5, 
+        39, 39.5, 40, 40.5, 41, 
+        41.5, 42, 42.5, 43, 43.5, 
+        44, 44.5, 45, 45.5, 46, 
+        46.5, 47, 47.5, 48, 48.5, 
+        49, 49.5, 50, 50.5, 51, 
+        51.5, 52, 52.5, 53, 53.5, 
+        54, 54.5, 55, 55.5, 56, 
+        56.5, 57, 57.5, 58, 58.5, 
+        59, 59.5, 60, 60.5, 61, 
+        61.5, 62, 62.5, 63, 63.5, 
+        64, 64.5, 65, 65.5, 66, 
+        66.5, 67, 67.5, 68, 68.5, 
+        69, 69.5, 70, 70.5, 71, 
+        71.5, 72, 72.5, 73, 73.5, 
+        74, 74.5, 75, 75.5, 76, 
+        76.5, 77, 77.5, 78, 78.5, 
+        79, 79.5, 80, 80.5, 81, 
+        81.5, 82, 82.5, 83, 83.5, 
+        84, 84.5, 85, 85.5, 86, 
+        86.5, 87, 87.5, 88, 88.5, 
+        89, 89.5, 90, 90.5, 91, 
+        91.5, 92, 92.5, 93, 93.5, 
+        94, 94.5, 95, 95.5, 96, 
+        96.5, 97, 97.5, 98, 98.5, 
+        99, 99.5, 100, 100.5, 101, 
+        101.5, 102, 102.5, 103, 103.5, 
+        104, 104.5, 105, 105.5, 106, 
+        106.5, 107, 107.5, 108, 108.5, 
+        109, 109.5, 110, 110.5, 111, 
+        111.5, 112, 112.5, 113, 113.5, 
+        114, 114.5, 115, 115.5, 116, 
+        116.5, 117, 117.5, 118, 118.5, 
+        119, 119.5, 120, 120.5, 121, 
+        121.5, 122, 122.5, 123, 123.5, 
+        124, 124.5, 125, 125.5, 126, 
+        126.5, 127, 127.5, 0, 0.5, 
+        1, 1.5, 2, 2.5, 3, 
+        3.5, 4, 4.5, 5, 5.5, 
+        6, 6.5, 7, 7.5, 8, 
+        8.5, 9, 9.5, 10, 10.5, 
+        11, 11.5, 12, 12.5, 13, 
+        13.5, 14, 14.5, 15, 15.5, 
+        16, 16.5, 17, 17.5, 18, 
+        18.5, 19, 19.5, 20, 20.5, 
+        21, 21.5, 22, 22.5, 23, 
+        23.5, 24, 24.5, 25, 25.5, 
+        26, 26.5, 27, 27.5, 28, 
+        28.5, 29, 29.5, 30, 30.5, 
+        31, 31.5, 32, 32.5, 33, 
+        33.5, 34, 34.5, 35, 35.5, 
+        36, 36.5, 37, 37.5, 38, 
+        38.5, 39, 39.5, 40, 40.5, 
+        41, 41.5, 42, 42.5, 43, 
+        43.5, 44, 44.5, 45, 45.5, 
+        46, 46.5, 47, 47.5, 48, 
+        48.5, 49, 49.5, 50, 50.5, 
+        51, 51.5, 52, 52.5, 53, 
+        53.5, 54, 54.5, 55, 55.5, 
+        56, 56.5, 57, 57.5, 58, 
+        58.5, 59, 59.5, 60, 60.5, 
+        61, 61.5, 62, 62.5, 63, 
+        63.5, 64, 64.5, 65, 65.5, 
+        66, 66.5, 67, 67.5, 68, 
+        68.5, 69, 69.5, 70, 70.5, 
+        71, 71.5, 72, 72.5, 73, 
+        73.5, 74, 74.5, 75, 75.5, 
+        76, 76.5, 77, 77.5, 78, 
+        78.5, 79, 79.5, 80, 80.5, 
+        81, 81.5, 82, 82.5, 83, 
+        83.5, 84, 84.5, 85, 85.5, 
+        86, 86.5, 87, 87.5, 88, 
+        88.5, 89, 89.5, 90, 90.5, 
+        91, 91.5, 92, 92.5, 93, 
+        93.5, 94, 94.5, 95, 95.5, 
+        96, 96.5, 97, 97.5, 98, 
+        98.5, 99, 99.5, 100, 100.5, 
+        101, 101.5, 102, 102.5, 103, 
+        103.5, 104, 104.5, 105, 105.5, 
+        106, 106.5, 107, 107.5, 108, 
+        108.5, 109, 109.5, 110, 110.5, 
+        111, 111.5, 112, 112.5, 113, 
+        113.5, 114, 114.5, 115, 115.5, 
+        116, 116.5, 117, 117.5, 118, 
+        118.5, 119, 119.5, 120, 120.5, 
+        121, 121.5, 122, 122.5, 123, 
+        123.5, 124, 124.5, 125, 125.5, 
+        126, 126.5, 127, 127.5, 0, 
+        0.5, 1, 1.5, 2, 2.5, 
+        3, 3.5, 4, 4.5, 5, 
+        5.5, 6, 6.5, 7, 7.5, 
+        8, 8.5, 9, 9.5, 10, 
+        10.5, 11, 11.5, 12, 12.5, 
+        13, 13.5, 14, 14.5, 15, 
+        15.5, 16, 16.5, 17, 17.5, 
+        18, 18.5, 19, 19.5, 20, 
+        20.5, 21, 21.5, 22, 22.5, 
+        23, 23.5, 24, 24.5, 25, 
+        25.5, 26, 26.5, 27, 27.5, 
+        28, 28.5, 29, 29.5, 30, 
+        30.5, 31, 31.5, 32, 32.5, 
+        33, 33.5, 34, 34.5, 35, 
+        35.5, 36, 36.5, 37, 37.5, 
+        38, 38.5, 39, 39.5, 40, 
+        40.5, 41, 41.5, 42, 42.5, 
+        43, 43.5, 44, 44.5, 45, 
+        45.5, 46, 46.5, 47, 47.5, 
+        48, 48.5, 49, 49.5, 50, 
+        50.5, 51, 51.5, 52, 52.5, 
+        53, 53.5, 54, 54.5, 55, 
+        55.5, 56, 56.5, 57, 57.5, 
+        58, 58.5, 59, 59.5, 60, 
+        60.5, 61, 61.5, 62, 62.5, 
+        63, 63.5, 64, 64.5, 65, 
+        65.5, 66, 66.5, 67, 67.5, 
+        68, 68.5, 69, 69.5, 70, 
+        70.5, 71, 71.5, 72, 72.5, 
+        73, 73.5, 74, 74.5, 75, 
+        75.5, 76, 76.5, 77, 77.5, 
+        78, 78.5, 79, 79.5, 80, 
+        80.5, 81, 81.5, 82, 82.5, 
+        83, 83.5, 84, 84.5, 85, 
+        85.5, 86, 86.5, 87, 87.5, 
+        88, 88.5, 89, 89.5, 90, 
+        90.5, 91, 91.5, 92, 92.5, 
+        93, 93.5, 94, 94.5, 95, 
+        95.5, 96, 96.5, 97, 97.5, 
+        98, 98.5, 99, 99.5, 100, 
+        100.5, 101, 101.5, 102, 102.5, 
+        103, 103.5, 104, 104.5, 105, 
+        105.5, 106, 106.5, 107, 107.5, 
+        108, 108.5, 109, 109.5, 110, 
+        110.5, 111, 111.5, 112, 112.5, 
+        113, 113.5, 114, 114.5, 115, 
+        115.5, 116, 116.5, 117, 117.5, 
+        118, 118.5, 119, 119.5, 120, 
+        120.5, 121, 121.5, 122, 122.5, 
+        123, 123.5, 124, 124.5, 125, 
+        125.5, 126, 126.5, 127, 127.5, 
+        0, 0.5, 1, 1.5, 2, 
+        2.5, 3, 3.5, 4, 4.5, 
+        5, 5.5, 6, 6.5, 7, 
+        7.5, 8, 8.5, 9, 9.5, 
+        10, 10.5, 11, 11.5, 12, 
+        12.5, 13, 13.5, 14, 14.5, 
+        15, 15.5, 16, 16.5, 17, 
+        17.5, 18, 18.5, 19, 19.5, 
+        20, 20.5, 21, 21.5, 22, 
+        22.5, 23, 23.5, 24, 24.5, 
+        25, 25.5, 26, 26.5, 27, 
+        27.5, 28, 28.5, 29, 29.5, 
+        30, 30.5, 31, 31.5, 32, 
+        32.5, 33, 33.5, 34, 34.5, 
+        35, 35.5, 36, 36.5, 37, 
+        37.5, 38, 38.5, 39, 39.5, 
+        40, 40.5, 41, 41.5, 42, 
+        42.5, 43, 43.5, 44, 44.5, 
+        45, 45.5, 46, 46.5, 47, 
+        47.5, 48, 48.5, 49, 49.5, 
+        50, 50.5, 51, 51.5, 52, 
+        52.5, 53, 53.5, 54, 54.5, 
+        55, 55.5, 56, 56.5, 57, 
+        57.5, 58, 58.5, 59, 59.5, 
+        60, 60.5, 61, 61.5, 62, 
+        62.5, 63, 63.5, 64, 64.5, 
+        65, 65.5, 66, 66.5, 67, 
+        67.5, 68, 68.5, 69, 69.5, 
+        70, 70.5, 71, 71.5, 72, 
+        72.5, 73, 73.5, 74, 74.5, 
+        75, 75.5, 76, 76.5, 77, 
+        77.5, 78, 78.5, 79, 79.5, 
+        80, 80.5, 81, 81.5, 82, 
+        82.5, 83, 83.5, 84, 84.5, 
+        85, 85.5, 86, 86.5, 87, 
+        87.5, 88, 88.5, 89, 89.5, 
+        90, 90.5, 91, 91.5, 92, 
+        92.5, 93, 93.5, 94, 94.5, 
+        95, 95.5, 96, 96.5, 97, 
+        97.5, 98, 98.5, 99, 99.5, 
+        100, 100.5, 101, 101.5, 102, 
+        102.5, 103, 103.5, 104, 104.5, 
+        105, 105.5, 106, 106.5, 107, 
+        107.5, 108, 108.5, 109, 109.5, 
+        110, 110.5, 111, 111.5, 112, 
+        112.5, 113, 113.5, 114, 114.5, 
+        115, 115.5, 116, 116.5, 117, 
+        117.5, 118, 118.5, 119, 119.5, 
+        120, 120.5, 121, 121.5, 122, 
+        122.5, 123, 123.5, 124, 124.5, 
+        125, 125.5, 126, 126.5, 127, 
+        127.5, 0, 0.5, 1, 1.5, 
+        2, 2.5, 3, 3.5, 4, 
+        4.5, 5, 5.5, 6, 6.5, 
+        7, 7.5, 8, 8.5, 9, 
+        9.5, 10, 10.5, 11, 11.5, 
+        12, 12.5, 13, 13.5, 14, 
+        14.5, 15, 15.5, 16, 16.5, 
+        17, 17.5, 18, 18.5, 19, 
+        19.5, 20, 20.5, 21, 21.5, 
+        22, 22.5, 23, 23.5, 24, 
+        24.5, 25, 25.5, 26, 26.5, 
+        27, 27.5, 28, 28.5, 29, 
+        29.5, 30, 30.5, 31, 31.5, 
+        32, 32.5, 33, 33.5, 34, 
+        34.5, 35, 35.5, 36, 36.5, 
+        37, 37.5, 38, 38.5, 39, 
+        39.5, 40, 40.5, 41, 41.5, 
+        42, 42.5, 43, 43.5, 44, 
+        44.5, 45, 45.5, 46, 46.5, 
+        47, 47.5, 48, 48.5, 49, 
+        49.5, 50, 50.5, 51, 51.5, 
+        52, 52.5, 53, 53.5, 54, 
+        54.5, 55, 55.5, 56, 56.5, 
+        57, 57.5, 58, 58.5, 59, 
+        59.5, 60, 60.5, 61, 61.5, 
+        62, 62.5, 63, 63.5, 64, 
+        64.5, 65, 65.5, 66, 66.5, 
+        67, 67.5, 68, 68.5, 69, 
+        69.5, 70, 70.5, 71, 71.5, 
+        72, 72.5, 73, 73.5, 74, 
+        74.5, 75, 75.5, 76, 76.5, 
+        77, 77.5, 78, 78.5, 79, 
+        79.5, 80, 80.5, 81, 81.5, 
+        82, 82.5, 83, 83.5, 84, 
+        84.5, 85, 85.5, 86, 86.5, 
+        87, 87.5, 88, 88.5, 89, 
+        89.5, 90, 90.5, 91, 91.5, 
+        92, 92.5, 93, 93.5, 94, 
+        94.5, 95, 95.5, 96, 96.5, 
+        97, 97.5, 98, 98.5, 99, 
+        99.5, 100, 100.5, 101, 101.5, 
+        102, 102.5, 103, 103.5, 104, 
+        104.5, 105, 105.5, 106, 106.5, 
+        107, 107.5, 108, 108.5, 109, 
+        109.5, 110, 110.5, 111, 111.5, 
+        112, 112.5, 113, 113.5, 114, 
+        114.5, 115, 115.5, 116, 116.5, 
+        117, 117.5, 118, 118.5, 119, 
+        119.5, 120, 120.5, 121, 121.5, 
+        122, 122.5, 123, 123.5, 124, 
+        124.5, 125, 125.5, 126, 126.5, 
+        127, 127.5, 0, 0.5, 1, 
+        1.5, 2, 2.5, 3, 3.5, 
+        4, 4.5, 5, 5.5, 6, 
+        6.5, 7, 7.5, 8, 8.5, 
+        9, 9.5, 10, 10.5, 11, 
+        11.5, 12, 12.5, 13, 13.5, 
+        14, 14.5, 15, 15.5, 16, 
+        16.5, 17, 17.5, 18, 18.5, 
+        19, 19.5, 20, 20.5, 21, 
+        21.5, 22, 22.5, 23, 23.5, 
+        24, 24.5, 25, 25.5, 26, 
+        26.5, 27, 27.5, 28, 28.5, 
+        29, 29.5, 30, 30.5, 31, 
+        31.5, 32, 32.5, 33, 33.5, 
+        34, 34.5, 35, 35.5, 36, 
+        36.5, 37, 37.5, 38, 38.5, 
+        39, 39.5, 40, 40.5, 41, 
+        41.5, 42, 42.5, 43, 43.5, 
+        44, 44.5, 45, 45.5, 46, 
+        46.5, 47, 47.5, 48, 48.5, 
+        49, 49.5, 50, 50.5, 51, 
+        51.5, 52, 52.5, 53, 53.5, 
+        54, 54.5, 55, 55.5, 56, 
+        56.5, 57, 57.5, 58, 58.5, 
+        59, 59.5, 60, 60.5, 61, 
+        61.5, 62, 62.5, 63, 63.5, 
+        64, 64.5, 65, 65.5, 66, 
+        66.5, 67, 67.5, 68, 68.5, 
+        69, 69.5, 70, 70.5, 71, 
+        71.5, 72, 72.5, 73, 73.5, 
+        74, 74.5, 75, 75.5, 76, 
+        76.5, 77, 77.5, 78, 78.5, 
+        79, 79.5, 80, 80.5, 81, 
+        81.5, 82, 82.5, 83, 83.5, 
+        84, 84.5, 85, 85.5, 86, 
+        86.5, 87, 87.5, 88, 88.5, 
+        89, 89.5, 90, 90.5, 91, 
+        91.5, 92, 92.5, 93, 93.5, 
+        94, 94.5, 95, 95.5, 96, 
+        96.5, 97, 97.5, 98, 98.5, 
+        99, 99.5, 100, 100.5, 101, 
+        101.5, 102, 102.5, 103, 103.5, 
+        104, 104.5, 105, 105.5, 106, 
+        106.5, 107, 107.5, 108, 108.5, 
+        109, 109.5, 110, 110.5, 111, 
+        111.5, 112, 112.5, 113, 113.5, 
+        114, 114.5, 115, 115.5, 116, 
+        116.5, 117, 117.5, 118, 118.5, 
+        119, 119.5, 120, 120.5, 121, 
+        121.5, 122, 122.5, 123, 123.5, 
+        124, 124.5, 125, 125.5, 126, 
+        126.5, 127, 127.5, 0, 0.5, 
+        1, 1.5, 2, 2.5, 3, 
+        3.5, 4, 4.5, 5, 5.5, 
+        6, 6.5, 7, 7.5, 8, 
+        8.5, 9, 9.5, 10, 10.5, 
+        11, 11.5, 12, 12.5, 13, 
+        13.5, 14, 14.5, 15, 15.5, 
+        16, 16.5, 17, 17.5, 18, 
+        18.5, 19, 19.5, 20, 20.5, 
+        21, 21.5, 22, 22.5, 23, 
+        23.5, 24, 24.5, 25, 25.5, 
+        26, 26.5, 27, 27.5, 28, 
+        28.5, 29, 29.5, 30, 30.5, 
+        31, 31.5, 32, 32.5, 33, 
+        33.5, 34, 34.5, 35, 35.5, 
+        36, 36.5, 37, 37.5, 38, 
+        38.5, 39, 39.5, 40, 40.5, 
+        41, 41.5, 42, 42.5, 43, 
+        43.5, 44, 44.5, 45, 45.5, 
+        46, 46.5, 47, 47.5, 48, 
+        48.5, 49, 49.5, 50, 50.5, 
+        51, 51.5, 52, 52.5, 53, 
+        53.5, 54, 54.5, 55, 55.5, 
+        56, 56.5, 57, 57.5, 58, 
+        58.5, 59, 59.5, 60, 60.5, 
+        61, 61.5, 62, 62.5, 63, 
+        63.5, 64, 64.5, 65, 65.5, 
+        66, 66.5, 67, 67.5, 68, 
+        68.5, 69, 69.5, 70, 70.5, 
+        71, 71.5, 72, 72.5, 73, 
+        73.5, 74, 74.5, 75, 75.5, 
+        76, 76.5, 77, 77.5, 78, 
+        78.5, 79, 79.5, 80, 80.5, 
+        81, 81.5, 82, 82.5, 83, 
+        83.5, 84, 84.5, 85, 85.5, 
+        86, 86.5, 87, 87.5, 88, 
+        88.5, 89, 89.5, 90, 90.5, 
+        91, 91.5, 92, 92.5, 93, 
+        93.5, 94, 94.5, 95, 95.5, 
+        96, 96.5, 97, 97.5, 98, 
+        98.5, 99, 99.5, 100, 100.5, 
+        101, 101.5, 102, 102.5, 103, 
+        103.5, 104, 104.5, 105, 105.5, 
+        106, 106.5, 107, 107.5, 108, 
+        108.5, 109, 109.5, 110, 110.5, 
+        111, 111.5, 112, 112.5, 113, 
+        113.5, 114, 114.5, 115, 115.5, 
+        116, 116.5, 117, 117.5, 118, 
+        118.5, 119, 119.5, 120, 120.5, 
+        121, 121.5, 122, 122.5, 123, 
+        123.5, 124, 124.5, 125, 125.5, 
+        126, 126.5, 127, 127.5, 0, 
+        0.5, 1, 1.5, 2, 2.5, 
+        3, 3.5, 4, 4.5, 5, 
+        5.5, 6, 6.5, 7, 7.5, 
+        8, 8.5, 9, 9.5, 10, 
+        10.5, 11, 11.5, 12, 12.5, 
+        13, 13.5, 14, 14.5, 15, 
+        15.5, 16, 16.5, 17, 17.5, 
+        18, 18.5, 19, 19.5, 20, 
+        20.5, 21, 21.5, 22, 22.5, 
+        23, 23.5, 24, 24.5, 25, 
+        25.5, 26, 26.5, 27, 27.5, 
+        28, 28.5, 29, 29.5, 30, 
+        30.5, 31, 31.5, 32, 32.5, 
+        33, 33.5, 34, 34.5, 35, 
+        35.5, 36, 36.5, 37, 37.5, 
+        38, 38.5, 39, 39.5, 40, 
+        40.5, 41, 41.5, 42, 42.5, 
+        43, 43.5, 44, 44.5, 45, 
+        45.5, 46, 46.5, 47, 47.5, 
+        48, 48.5, 49, 49.5, 50, 
+        50.5, 51, 51.5, 52, 52.5, 
+        53, 53.5, 54, 54.5, 55, 
+        55.5, 56, 56.5, 57, 57.5, 
+        58, 58.5, 59, 59.5, 60, 
+        60.5, 61, 61.5, 62, 62.5, 
+        63, 63.5, 64, 64.5, 65, 
+        65.5, 66, 66.5, 67, 67.5, 
+        68, 68.5, 69, 69.5, 70, 
+        70.5, 71, 71.5, 72, 72.5, 
+        73, 73.5, 74, 74.5, 75, 
+        75.5, 76, 76.5, 77, 77.5, 
+        78, 78.5, 79, 79.5, 80, 
+        80.5, 81, 81.5, 82, 82.5, 
+        83, 83.5, 84, 84.5, 85, 
+        85.5, 86, 86.5, 87, 87.5, 
+        88, 88.5, 89, 89.5, 90, 
+        90.5, 91, 91.5, 92, 92.5, 
+        93, 93.5, 94, 94.5, 95, 
+        95.5, 96, 96.5, 97, 97.5, 
+        98, 98.5, 99, 99.5, 100, 
+        100.5, 101, 101.5, 102, 102.5, 
+        103, 103.5, 104, 104.5, 105, 
+        105.5, 106, 106.5, 107, 107.5, 
+        108, 108.5, 109, 109.5, 110, 
+        110.5, 111, 111.5, 112, 112.5, 
+        113, 113.5, 114, 114.5, 115, 
+        115.5, 116, 116.5, 117, 117.5, 
+        118, 118.5, 119, 119.5, 120, 
+        120.5, 121, 121.5, 122, 122.5, 
+        123, 123.5, 124, 124.5, 125, 
+        125.5, 126, 126.5, 127, 127.5, 
+        0, 0.5, 1, 1.5, 2, 
+        2.5, 3, 3.5, 4, 4.5, 
+        5, 5.5, 6, 6.5, 7, 
+        7.5, 8, 8.5, 9, 9.5, 
+        10, 10.5, 11, 11.5, 12, 
+        12.5, 13, 13.5, 14, 14.5, 
+        15, 15.5, 16, 16.5, 17, 
+        17.5, 18, 18.5, 19, 19.5, 
+        20, 20.5, 21, 21.5, 22, 
+        22.5, 23, 23.5, 24, 24.5, 
+        25, 25.5, 26, 26.5, 27, 
+        27.5, 28, 28.5, 29, 29.5, 
+        30, 30.5, 31, 31.5, 32, 
+        32.5, 33, 33.5, 34, 34.5, 
+        35, 35.5, 36, 36.5, 37, 
+        37.5, 38, 38.5, 39, 39.5, 
+        40, 40.5, 41, 41.5, 42, 
+        42.5, 43, 43.5, 44, 44.5, 
+        45, 45.5, 46, 46.5, 47, 
+        47.5, 48, 48.5, 49, 49.5, 
+        50, 50.5, 51, 51.5, 52, 
+        52.5, 53, 53.5, 54, 54.5, 
+        55, 55.5, 56, 56.5, 57, 
+        57.5, 58, 58.5, 59, 59.5, 
+        60, 60.5, 61, 61.5, 62, 
+        62.5, 63, 63.5, 64, 64.5, 
+        65, 65.5, 66, 66.5, 67, 
+        67.5, 68, 68.5, 69, 69.5, 
+        70, 70.5, 71, 71.5, 72, 
+        72.5, 73, 73.5, 74, 74.5, 
+        75, 75.5, 76, 76.5, 77, 
+        77.5, 78, 78.5, 79, 79.5, 
+        80, 80.5, 81, 81.5, 82, 
+        82.5, 83, 83.5, 84, 84.5, 
+        85, 85.5, 86, 86.5, 87, 
+        87.5, 88, 88.5, 89, 89.5, 
+        90, 90.5, 91, 91.5, 92, 
+        92.5, 93, 93.5, 94, 94.5, 
+        95, 95.5, 96, 96.5, 97, 
+        97.5, 98, 98.5, 99, 99.5, 
+        100, 100.5, 101, 101.5, 102, 
+        102.5, 103, 103.5, 104, 104.5, 
+        105, 105.5, 106, 106.5, 107, 
+        107.5, 108, 108.5, 109, 109.5, 
+        110, 110.5, 111, 111.5, 112, 
+        112.5, 113, 113.5, 114, 114.5, 
+        115, 115.5, 116, 116.5, 117, 
+        117.5, 118, 118.5, 119, 119.5, 
+        120, 120.5, 121, 121.5, 122, 
+        122.5, 123, 123.5, 124, 124.5, 
+        125, 125.5, 126, 126.5, 127, 
+        127.5, 0, 0.5, 1, 1.5, 
+        2, 2.5, 3, 3.5, 4, 
+        4.5, 5, 5.5, 6, 6.5, 
+        7, 7.5, 8, 8.5, 9, 
+        9.5, 10, 10.5, 11, 11.5, 
+        12, 12.5, 13, 13.5, 14, 
+        14.5, 15, 15.5, 16, 16.5, 
+        17, 17.5, 18, 18.5, 19, 
+        19.5, 20, 20.5, 21, 21.5, 
+        22, 22.5, 23, 23.5, 24, 
+        24.5, 25, 25.5, 26, 26.5, 
+        27, 27.5, 28, 28.5, 29, 
+        29.5, 30, 30.5, 31, 31.5, 
+        32, 32.5, 33, 33.5, 34, 
+        34.5, 35, 35.5, 36, 36.5, 
+        37, 37.5, 38, 38.5, 39, 
+        39.5, 40, 40.5, 41, 41.5, 
+        42, 42.5, 43, 43.5, 44, 
+        44.5, 45, 45.5, 46, 46.5, 
+        47, 47.5, 48, 48.5, 49, 
+        49.5, 50, 50.5, 51, 51.5, 
+        52, 52.5, 53, 53.5, 54, 
+        54.5, 55, 55.5, 56, 56.5, 
+        57, 57.5, 58, 58.5, 59, 
+        59.5, 60, 60.5, 61, 61.5, 
+        62, 62.5, 63, 63.5, 64, 
+        64.5, 65, 65.5, 66, 66.5, 
+        67, 67.5, 68, 68.5, 69, 
+        69.5, 70, 70.5, 71, 71.5, 
+        72, 72.5, 73, 73.5, 74, 
+        74.5, 75, 75.5, 76, 76.5, 
+        77, 77.5, 78, 78.5, 79, 
+        79.5, 80, 80.5, 81, 81.5, 
+        82, 82.5, 83, 83.5, 84, 
+        84.5, 85, 85.5, 86, 86.5, 
+        87, 87.5, 88, 88.5, 89, 
+        89.5, 90, 90.5, 91, 91.5, 
+        92, 92.5, 93, 93.5, 94, 
+        94.5, 95, 95.5, 96, 96.5, 
+        97, 97.5, 98, 98.5, 99, 
+        99.5, 100, 100.5, 101, 101.5, 
+        102, 102.5, 103, 103.5, 104, 
+        104.5, 105, 105.5, 106, 106.5, 
+        107, 107.5, 108, 108.5, 109, 
+        109.5, 110, 110.5, 111, 111.5, 
+        112, 112.5, 113, 113.5, 114, 
+        114.5, 115, 115.5, 116, 116.5, 
+        117, 117.5, 118, 118.5, 119, 
+        119.5, 120, 120.5, 121, 121.5, 
+        122, 122.5, 123, 123.5, 124, 
+        124.5, 125, 125.5, 126, 126.5, 
+        127, 127.5, 0, 0.5, 1, 
+        1.5, 2, 2.5, 3, 3.5, 
+        4, 4.5, 5, 5.5, 6, 
+        6.5, 7, 7.5, 8, 8.5, 
+        9, 9.5, 10, 10.5, 11, 
+        11.5, 12, 12.5, 13, 13.5, 
+        14, 14.5, 15, 15.5, 16, 
+        16.5, 17, 17.5, 18, 18.5, 
+        19, 19.5, 20, 20.5, 21, 
+        21.5, 22, 22.5, 23, 23.5, 
+        24, 24.5, 25, 25.5, 26, 
+        26.5, 27, 27.5, 28, 28.5, 
+        29, 29.5, 30, 30.5, 31, 
+        31.5, 32, 32.5, 33, 33.5, 
+        34, 34.5, 35, 35.5, 36, 
+        36.5, 37, 37.5, 38, 38.5, 
+        39, 39.5, 40, 40.5, 41, 
+        41.5, 42, 42.5, 43, 43.5, 
+        44, 44.5, 45, 45.5, 46, 
+        46.5, 47, 47.5, 48, 48.5, 
+        49, 49.5, 50, 50.5, 51, 
+        51.5, 52, 52.5, 53, 53.5, 
+        54, 54.5, 55, 55.5, 56, 
+        56.5, 57, 57.5, 58, 58.5, 
+        59, 59.5, 60, 60.5, 61, 
+        61.5, 62, 62.5, 63, 63.5, 
+        64, 64.5, 65, 65.5, 66, 
+        66.5, 67, 67.5, 68, 68.5, 
+        69, 69.5, 70, 70.5, 71, 
+        71.5, 72, 72.5, 73, 73.5, 
+        74, 74.5, 75, 75.5, 76, 
+        76.5, 77, 77.5, 78, 78.5, 
+        79, 79.5, 80, 80.5, 81, 
+        81.5, 82, 82.5, 83, 83.5, 
+        84, 84.5, 85, 85.5, 86, 
+        86.5, 87, 87.5, 88, 88.5, 
+        89, 89.5, 90, 90.5, 91, 
+        91.5, 92, 92.5, 93, 93.5, 
+        94, 94.5, 95, 95.5, 96, 
+        96.5, 97, 97.5, 98, 98.5, 
+        99, 99.5, 100, 100.5, 101, 
+        101.5, 102, 102.5, 103, 103.5, 
+        104, 104.5, 105, 105.5, 106, 
+        106.5, 107, 107.5, 108, 108.5, 
+        109, 109.5, 110, 110.5, 111, 
+        111.5, 112, 112.5, 113, 113.5, 
+        114, 114.5, 115, 115.5, 116, 
+        116.5, 117, 117.5, 118, 118.5, 
+        119, 119.5, 120, 120.5, 121, 
+        121.5, 122, 122.5, 123, 123.5, 
+        124, 124.5, 125, 125.5, 126, 
+        126.5, 127, 127.5, 0, 0.5, 
+        1, 1.5, 2, 2.5, 3, 
+        3.5, 4, 4.5, 5, 5.5, 
+        6, 6.5, 7, 7.5, 8, 
+        8.5, 9, 9.5, 10, 10.5, 
+        11, 11.5, 12, 12.5, 13, 
+        13.5, 14, 14.5, 15, 15.5, 
+        16, 16.5, 17, 17.5, 18, 
+        18.5, 19, 19.5, 20, 20.5, 
+        21, 21.5, 22, 22.5, 23, 
+        23.5, 24, 24.5, 25, 25.5, 
+        26, 26.5, 27, 27.5, 28, 
+        28.5, 29, 29.5, 30, 30.5, 
+        31, 31.5, 32, 32.5, 33, 
+        33.5, 34, 34.5, 35, 35.5, 
+        36, 36.5, 37, 37.5, 38, 
+        38.5, 39, 39.5, 40, 40.5, 
+        41, 41.5, 42, 42.5, 43, 
+        43.5, 44, 44.5, 45, 45.5, 
+        46, 46.5, 47, 47.5, 48, 
+        48.5, 49, 49.5, 50, 50.5, 
+        51, 51.5, 52, 52.5, 53, 
+        53.5, 54, 54.5, 55, 55.5, 
+        56, 56.5, 57, 57.5, 58, 
+        58.5, 59, 59.5, 60, 60.5, 
+        61, 61.5, 62, 62.5, 63, 
+        63.5, 64, 64.5, 65, 65.5, 
+        66, 66.5, 67, 67.5, 68, 
+        68.5, 69, 69.5, 70, 70.5, 
+        71, 71.5, 72, 72.5, 73, 
+        73.5, 74, 74.5, 75, 75.5, 
+        76, 76.5, 77, 77.5, 78, 
+        78.5, 79, 79.5, 80, 80.5, 
+        81, 81.5, 82, 82.5, 83, 
+        83.5, 84, 84.5, 85, 85.5, 
+        86, 86.5, 87, 87.5, 88, 
+        88.5, 89, 89.5, 90, 90.5, 
+        91, 91.5, 92, 92.5, 93, 
+        93.5, 94, 94.5, 95, 95.5, 
+        96, 96.5, 97, 97.5, 98, 
+        98.5, 99, 99.5, 100, 100.5, 
+        101, 101.5, 102, 102.5, 103, 
+        103.5, 104, 104.5, 105, 105.5, 
+        106, 106.5, 107, 107.5, 108, 
+        108.5, 109, 109.5, 110, 110.5, 
+        111, 111.5, 112, 112.5, 113, 
+        113.5, 114, 114.5, 115, 115.5, 
+        116, 116.5, 117, 117.5, 118, 
+        118.5, 119, 119.5, 120, 120.5, 
+        121, 121.5, 122, 122.5, 123, 
+        123.5, 124, 124.5, 125, 125.5, 
+        126, 126.5, 127, 127.5, 0, 
+        0.5, 1, 1.5, 2, 2.5, 
+        3, 3.5, 4, 4.5, 5, 
+        5.5, 6, 6.5, 7, 7.5, 
+        8, 8.5, 9, 9.5, 10, 
+        10.5, 11, 11.5, 12, 12.5, 
+        13, 13.5, 14, 14.5, 15, 
+        15.5, 16, 16.5, 17, 17.5, 
+        18, 18.5, 19, 19.5, 20, 
+        20.5, 21, 21.5, 22, 22.5, 
+        23, 23.5, 24, 24.5, 25, 
+        25.5, 26, 26.5, 27, 27.5, 
+        28, 28.5, 29, 29.5, 30, 
+        30.5, 31, 31.5, 32, 32.5, 
+        33, 33.5, 34, 34.5, 35, 
+        35.5, 36, 36.5, 37, 37.5, 
+        38, 38.5, 39, 39.5, 40, 
+        40.5, 41, 41.5, 42, 42.5, 
+        43, 43.5, 44, 44.5, 45, 
+        45.5, 46, 46.5, 47, 47.5, 
+        48, 48.5, 49, 49.5, 50, 
+        50.5, 51, 51.5, 52, 52.5, 
+        53, 53.5, 54, 54.5, 55, 
+        55.5, 56, 56.5, 57, 57.5, 
+        58, 58.5, 59, 59.5, 60, 
+        60.5, 61, 61.5, 62, 62.5, 
+        63, 63.5, 64, 64.5, 65, 
+        65.5, 66, 66.5, 67, 67.5, 
+        68, 68.5, 69, 69.5, 70, 
+        70.5, 71, 71.5, 72, 72.5, 
+        73, 73.5, 74, 74.5, 75, 
+        75.5, 76, 76.5, 77, 77.5, 
+        78, 78.5, 79, 79.5, 80, 
+        80.5, 81, 81.5, 82, 82.5, 
+        83, 83.5, 84, 84.5, 85, 
+        85.5, 86, 86.5, 87, 87.5, 
+        88, 88.5, 89, 89.5, 90, 
+        90.5, 91, 91.5, 92, 92.5, 
+        93, 93.5, 94, 94.5, 95, 
+        95.5, 96, 96.5, 97, 97.5, 
+        98, 98.5, 99, 99.5, 100, 
+        100.5, 101, 101.5, 102, 102.5, 
+        103, 103.5, 104, 104.5, 105, 
+        105.5, 106, 106.5, 107, 107.5, 
+        108, 108.5, 109, 109.5, 110, 
+        110.5, 111, 111.5, 112, 112.5, 
+        113, 113.5, 114, 114.5, 115, 
+        115.5, 116, 116.5, 117, 117.5, 
+        118, 118.5, 119, 119.5, 120, 
+        120.5, 121, 121.5, 122, 122.5, 
+        123, 123.5, 124, 124.5, 125, 
+        125.5, 126, 126.5, 127, 127.5, 
+        0, 0.5, 1, 1.5, 2, 
+        2.5, 3, 3.5, 4, 4.5, 
+        5, 5.5, 6, 6.5, 7, 
+        7.5, 8, 8.5, 9, 9.5, 
+        10, 10.5, 11, 11.5, 12, 
+        12.5, 13, 13.5, 14, 14.5, 
+        15, 15.5, 16, 16.5, 17, 
+        17.5, 18, 18.5, 19, 19.5, 
+        20, 20.5, 21, 21.5, 22, 
+        22.5, 23, 23.5, 24, 24.5, 
+        25, 25.5, 26, 26.5, 27, 
+        27.5, 28, 28.5, 29, 29.5, 
+        30, 30.5, 31, 31.5, 32, 
+        32.5, 33, 33.5, 34, 34.5, 
+        35, 35.5, 36, 36.5, 37, 
+        37.5, 38, 38.5, 39, 39.5, 
+        40, 40.5, 41, 41.5, 42, 
+        42.5, 43, 43.5, 44, 44.5, 
+        45, 45.5, 46, 46.5, 47, 
+        47.5, 48, 48.5, 49, 49.5, 
+        50, 50.5, 51, 51.5, 52, 
+        52.5, 53, 53.5, 54, 54.5, 
+        55, 55.5, 56, 56.5, 57, 
+        57.5, 58, 58.5, 59, 59.5, 
+        60, 60.5, 61, 61.5, 62, 
+        62.5, 63, 63.5, 64, 64.5, 
+        65, 65.5, 66, 66.5, 67, 
+        67.5, 68, 68.5, 69, 69.5, 
+        70, 70.5, 71, 71.5, 72, 
+        72.5, 73, 73.5, 74, 74.5, 
+        75, 75.5, 76, 76.5, 77, 
+        77.5, 78, 78.5, 79, 79.5, 
+        80, 80.5, 81, 81.5, 82, 
+        82.5, 83, 83.5, 84, 84.5, 
+        85, 85.5, 86, 86.5, 87, 
+        87.5, 88, 88.5, 89, 89.5, 
+        90, 90.5, 91, 91.5, 92, 
+        92.5, 93, 93.5, 94, 94.5, 
+        95, 95.5, 96, 96.5, 97, 
+        97.5, 98, 98.5, 99, 99.5, 
+        100, 100.5, 101, 101.5, 102, 
+        102.5, 103, 103.5, 104, 104.5, 
+        105, 105.5, 106, 106.5, 107, 
+        107.5, 108, 108.5, 109, 109.5, 
+        110, 110.5, 111, 111.5, 112, 
+        112.5, 113, 113.5, 114, 114.5, 
+        115, 115.5, 116, 116.5, 117, 
+        117.5, 118, 118.5, 119, 119.5, 
+        120, 120.5, 121, 121.5, 122, 
+        122.5, 123, 123.5, 124, 124.5, 
+        125, 125.5, 126, 126.5, 127, 
+        127.5, 0, 0.5, 1, 1.5, 
+        2, 2.5, 3, 3.5, 4, 
+        4.5, 5, 5.5, 6, 6.5, 
+        7, 7.5, 8, 8.5, 9, 
+        9.5, 10, 10.5, 11, 11.5, 
+        12, 12.5, 13, 13.5, 14, 
+        14.5, 15, 15.5, 16, 16.5, 
+        17, 17.5, 18, 18.5, 19, 
+        19.5, 20, 20.5, 21, 21.5, 
+        22, 22.5, 23, 23.5, 24, 
+        24.5, 25, 25.5, 26, 26.5, 
+        27, 27.5, 28, 28.5, 29, 
+        29.5, 30, 30.5, 31, 31.5, 
+        32, 32.5, 33, 33.5, 34, 
+        34.5, 35, 35.5, 36, 36.5, 
+        37, 37.5, 38, 38.5, 39, 
+        39.5, 40, 40.5, 41, 41.5, 
+        42, 42.5, 43, 43.5, 44, 
+        44.5, 45, 45.5, 46, 46.5, 
+        47, 47.5, 48, 48.5, 49, 
+        49.5, 50, 50.5, 51, 51.5, 
+        52, 52.5, 53, 53.5, 54, 
+        54.5, 55, 55.5, 56, 56.5, 
+        57, 57.5, 58, 58.5, 59, 
+        59.5, 60, 60.5, 61, 61.5, 
+        62, 62.5, 63, 63.5, 64, 
+        64.5, 65, 65.5, 66, 66.5, 
+        67, 67.5, 68, 68.5, 69, 
+        69.5, 70, 70.5, 71, 71.5, 
+        72, 72.5, 73, 73.5, 74, 
+        74.5, 75, 75.5, 76, 76.5, 
+        77, 77.5, 78, 78.5, 79, 
+        79.5, 80, 80.5, 81, 81.5, 
+        82, 82.5, 83, 83.5, 84, 
+        84.5, 85, 85.5, 86, 86.5, 
+        87, 87.5, 88, 88.5, 89, 
+        89.5, 90, 90.5, 91, 91.5, 
+        92, 92.5, 93, 93.5, 94, 
+        94.5, 95, 95.5, 96, 96.5, 
+        97, 97.5, 98, 98.5, 99, 
+        99.5, 100, 100.5, 101, 101.5, 
+        102, 102.5, 103, 103.5, 104, 
+        104.5, 105, 105.5, 106, 106.5, 
+        107, 107.5, 108, 108.5, 109, 
+        109.5, 110, 110.5, 111, 111.5, 
+        112, 112.5, 113, 113.5, 114, 
+        114.5, 115, 115.5, 116, 116.5, 
+        117, 117.5, 118, 118.5, 119, 
+        119.5, 120, 120.5, 121, 121.5, 
+        122, 122.5, 123, 123.5, 124, 
+        124.5, 125, 125.5, 126, 126.5, 
+        127, 127.5, 0, 0.5, 1, 
+        1.5, 2, 2.5, 3, 3.5, 
+        4, 4.5, 5, 5.5, 6, 
+        6.5, 7, 7.5, 8, 8.5, 
+        9, 9.5, 10, 10.5, 11, 
+        11.5, 12, 12.5, 13, 13.5, 
+        14, 14.5, 15, 15.5, 16, 
+        16.5, 17, 17.5, 18, 18.5, 
+        19, 19.5, 20, 20.5, 21, 
+        21.5, 22, 22.5, 23, 23.5, 
+        24, 24.5, 25, 25.5, 26, 
+        26.5, 27, 27.5, 28, 28.5, 
+        29, 29.5, 30, 30.5, 31, 
+        31.5, 32, 32.5, 33, 33.5, 
+        34, 34.5, 35, 35.5, 36, 
+        36.5, 37, 37.5, 38, 38.5, 
+        39, 39.5, 40, 40.5, 41, 
+        41.5, 42, 42.5, 43, 43.5, 
+        44, 44.5, 45, 45.5, 46, 
+        46.5, 47, 47.5, 48, 48.5, 
+        49, 49.5, 50, 50.5, 51, 
+        51.5, 52, 52.5, 53, 53.5, 
+        54, 54.5, 55, 55.5, 56, 
+        56.5, 57, 57.5, 58, 58.5, 
+        59, 59.5, 60, 60.5, 61, 
+        61.5, 62, 62.5, 63, 63.5, 
+        64, 64.5, 65, 65.5, 66, 
+        66.5, 67, 67.5, 68, 68.5, 
+        69, 69.5, 70, 70.5, 71, 
+        71.5, 72, 72.5, 73, 73.5, 
+        74, 74.5, 75, 75.5, 76, 
+        76.5, 77, 77.5, 78, 78.5, 
+        79, 79.5, 80, 80.5, 81, 
+        81.5, 82, 82.5, 83, 83.5, 
+        84, 84.5, 85, 85.5, 86, 
+        86.5, 87, 87.5, 88, 88.5, 
+        89, 89.5, 90, 90.5, 91, 
+        91.5, 92, 92.5, 93, 93.5, 
+        94, 94.5, 95, 95.5, 96, 
+        96.5, 97, 97.5, 98, 98.5, 
+        99, 99.5, 100, 100.5, 101, 
+        101.5, 102, 102.5, 103, 103.5, 
+        104, 104.5, 105, 105.5, 106, 
+        106.5, 107, 107.5, 108, 108.5, 
+        109, 109.5, 110, 110.5, 111, 
+        111.5, 112, 112.5, 113, 113.5, 
+        114, 114.5, 115, 115.5, 116, 
+        116.5, 117, 117.5, 118, 118.5, 
+        119, 119.5, 120, 120.5, 121, 
+        121.5, 122, 122.5, 123, 123.5, 
+        124, 124.5, 125, 125.5, 126, 
+        126.5, 127, 127.5, 0, 0.5, 
+        1, 1.5, 2, 2.5, 3, 
+        3.5, 4, 4.5, 5, 5.5, 
+        6, 6.5, 7, 7.5, 8, 
+        8.5, 9, 9.5, 10, 10.5, 
+        11, 11.5, 12, 12.5, 13, 
+        13.5, 14, 14.5, 15, 15.5, 
+        16, 16.5, 17, 17.5, 18, 
+        18.5, 19, 19.5, 20, 20.5, 
+        21, 21.5, 22, 22.5, 23, 
+        23.5, 24, 24.5, 25, 25.5, 
+        26, 26.5, 27, 27.5, 28, 
+        28.5, 29, 29.5, 30, 30.5, 
+        31, 31.5, 32, 32.5, 33, 
+        33.5, 34, 34.5, 35, 35.5, 
+        36, 36.5, 37, 37.5, 38, 
+        38.5, 39, 39.5, 40, 40.5, 
+        41, 41.5, 42, 42.5, 43, 
+        43.5, 44, 44.5, 45, 45.5, 
+        46, 46.5, 47, 47.5, 48, 
+        48.5, 49, 49.5, 50, 50.5, 
+        51, 51.5, 52, 52.5, 53, 
+        53.5, 54, 54.5, 55, 55.5, 
+        56, 56.5, 57, 57.5, 58, 
+        58.5, 59, 59.5, 60, 60.5, 
+        61, 61.5, 62, 62.5, 63, 
+        63.5, 64, 64.5, 65, 65.5, 
+        66, 66.5, 67, 67.5, 68, 
+        68.5, 69, 69.5, 70, 70.5, 
+        71, 71.5, 72, 72.5, 73, 
+        73.5, 74, 74.5, 75, 75.5, 
+        76, 76.5, 77, 77.5, 78, 
+        78.5, 79, 79.5, 80, 80.5, 
+        81, 81.5, 82, 82.5, 83, 
+        83.5, 84, 84.5, 85, 85.5, 
+        86, 86.5, 87, 87.5, 88, 
+        88.5, 89, 89.5, 90, 90.5, 
+        91, 91.5, 92, 92.5, 93, 
+        93.5, 94, 94.5, 95, 95.5, 
+        96, 96.5, 97, 97.5, 98, 
+        98.5, 99, 99.5, 100, 100.5, 
+        101, 101.5, 102, 102.5, 103, 
+        103.5, 104, 104.5, 105, 105.5, 
+        106, 106.5, 107, 107.5, 108, 
+        108.5, 109, 109.5, 110, 110.5, 
+        111, 111.5, 112, 112.5, 113, 
+        113.5, 114, 114.5, 115, 115.5, 
+        116, 116.5, 117, 117.5, 118, 
+        118.5, 119, 119.5, 120, 120.5, 
+        121, 121.5, 122, 122.5, 123, 
+        123.5, 124, 124.5, 125, 125.5, 
+        126, 126.5, 127, 127.5, 0, 
+        0.5, 1, 1.5, 2, 2.5, 
+        3, 3.5, 4, 4.5, 5, 
+        5.5, 6, 6.5, 7, 7.5, 
+        8, 8.5, 9, 9.5, 10, 
+        10.5, 11, 11.5, 12, 12.5, 
+        13, 13.5, 14, 14.5, 15, 
+        15.5, 16, 16.5, 17, 17.5, 
+        18, 18.5, 19, 19.5, 20, 
+        20.5, 21, 21.5, 22, 22.5, 
+        23, 23.5, 24, 24.5, 25, 
+        25.5, 26, 26.5, 27, 27.5, 
+        28, 28.5, 29, 29.5, 30, 
+        30.5, 31, 31.5, 32, 32.5, 
+        33, 33.5, 34, 34.5, 35, 
+        35.5, 36, 36.5, 37, 37.5, 
+        38, 38.5, 39, 39.5, 40, 
+        40.5, 41, 41.5, 42, 42.5, 
+        43, 43.5, 44, 44.5, 45, 
+        45.5, 46, 46.5, 47, 47.5, 
+        48, 48.5, 49, 49.5, 50, 
+        50.5, 51, 51.5, 52, 52.5, 
+        53, 53.5, 54, 54.5, 55, 
+        55.5, 56, 56.5, 57, 57.5, 
+        58, 58.5, 59, 59.5, 60, 
+        60.5, 61, 61.5, 62, 62.5, 
+        63, 63.5, 64, 64.5, 65, 
+        65.5, 66, 66.5, 67, 67.5, 
+        68, 68.5, 69, 69.5, 70, 
+        70.5, 71, 71.5, 72, 72.5, 
+        73, 73.5, 74, 74.5, 75, 
+        75.5, 76, 76.5, 77, 77.5, 
+        78, 78.5, 79, 79.5, 80, 
+        80.5, 81, 81.5, 82, 82.5, 
+        83, 83.5, 84, 84.5, 85, 
+        85.5, 86, 86.5, 87, 87.5, 
+        88, 88.5, 89, 89.5, 90, 
+        90.5, 91, 91.5, 92, 92.5, 
+        93, 93.5, 94, 94.5, 95, 
+        95.5, 96, 96.5, 97, 97.5, 
+        98, 98.5, 99, 99.5, 100, 
+        100.5, 101, 101.5, 102, 102.5, 
+        103, 103.5, 104, 104.5, 105, 
+        105.5, 106, 106.5, 107, 107.5, 
+        108, 108.5, 109, 109.5, 110, 
+        110.5, 111, 111.5, 112, 112.5, 
+        113, 113.5, 114, 114.5, 115, 
+        115.5, 116, 116.5, 117, 117.5, 
+        118, 118.5, 119, 119.5, 120, 
+        120.5, 121, 121.5, 122, 122.5, 
+        123, 123.5, 124, 124.5, 125, 
+        125.5, 126, 126.5, 127, 127.5, 
+        0, 0.5, 1, 1.5, 2, 
+        2.5, 3, 3.5, 4, 4.5, 
+        5, 5.5, 6, 6.5, 7, 
+        7.5, 8, 8.5, 9, 9.5, 
+        10, 10.5, 11, 11.5, 12, 
+        12.5, 13, 13.5, 14, 14.5, 
+        15, 15.5, 16, 16.5, 17, 
+        17.5, 18, 18.5, 19, 19.5, 
+        20, 20.5, 21, 21.5, 22, 
+        22.5, 23, 23.5, 24, 24.5, 
+        25, 25.5, 26, 26.5, 27, 
+        27.5, 28, 28.5, 29, 29.5, 
+        30, 30.5, 31, 31.5, 32, 
+        32.5, 33, 33.5, 34, 34.5, 
+        35, 35.5, 36, 36.5, 37, 
+        37.5, 38, 38.5, 39, 39.5, 
+        40, 40.5, 41, 41.5, 42, 
+        42.5, 43, 43.5, 44, 44.5, 
+        45, 45.5, 46, 46.5, 47, 
+        47.5, 48, 48.5, 49, 49.5, 
+        50, 50.5, 51, 51.5, 52, 
+        52.5, 53, 53.5, 54, 54.5, 
+        55, 55.5, 56, 56.5, 57, 
+        57.5, 58, 58.5, 59, 59.5, 
+        60, 60.5, 61, 61.5, 62, 
+        62.5, 63, 63.5, 64, 64.5, 
+        65, 65.5, 66, 66.5, 67, 
+        67.5, 68, 68.5, 69, 69.5, 
+        70, 70.5, 71, 71.5, 72, 
+        72.5, 73, 73.5, 74, 74.5, 
+        75, 75.5, 76, 76.5, 77, 
+        77.5, 78, 78.5, 79, 79.5, 
+        80, 80.5, 81, 81.5, 82, 
+        82.5, 83, 83.5, 84, 84.5, 
+        85, 85.5, 86, 86.5, 87, 
+        87.5, 88, 88.5, 89, 89.5, 
+        90, 90.5, 91, 91.5, 92, 
+        92.5, 93, 93.5, 94, 94.5, 
+        95, 95.5, 96, 96.5, 97, 
+        97.5, 98, 98.5, 99, 99.5, 
+        100, 100.5, 101, 101.5, 102, 
+        102.5, 103, 103.5, 104, 104.5, 
+        105, 105.5, 106, 106.5, 107, 
+        107.5, 108, 108.5, 109, 109.5, 
+        110, 110.5, 111, 111.5, 112, 
+        112.5, 113, 113.5, 114, 114.5, 
+        115, 115.5, 116, 116.5, 117, 
+        117.5, 118, 118.5, 119, 119.5, 
+        120, 120.5, 121, 121.5, 122, 
+        122.5, 123, 123.5, 124, 124.5, 
+        125, 125.5, 126, 126.5, 127, 
+        127.5, 0, 0.5, 1, 1.5, 
+        2, 2.5, 3, 3.5, 4, 
+        4.5, 5, 5.5, 6, 6.5, 
+        7, 7.5, 8, 8.5, 9, 
+        9.5, 10, 10.5, 11, 11.5, 
+        12, 12.5, 13, 13.5, 14, 
+        14.5, 15, 15.5, 16, 16.5, 
+        17, 17.5, 18, 18.5, 19, 
+        19.5, 20, 20.5, 21, 21.5, 
+        22, 22.5, 23, 23.5, 24, 
+        24.5, 25, 25.5, 26, 26.5, 
+        27, 27.5, 28, 28.5, 29, 
+        29.5, 30, 30.5, 31, 31.5, 
+        32, 32.5, 33, 33.5, 34, 
+        34.5, 35, 35.5, 36, 36.5, 
+        37, 37.5, 38, 38.5, 39, 
+        39.5, 40, 40.5, 41, 41.5, 
+        42, 42.5, 43, 43.5, 44, 
+        44.5, 45, 45.5, 46, 46.5, 
+        47, 47.5, 48, 48.5, 49, 
+        49.5, 50, 50.5, 51, 51.5, 
+        52, 52.5, 53, 53.5, 54, 
+        54.5, 55, 55.5, 56, 56.5, 
+        57, 57.5, 58, 58.5, 59, 
+        59.5, 60, 60.5, 61, 61.5, 
+        62, 62.5, 63, 63.5, 64, 
+        64.5, 65, 65.5, 66, 66.5, 
+        67, 67.5, 68, 68.5, 69, 
+        69.5, 70, 70.5, 71, 71.5, 
+        72, 72.5, 73, 73.5, 74, 
+        74.5, 75, 75.5, 76, 76.5, 
+        77, 77.5, 78, 78.5, 79, 
+        79.5, 80, 80.5, 81, 81.5, 
+        82, 82.5, 83, 83.5, 84, 
+        84.5, 85, 85.5, 86, 86.5, 
+        87, 87.5, 88, 88.5, 89, 
+        89.5, 90, 90.5, 91, 91.5, 
+        92, 92.5, 93, 93.5, 94, 
+        94.5, 95, 95.5, 96, 96.5, 
+        97, 97.5, 98, 98.5, 99, 
+        99.5, 100, 100.5, 101, 101.5, 
+        102, 102.5, 103, 103.5, 104, 
+        104.5, 105, 105.5, 106, 106.5, 
+        107, 107.5, 108, 108.5, 109, 
+        109.5, 110, 110.5, 111, 111.5, 
+        112, 112.5, 113, 113.5, 114, 
+        114.5, 115, 115.5, 116, 116.5, 
+        117, 117.5, 118, 118.5, 119, 
+        119.5, 120, 120.5, 121, 121.5, 
+        122, 122.5, 123, 123.5, 124, 
+        124.5, 125, 125.5, 126, 126.5, 
+        127, 127.5, 0, 0.5, 1, 
+        1.5, 2, 2.5, 3, 3.5, 
+        4, 4.5, 5, 5.5, 6, 
+        6.5, 7, 7.5, 8, 8.5, 
+        9, 9.5, 10, 10.5, 11, 
+        11.5, 12, 12.5, 13, 13.5, 
+        14, 14.5, 15, 15.5, 16, 
+        16.5, 17, 17.5, 18, 18.5, 
+        19, 19.5, 20, 20.5, 21, 
+        21.5, 22, 22.5, 23, 23.5, 
+        24, 24.5, 25, 25.5, 26, 
+        26.5, 27, 27.5, 28, 28.5, 
+        29, 29.5, 30, 30.5, 31, 
+        31.5, 32, 32.5, 33, 33.5, 
+        34, 34.5, 35, 35.5, 36, 
+        36.5, 37, 37.5, 38, 38.5, 
+        39, 39.5, 40, 40.5, 41, 
+        41.5, 42, 42.5, 43, 43.5, 
+        44, 44.5, 45, 45.5, 46, 
+        46.5, 47, 47.5, 48, 48.5, 
+        49, 49.5, 50, 50.5, 51, 
+        51.5, 52, 52.5, 53, 53.5, 
+        54, 54.5, 55, 55.5, 56, 
+        56.5, 57, 57.5, 58, 58.5, 
+        59, 59.5, 60, 60.5, 61, 
+        61.5, 62, 62.5, 63, 63.5, 
+        64, 64.5, 65, 65.5, 66, 
+        66.5, 67, 67.5, 68, 68.5, 
+        69, 69.5, 70, 70.5, 71, 
+        71.5, 72, 72.5, 73, 73.5, 
+        74, 74.5, 75, 75.5, 76, 
+        76.5, 77, 77.5, 78, 78.5, 
+        79, 79.5, 80, 80.5, 81, 
+        81.5, 82, 82.5, 83, 83.5, 
+        84, 84.5, 85, 85.5, 86, 
+        86.5, 87, 87.5, 88, 88.5, 
+        89, 89.5, 90, 90.5, 91, 
+        91.5, 92, 92.5, 93, 93.5, 
+        94, 94.5, 95, 95.5, 96, 
+        96.5, 97, 97.5, 98, 98.5, 
+        99, 99.5, 100, 100.5, 101, 
+        101.5, 102, 102.5, 103, 103.5, 
+        104, 104.5, 105, 105.5, 106, 
+        106.5, 107, 107.5, 108, 108.5, 
+        109, 109.5, 110, 110.5, 111, 
+        111.5, 112, 112.5, 113, 113.5, 
+        114, 114.5, 115, 115.5, 116, 
+        116.5, 117, 117.5, 118, 118.5, 
+        119, 119.5, 120, 120.5, 121, 
+        121.5, 122, 122.5, 123, 123.5, 
+        124, 124.5, 125, 125.5, 126, 
+        126.5, 127, 127.5, 0, 0.5, 
+        1, 1.5, 2, 2.5, 3, 
+        3.5, 4, 4.5, 5, 5.5, 
+        6, 6.5, 7, 7.5, 8, 
+        8.5, 9, 9.5, 10, 10.5, 
+        11, 11.5, 12, 12.5, 13, 
+        13.5, 14, 14.5, 15, 15.5, 
+        16, 16.5, 17, 17.5, 18, 
+        18.5, 19, 19.5, 20, 20.5, 
+        21, 21.5, 22, 22.5, 23, 
+        23.5, 24, 24.5, 25, 25.5, 
+        26, 26.5, 27, 27.5, 28, 
+        28.5, 29, 29.5, 30, 30.5, 
+        31, 31.5, 32, 32.5, 33, 
+        33.5, 34, 34.5, 35, 35.5, 
+        36, 36.5, 37, 37.5, 38, 
+        38.5, 39, 39.5, 40, 40.5, 
+        41, 41.5, 42, 42.5, 43, 
+        43.5, 44, 44.5, 45, 45.5, 
+        46, 46.5, 47, 47.5, 48, 
+        48.5, 49, 49.5, 50, 50.5, 
+        51, 51.5, 52, 52.5, 53, 
+        53.5, 54, 54.5, 55, 55.5, 
+        56, 56.5, 57, 57.5, 58, 
+        58.5, 59, 59.5, 60, 60.5, 
+        61, 61.5, 62, 62.5, 63, 
+        63.5, 64, 64.5, 65, 65.5, 
+        66, 66.5, 67, 67.5, 68, 
+        68.5, 69, 69.5, 70, 70.5, 
+        71, 71.5, 72, 72.5, 73, 
+        73.5, 74, 74.5, 75, 75.5, 
+        76, 76.5, 77, 77.5, 78, 
+        78.5, 79, 79.5, 80, 80.5, 
+        81, 81.5, 82, 82.5, 83, 
+        83.5, 84, 84.5, 85, 85.5, 
+        86, 86.5, 87, 87.5, 88, 
+        88.5, 89, 89.5, 90, 90.5, 
+        91, 91.5, 92, 92.5, 93, 
+        93.5, 94, 94.5, 95, 95.5, 
+        96, 96.5, 97, 97.5, 98, 
+        98.5, 99, 99.5, 100, 100.5, 
+        101, 101.5, 102, 102.5, 103, 
+        103.5, 104, 104.5, 105, 105.5, 
+        106, 106.5, 107, 107.5, 108, 
+        108.5, 109, 109.5, 110, 110.5, 
+        111, 111.5, 112, 112.5, 113, 
+        113.5, 114, 114.5, 115, 115.5, 
+        116, 116.5, 117, 117.5, 118, 
+        118.5, 119, 119.5, 120, 120.5, 
+        121, 121.5, 122, 122.5, 123, 
+        123.5, 124, 124.5, 125, 125.5, 
+        126, 126.5, 127, 127.5, 0, 
+        0.5, 1, 1.5, 2, 2.5, 
+        3, 3.5, 4, 4.5, 5, 
+        5.5, 6, 6.5, 7, 7.5, 
+        8, 8.5, 9, 9.5, 10, 
+        10.5, 11, 11.5, 12, 12.5, 
+        13, 13.5, 14, 14.5, 15, 
+        15.5, 16, 16.5, 17, 17.5, 
+        18, 18.5, 19, 19.5, 20, 
+        20.5, 21, 21.5, 22, 22.5, 
+        23, 23.5, 24, 24.5, 25, 
+        25.5, 26, 26.5, 27, 27.5, 
+        28, 28.5, 29, 29.5, 30, 
+        30.5, 31, 31.5, 32, 32.5, 
+        33, 33.5, 34, 34.5, 35, 
+        35.5, 36, 36.5, 37, 37.5, 
+        38, 38.5, 39, 39.5, 40, 
+        40.5, 41, 41.5, 42, 42.5, 
+        43, 43.5, 44, 44.5, 45, 
+        45.5, 46, 46.5, 47, 47.5, 
+        48, 48.5, 49, 49.5, 50, 
+        50.5, 51, 51.5, 52, 52.5, 
+        53, 53.5, 54, 54.5, 55, 
+        55.5, 56, 56.5, 57, 57.5, 
+        58, 58.5, 59, 59.5, 60, 
+        60.5, 61, 61.5, 62, 62.5, 
+        63, 63.5, 64, 64.5, 65, 
+        65.5, 66, 66.5, 67, 67.5, 
+        68, 68.5, 69, 69.5, 70, 
+        70.5, 71, 71.5, 72, 72.5, 
+        73, 73.5, 74, 74.5, 75, 
+        75.5, 76, 76.5, 77, 77.5, 
+        78, 78.5, 79, 79.5, 80, 
+        80.5, 81, 81.5, 82, 82.5, 
+        83, 83.5, 84, 84.5, 85, 
+        85.5, 86, 86.5, 87, 87.5, 
+        88, 88.5, 89, 89.5, 90, 
+        90.5, 91, 91.5, 92, 92.5, 
+        93, 93.5, 94, 94.5, 95, 
+        95.5, 96, 96.5, 97, 97.5, 
+        98, 98.5, 99, 99.5, 100, 
+        100.5, 101, 101.5, 102, 102.5, 
+        103, 103.5, 104, 104.5, 105, 
+        105.5, 106, 106.5, 107, 107.5, 
+        108, 108.5, 109, 109.5, 110, 
+        110.5, 111, 111.5, 112, 112.5, 
+        113, 113.5, 114, 114.5, 115, 
+        115.5, 116, 116.5, 117, 117.5, 
+        118, 118.5, 119, 119.5, 120, 
+        120.5, 121, 121.5, 122, 122.5, 
+        123, 123.5, 124, 124.5, 125, 
+        125.5, 126, 126.5, 127, 127.5, 
+        0, 0.5, 1, 1.5, 2, 
+        2.5, 3, 3.5, 4, 4.5, 
+        5, 5.5, 6, 6.5, 7, 
+        7.5, 8, 8.5, 9, 9.5, 
+        10, 10.5, 11, 11.5, 12, 
+        12.5, 13, 13.5, 14, 14.5, 
+        15, 15.5, 16, 16.5, 17, 
+        17.5, 18, 18.5, 19, 19.5, 
+        20, 20.5, 21, 21.5, 22, 
+        22.5, 23, 23.5, 24, 24.5, 
+        25, 25.5, 26, 26.5, 27, 
+        27.5, 28, 28.5, 29, 29.5, 
+        30, 30.5, 31, 31.5, 32, 
+        32.5, 33, 33.5, 34, 34.5, 
+        35, 35.5, 36, 36.5, 37, 
+        37.5, 38, 38.5, 39, 39.5, 
+        40, 40.5, 41, 41.5, 42, 
+        42.5, 43, 43.5, 44, 44.5, 
+        45, 45.5, 46, 46.5, 47, 
+        47.5, 48, 48.5, 49, 49.5, 
+        50, 50.5, 51, 51.5, 52, 
+        52.5, 53, 53.5, 54, 54.5, 
+        55, 55.5, 56, 56.5, 57, 
+        57.5, 58, 58.5, 59, 59.5, 
+        60, 60.5, 61, 61.5, 62, 
+        62.5, 63, 63.5, 64, 64.5, 
+        65, 65.5, 66, 66.5, 67, 
+        67.5, 68, 68.5, 69, 69.5, 
+        70, 70.5, 71, 71.5, 72, 
+        72.5, 73, 73.5, 74, 74.5, 
+        75, 75.5, 76, 76.5, 77, 
+        77.5, 78, 78.5, 79, 79.5, 
+        80, 80.5, 81, 81.5, 82, 
+        82.5, 83, 83.5, 84, 84.5, 
+        85, 85.5, 86, 86.5, 87, 
+        87.5, 88, 88.5, 89, 89.5, 
+        90, 90.5, 91, 91.5, 92, 
+        92.5, 93, 93.5, 94, 94.5, 
+        95, 95.5, 96, 96.5, 97, 
+        97.5, 98, 98.5, 99, 99.5, 
+        100, 100.5, 101, 101.5, 102, 
+        102.5, 103, 103.5, 104, 104.5, 
+        105, 105.5, 106, 106.5, 107, 
+        107.5, 108, 108.5, 109, 109.5, 
+        110, 110.5, 111, 111.5, 112, 
+        112.5, 113, 113.5, 114, 114.5, 
+        115, 115.5, 116, 116.5, 117, 
+        117.5, 118, 118.5, 119, 119.5, 
+        120, 120.5, 121, 121.5, 122, 
+        122.5, 123, 123.5, 124, 124.5, 
+        125, 125.5, 126, 126.5, 127, 
+        127.5, 0, 0.5, 1, 1.5, 
+        2, 2.5, 3, 3.5, 4, 
+        4.5, 5, 5.5, 6, 6.5, 
+        7, 7.5, 8, 8.5, 9, 
+        9.5, 10, 10.5, 11, 11.5, 
+        12, 12.5, 13, 13.5, 14, 
+        14.5, 15, 15.5, 16, 16.5, 
+        17, 17.5, 18, 18.5, 19, 
+        19.5, 20, 20.5, 21, 21.5, 
+        22, 22.5, 23, 23.5, 24, 
+        24.5, 25, 25.5, 26, 26.5, 
+        27, 27.5, 28, 28.5, 29, 
+        29.5, 30, 30.5, 31, 31.5, 
+        32, 32.5, 33, 33.5, 34, 
+        34.5, 35, 35.5, 36, 36.5, 
+        37, 37.5, 38, 38.5, 39, 
+        39.5, 40, 40.5, 41, 41.5, 
+        42, 42.5, 43, 43.5, 44, 
+        44.5, 45, 45.5, 46, 46.5, 
+        47, 47.5, 48, 48.5, 49, 
+        49.5, 50, 50.5, 51, 51.5, 
+        52, 52.5, 53, 53.5, 54, 
+        54.5, 55, 55.5, 56, 56.5, 
+        57, 57.5, 58, 58.5, 59, 
+        59.5, 60, 60.5, 61, 61.5, 
+        62, 62.5, 63, 63.5, 64, 
+        64.5, 65, 65.5, 66, 66.5, 
+        67, 67.5, 68, 68.5, 69, 
+        69.5, 70, 70.5, 71, 71.5, 
+        72, 72.5, 73, 73.5, 74, 
+        74.5, 75, 75.5, 76, 76.5, 
+        77, 77.5, 78, 78.5, 79, 
+        79.5, 80, 80.5, 81, 81.5, 
+        82, 82.5, 83, 83.5, 84, 
+        84.5, 85, 85.5, 86, 86.5, 
+        87, 87.5, 88, 88.5, 89, 
+        89.5, 90, 90.5, 91, 91.5, 
+        92, 92.5, 93, 93.5, 94, 
+        94.5, 95, 95.5, 96, 96.5, 
+        97, 97.5, 98, 98.5, 99, 
+        99.5, 100, 100.5, 101, 101.5, 
+        102, 102.5, 103, 103.5, 104, 
+        104.5, 105, 105.5, 106, 106.5, 
+        107, 107.5, 108, 108.5, 109, 
+        109.5, 110, 110.5, 111, 111.5, 
+        112, 112.5, 113, 113.5, 114, 
+        114.5, 115, 115.5, 116, 116.5, 
+        117, 117.5, 118, 118.5, 119, 
+        119.5, 120, 120.5, 121, 121.5, 
+        122, 122.5, 123, 123.5, 124, 
+        124.5, 125, 125.5, 126, 126.5, 
+        127, 127.5, 0, 0.5, 1, 
+        1.5, 2, 2.5, 3, 3.5, 
+        4, 4.5, 5, 5.5, 6, 
+        6.5, 7, 7.5, 8, 8.5, 
+        9, 9.5, 10, 10.5, 11, 
+        11.5, 12, 12.5, 13, 13.5, 
+        14, 14.5, 15, 15.5, 16, 
+        16.5, 17, 17.5, 18, 18.5, 
+        19, 19.5, 20, 20.5, 21, 
+        21.5, 22, 22.5, 23, 23.5, 
+        24, 24.5, 25, 25.5, 26, 
+        26.5, 27, 27.5, 28, 28.5, 
+        29, 29.5, 30, 30.5, 31, 
+        31.5, 32, 32.5, 33, 33.5, 
+        34, 34.5, 35, 35.5, 36, 
+        36.5, 37, 37.5, 38, 38.5, 
+        39, 39.5, 40, 40.5, 41, 
+        41.5, 42, 42.5, 43, 43.5, 
+        44, 44.5, 45, 45.5, 46, 
+        46.5, 47, 47.5, 48, 48.5, 
+        49, 49.5, 50, 50.5, 51, 
+        51.5, 52, 52.5, 53, 53.5, 
+        54, 54.5, 55, 55.5, 56, 
+        56.5, 57, 57.5, 58, 58.5, 
+        59, 59.5, 60, 60.5, 61, 
+        61.5, 62, 62.5, 63, 63.5, 
+        64, 64.5, 65, 65.5, 66, 
+        66.5, 67, 67.5, 68, 68.5, 
+        69, 69.5, 70, 70.5, 71, 
+        71.5, 72, 72.5, 73, 73.5, 
+        74, 74.5, 75, 75.5, 76, 
+        76.5, 77, 77.5, 78, 78.5, 
+        79, 79.5, 80, 80.5, 81, 
+        81.5, 82, 82.5, 83, 83.5, 
+        84, 84.5, 85, 85.5, 86, 
+        86.5, 87, 87.5, 88, 88.5, 
+        89, 89.5, 90, 90.5, 91, 
+        91.5, 92, 92.5, 93, 93.5, 
+        94, 94.5, 95, 95.5, 96, 
+        96.5, 97, 97.5, 98, 98.5, 
+        99, 99.5, 100, 100.5, 101, 
+        101.5, 102, 102.5, 103, 103.5, 
+        104, 104.5, 105, 105.5, 106, 
+        106.5, 107, 107.5, 108, 108.5, 
+        109, 109.5, 110, 110.5, 111, 
+        111.5, 112, 112.5, 113, 113.5, 
+        114, 114.5, 115, 115.5, 116, 
+        116.5, 117, 117.5, 118, 118.5, 
+        119, 119.5, 120, 120.5, 121, 
+        121.5, 122, 122.5, 123, 123.5, 
+        124, 124.5, 125, 125.5, 126, 
+        126.5, 127, 127.5 ) )
+)
+
+
+process.L1DTConfigFromDB = cms.ESProducer("DTConfigDBProducer",
+    debugBti = cms.int32(0),
+    DTTPGParameters = cms.PSet(
+        Debug = cms.untracked.bool(False),
+        SectCollParameters = cms.PSet(
+            SCCSP5 = cms.int32(0),
+            SCCSP2 = cms.int32(0),
+            SCCSP3 = cms.int32(0),
+            SCECF4 = cms.bool(False),
+            SCCSP1 = cms.int32(0),
+            SCECF2 = cms.bool(False),
+            SCECF3 = cms.bool(False),
+            SCCSP4 = cms.int32(0),
+            SCECF1 = cms.bool(False),
+            Debug = cms.untracked.bool(False)
+        ),
+        TUParameters = cms.PSet(
+            TSPhiParameters = cms.PSet(
+                TSMNOE1 = cms.bool(True),
+                TSMNOE2 = cms.bool(False),
+                TSSMSK1 = cms.int32(312),
+                TSTREN9 = cms.bool(True),
+                TSTREN8 = cms.bool(True),
+                TSTREN11 = cms.bool(True),
+                TSTREN3 = cms.bool(True),
+                TSTREN2 = cms.bool(True),
+                TSTREN1 = cms.bool(True),
+                TSTREN0 = cms.bool(True),
+                TSTREN7 = cms.bool(True),
+                TSTREN6 = cms.bool(True),
+                TSTREN5 = cms.bool(True),
+                TSTREN4 = cms.bool(True),
+                TSSCCE1 = cms.bool(True),
+                TSSCCE2 = cms.bool(False),
+                TSMCCE2 = cms.bool(False),
+                TSTREN19 = cms.bool(True),
+                TSMCCE1 = cms.bool(True),
+                TSTREN17 = cms.bool(True),
+                TSTREN16 = cms.bool(True),
+                TSTREN15 = cms.bool(True),
+                TSTREN14 = cms.bool(True),
+                TSTREN13 = cms.bool(True),
+                TSTREN12 = cms.bool(True),
+                TSSMSK2 = cms.int32(312),
+                TSTREN10 = cms.bool(True),
+                TSMMSK2 = cms.int32(312),
+                TSMMSK1 = cms.int32(312),
+                TSMHSP = cms.int32(1),
+                TSSNOE2 = cms.bool(False),
+                TSSNOE1 = cms.bool(True),
+                TSSCGS2 = cms.bool(True),
+                TSSCCEC = cms.bool(False),
+                TSMCCEC = cms.bool(False),
+                TSMHTE2 = cms.bool(False),
+                Debug = cms.untracked.bool(False),
+                TSSHTE2 = cms.bool(False),
+                TSMCGS1 = cms.bool(True),
+                TSMCGS2 = cms.bool(True),
+                TSSHTE1 = cms.bool(True),
+                TSTREN22 = cms.bool(True),
+                TSSNOEC = cms.bool(False),
+                TSTREN20 = cms.bool(True),
+                TSTREN21 = cms.bool(True),
+                TSMGS1 = cms.int32(1),
+                TSMGS2 = cms.int32(1),
+                TSSHTEC = cms.bool(False),
+                TSMWORD = cms.int32(255),
+                TSMHTEC = cms.bool(False),
+                TSSCGS1 = cms.bool(True),
+                TSTREN23 = cms.bool(True),
+                TSSGS2 = cms.int32(1),
+                TSMNOEC = cms.bool(False),
+                TSSGS1 = cms.int32(1),
+                TSTREN18 = cms.bool(True),
+                TSMHTE1 = cms.bool(True)
+            ),
+            TSThetaParameters = cms.PSet(
+                Debug = cms.untracked.bool(False)
+            ),
+            TracoParameters = cms.PSet(
+                SPRGCOMP = cms.int32(2),
+                FHTMSK = cms.int32(0),
+                DD = cms.int32(18),
+                SSLMSK = cms.int32(0),
+                LVALIDIFH = cms.int32(0),
+                Debug = cms.untracked.int32(0),
+                FSLMSK = cms.int32(0),
+                SHTPRF = cms.int32(1),
+                SHTMSK = cms.int32(0),
+                TRGENB3 = cms.int32(1),
+                SHISM = cms.int32(0),
+                IBTIOFF = cms.int32(0),
+                KPRGCOM = cms.int32(255),
+                KRAD = cms.int32(0),
+                FLTMSK = cms.int32(1),
+                LTS = cms.int32(0),
+                SLTMSK = cms.int32(1),
+                FPRGCOMP = cms.int32(2),
+                TRGENB9 = cms.int32(1),
+                TRGENB8 = cms.int32(1),
+                FHTPRF = cms.int32(1),
+                LTF = cms.int32(0),
+                TRGENB1 = cms.int32(1),
+                TRGENB0 = cms.int32(1),
+                FHISM = cms.int32(0),
+                TRGENB2 = cms.int32(1),
+                TRGENB5 = cms.int32(1),
+                TRGENB4 = cms.int32(1),
+                TRGENB7 = cms.int32(1),
+                TRGENB6 = cms.int32(1),
+                TRGENB15 = cms.int32(1),
+                TRGENB14 = cms.int32(1),
+                TRGENB11 = cms.int32(1),
+                TRGENB10 = cms.int32(1),
+                TRGENB13 = cms.int32(1),
+                TRGENB12 = cms.int32(1),
+                REUSEO = cms.int32(1),
+                REUSEI = cms.int32(1),
+                BTIC = cms.int32(32)
+            ),
+            BtiParameters = cms.PSet(
+                WEN8 = cms.int32(1),
+                ACH = cms.int32(1),
+                DEAD = cms.int32(31),
+                ACL = cms.int32(2),
+                PTMS20 = cms.int32(1),
+                XON = cms.bool(False),
+                PTMS22 = cms.int32(1),
+                PTMS23 = cms.int32(1),
+                PTMS24 = cms.int32(1),
+                PTMS25 = cms.int32(1),
+                PTMS26 = cms.int32(1),
+                PTMS27 = cms.int32(1),
+                PTMS28 = cms.int32(1),
+                PTMS29 = cms.int32(1),
+                SET = cms.int32(7),
+                RON = cms.bool(True),
+                WEN2 = cms.int32(1),
+                LL = cms.int32(2),
+                LH = cms.int32(21),
+                WEN3 = cms.int32(1),
+                RE43 = cms.int32(2),
+                WEN0 = cms.int32(1),
+                RL = cms.int32(42),
+                WEN1 = cms.int32(1),
+                RH = cms.int32(61),
+                LTS = cms.int32(3),
+                CH = cms.int32(41),
+                CL = cms.int32(22),
+                PTMS15 = cms.int32(1),
+                PTMS14 = cms.int32(1),
+                PTMS17 = cms.int32(1),
+                PTMS16 = cms.int32(1),
+                PTMS11 = cms.int32(1),
+                PTMS10 = cms.int32(1),
+                PTMS13 = cms.int32(1),
+                PTMS12 = cms.int32(1),
+                Debug = cms.untracked.int32(0),
+                WEN7 = cms.int32(1),
+                WEN4 = cms.int32(1),
+                WEN5 = cms.int32(1),
+                PTMS19 = cms.int32(1),
+                PTMS18 = cms.int32(1),
+                PTMS31 = cms.int32(0),
+                PTMS30 = cms.int32(0),
+                PTMS5 = cms.int32(1),
+                PTMS4 = cms.int32(1),
+                PTMS7 = cms.int32(1),
+                PTMS6 = cms.int32(1),
+                PTMS1 = cms.int32(0),
+                PTMS0 = cms.int32(0),
+                PTMS3 = cms.int32(0),
+                WEN6 = cms.int32(1),
+                KACCTHETA = cms.int32(1),
+                PTMS9 = cms.int32(1),
+                PTMS8 = cms.int32(1),
+                ST43 = cms.int32(42),
+                AC2 = cms.int32(3),
+                AC1 = cms.int32(0),
+                KMAX = cms.int32(64),
+                PTMS21 = cms.int32(1),
+                PTMS2 = cms.int32(0)
+            ),
+            Debug = cms.untracked.bool(False),
+            LutParameters = cms.PSet(
+                WHEEL = cms.untracked.int32(-1),
+                Debug = cms.untracked.bool(False),
+                BTIC = cms.untracked.int32(0),
+                XCN = cms.untracked.double(0),
+                D = cms.untracked.double(0)
+            )
+        )
+    ),
+    TracoLutsFromDB = cms.bool(True),
+    debugSC = cms.bool(False),
+    debugDB = cms.bool(False),
+    DTTPGMap = cms.untracked.PSet(
+        wh0st2se11 = cms.untracked.vint32(60, 58, 60, 15),
+        wh0st2se10 = cms.untracked.vint32(60, 58, 60, 15),
+        wh0st2se12 = cms.untracked.vint32(60, 58, 60, 15),
+        whm2st1se4 = cms.untracked.vint32(50, 58, 50, 13),
+        whm1st1se12 = cms.untracked.vint32(50, 58, 50, 13),
+        whm1st1se11 = cms.untracked.vint32(50, 58, 50, 13),
+        whm1st1se10 = cms.untracked.vint32(50, 58, 50, 13),
+        whm2st1se1 = cms.untracked.vint32(50, 58, 50, 13),
+        whm2st1se2 = cms.untracked.vint32(50, 58, 50, 13),
+        whm1st3se4 = cms.untracked.vint32(72, 58, 72, 18),
+        wh1st3se4 = cms.untracked.vint32(72, 48, 72, 18),
+        whm2st1se8 = cms.untracked.vint32(50, 58, 50, 13),
+        whm2st1se9 = cms.untracked.vint32(50, 58, 50, 13),
+        wh1st1se1 = cms.untracked.vint32(50, 58, 50, 13),
+        wh0st2se6 = cms.untracked.vint32(60, 58, 60, 15),
+        whm2st1se12 = cms.untracked.vint32(50, 58, 50, 13),
+        whm2st1se10 = cms.untracked.vint32(50, 58, 50, 13),
+        whm2st1se11 = cms.untracked.vint32(50, 58, 50, 13),
+        whm1st2se12 = cms.untracked.vint32(60, 58, 60, 15),
+        wh0st2se1 = cms.untracked.vint32(60, 58, 60, 15),
+        wh1st1se3 = cms.untracked.vint32(50, 58, 50, 13),
+        wh1st1se2 = cms.untracked.vint32(50, 58, 50, 13),
+        whm1st3se3 = cms.untracked.vint32(72, 48, 72, 18),
+        whm1st1se7 = cms.untracked.vint32(50, 58, 50, 13),
+        wh0st2se2 = cms.untracked.vint32(60, 58, 60, 15),
+        whm1st1se6 = cms.untracked.vint32(50, 58, 50, 13),
+        wh0st4se8 = cms.untracked.vint32(92, 0, 92, 23),
+        whm1st3se11 = cms.untracked.vint32(72, 58, 72, 18),
+        wh0st2se9 = cms.untracked.vint32(60, 58, 60, 15),
+        wh0st2se8 = cms.untracked.vint32(60, 58, 60, 15),
+        whm1st3se10 = cms.untracked.vint32(72, 58, 72, 18),
+        whm1st3se5 = cms.untracked.vint32(72, 58, 72, 18),
+        wh0st2se4 = cms.untracked.vint32(60, 58, 60, 15),
+        wh0st2se7 = cms.untracked.vint32(60, 58, 60, 15),
+        whm1st3se6 = cms.untracked.vint32(72, 58, 72, 18),
+        whm1st3se1 = cms.untracked.vint32(72, 58, 72, 18),
+        whm1st1se9 = cms.untracked.vint32(50, 58, 50, 13),
+        wh0st2se3 = cms.untracked.vint32(60, 58, 60, 15),
+        whm1st3se2 = cms.untracked.vint32(72, 58, 72, 18),
+        whm2st4se14 = cms.untracked.vint32(60, 0, 60, 15),
+        whm2st4se13 = cms.untracked.vint32(72, 0, 72, 18),
+        whm2st4se12 = cms.untracked.vint32(92, 0, 92, 23),
+        whm2st4se11 = cms.untracked.vint32(48, 0, 48, 12),
+        whm2st4se10 = cms.untracked.vint32(60, 0, 60, 15),
+        whm2st1se6 = cms.untracked.vint32(50, 58, 50, 13),
+        wh2st1se10 = cms.untracked.vint32(50, 58, 50, 13),
+        wh2st1se11 = cms.untracked.vint32(50, 58, 50, 13),
+        wh2st1se12 = cms.untracked.vint32(50, 58, 50, 13),
+        whm2st1se7 = cms.untracked.vint32(50, 58, 50, 13),
+        whm1st3se7 = cms.untracked.vint32(72, 58, 72, 18),
+        whm2st4se9 = cms.untracked.vint32(48, 0, 48, 12),
+        whm2st4se8 = cms.untracked.vint32(92, 0, 92, 23),
+        whm1st4se12 = cms.untracked.vint32(92, 0, 92, 23),
+        whm1st4se13 = cms.untracked.vint32(72, 0, 72, 18),
+        whm1st4se10 = cms.untracked.vint32(60, 0, 60, 15),
+        whm1st4se11 = cms.untracked.vint32(48, 0, 48, 12),
+        whm2st4se3 = cms.untracked.vint32(96, 0, 96, 24),
+        whm2st4se2 = cms.untracked.vint32(96, 0, 96, 24),
+        whm1st4se14 = cms.untracked.vint32(60, 0, 60, 15),
+        whm2st3se8 = cms.untracked.vint32(72, 58, 72, 18),
+        whm2st3se9 = cms.untracked.vint32(72, 58, 72, 18),
+        whm2st3se6 = cms.untracked.vint32(72, 58, 72, 18),
+        whm2st3se7 = cms.untracked.vint32(72, 58, 72, 18),
+        whm2st3se4 = cms.untracked.vint32(72, 58, 72, 18),
+        whm2st3se5 = cms.untracked.vint32(72, 58, 72, 18),
+        whm2st3se2 = cms.untracked.vint32(72, 58, 72, 18),
+        whm2st3se3 = cms.untracked.vint32(72, 58, 72, 18),
+        whm2st3se1 = cms.untracked.vint32(72, 58, 72, 18),
+        wh1st3se12 = cms.untracked.vint32(72, 58, 72, 18),
+        wh1st3se11 = cms.untracked.vint32(72, 58, 72, 18),
+        wh1st3se10 = cms.untracked.vint32(72, 58, 72, 18),
+        wh0st1se12 = cms.untracked.vint32(50, 58, 50, 13),
+        wh0st1se10 = cms.untracked.vint32(50, 58, 50, 13),
+        wh0st1se11 = cms.untracked.vint32(50, 58, 50, 13),
+        wh1st4se6 = cms.untracked.vint32(96, 0, 96, 24),
+        wh1st4se7 = cms.untracked.vint32(96, 0, 96, 24),
+        wh1st4se4 = cms.untracked.vint32(72, 0, 72, 18),
+        wh1st4se5 = cms.untracked.vint32(96, 0, 96, 24),
+        wh1st4se2 = cms.untracked.vint32(96, 0, 96, 24),
+        wh2st2se12 = cms.untracked.vint32(60, 58, 60, 15),
+        wh2st2se11 = cms.untracked.vint32(60, 58, 60, 15),
+        wh2st2se10 = cms.untracked.vint32(60, 58, 60, 15),
+        wh1st3se3 = cms.untracked.vint32(72, 58, 72, 18),
+        wh1st3se2 = cms.untracked.vint32(72, 58, 72, 18),
+        wh1st3se1 = cms.untracked.vint32(72, 58, 72, 18),
+        wh1st3se7 = cms.untracked.vint32(72, 58, 72, 18),
+        wh1st3se6 = cms.untracked.vint32(72, 58, 72, 18),
+        wh1st3se5 = cms.untracked.vint32(72, 58, 72, 18),
+        wh1st4se9 = cms.untracked.vint32(48, 0, 48, 12),
+        whm1st1se3 = cms.untracked.vint32(50, 48, 50, 13),
+        whm1st1se2 = cms.untracked.vint32(50, 58, 50, 13),
+        whm1st1se1 = cms.untracked.vint32(50, 58, 50, 13),
+        wh1st2se8 = cms.untracked.vint32(60, 58, 60, 15),
+        wh1st2se9 = cms.untracked.vint32(60, 58, 60, 15),
+        whm1st1se5 = cms.untracked.vint32(50, 58, 50, 13),
+        whm1st1se4 = cms.untracked.vint32(50, 58, 50, 13),
+        wh1st2se4 = cms.untracked.vint32(60, 48, 60, 15),
+        wh1st2se5 = cms.untracked.vint32(60, 58, 60, 15),
+        wh1st2se6 = cms.untracked.vint32(60, 58, 60, 15),
+        wh1st2se7 = cms.untracked.vint32(60, 58, 60, 15),
+        wh1st2se1 = cms.untracked.vint32(60, 58, 60, 15),
+        wh1st2se2 = cms.untracked.vint32(60, 58, 60, 15),
+        wh1st4se8 = cms.untracked.vint32(92, 0, 92, 23),
+        wh2st3se9 = cms.untracked.vint32(72, 58, 72, 18),
+        wh1st1se8 = cms.untracked.vint32(50, 58, 50, 13),
+        whm2st4se7 = cms.untracked.vint32(96, 0, 96, 24),
+        whm2st4se6 = cms.untracked.vint32(96, 0, 96, 24),
+        whm1st4se4 = cms.untracked.vint32(72, 0, 72, 18),
+        whm2st4se5 = cms.untracked.vint32(96, 0, 96, 24),
+        wh0st1se8 = cms.untracked.vint32(50, 58, 50, 13),
+        wh2st1se7 = cms.untracked.vint32(50, 58, 50, 13),
+        wh2st1se4 = cms.untracked.vint32(50, 58, 50, 13),
+        whm2st4se4 = cms.untracked.vint32(72, 0, 72, 18),
+        wh2st1se2 = cms.untracked.vint32(50, 58, 50, 13),
+        wh2st1se3 = cms.untracked.vint32(50, 58, 50, 13),
+        wh2st1se1 = cms.untracked.vint32(50, 58, 50, 13),
+        wh0st1se1 = cms.untracked.vint32(50, 58, 50, 13),
+        wh0st1se2 = cms.untracked.vint32(50, 58, 50, 13),
+        wh0st1se3 = cms.untracked.vint32(50, 58, 50, 13),
+        wh0st1se4 = cms.untracked.vint32(50, 58, 50, 13),
+        wh0st1se5 = cms.untracked.vint32(50, 58, 50, 13),
+        wh2st1se8 = cms.untracked.vint32(50, 58, 50, 13),
+        wh2st1se9 = cms.untracked.vint32(50, 58, 50, 13),
+        wh2st4se1 = cms.untracked.vint32(96, 0, 96, 24),
+        wh2st4se3 = cms.untracked.vint32(96, 0, 96, 24),
+        wh2st4se2 = cms.untracked.vint32(96, 0, 96, 24),
+        wh2st4se5 = cms.untracked.vint32(96, 0, 96, 24),
+        wh2st4se4 = cms.untracked.vint32(72, 0, 72, 18),
+        wh2st4se7 = cms.untracked.vint32(96, 0, 96, 24),
+        wh2st4se6 = cms.untracked.vint32(96, 0, 96, 24),
+        wh0st4se3 = cms.untracked.vint32(96, 0, 96, 24),
+        wh2st4se8 = cms.untracked.vint32(92, 0, 92, 23),
+        wh0st4se1 = cms.untracked.vint32(96, 0, 96, 24),
+        wh0st4se7 = cms.untracked.vint32(96, 0, 96, 24),
+        wh0st4se6 = cms.untracked.vint32(96, 0, 96, 24),
+        wh0st4se5 = cms.untracked.vint32(96, 0, 96, 24),
+        wh0st4se4 = cms.untracked.vint32(72, 0, 72, 18),
+        wh0st3se10 = cms.untracked.vint32(72, 58, 72, 18),
+        wh0st3se11 = cms.untracked.vint32(72, 58, 72, 18),
+        wh0st3se12 = cms.untracked.vint32(72, 58, 72, 18),
+        wh2st4se11 = cms.untracked.vint32(48, 0, 48, 12),
+        wh2st4se10 = cms.untracked.vint32(60, 0, 60, 15),
+        wh2st4se13 = cms.untracked.vint32(72, 0, 72, 18),
+        wh2st4se12 = cms.untracked.vint32(92, 0, 92, 23),
+        wh2st4se14 = cms.untracked.vint32(60, 0, 60, 15),
+        wh1st1se5 = cms.untracked.vint32(50, 58, 50, 13),
+        whm1st4se1 = cms.untracked.vint32(96, 0, 96, 24),
+        whm1st4se2 = cms.untracked.vint32(96, 0, 96, 24),
+        whm1st4se3 = cms.untracked.vint32(96, 0, 96, 24),
+        wh1st2se12 = cms.untracked.vint32(60, 58, 60, 15),
+        whm1st4se5 = cms.untracked.vint32(96, 0, 96, 24),
+        wh1st2se10 = cms.untracked.vint32(60, 58, 60, 15),
+        whm1st4se7 = cms.untracked.vint32(96, 0, 96, 24),
+        whm1st4se8 = cms.untracked.vint32(92, 0, 92, 23),
+        whm1st4se9 = cms.untracked.vint32(48, 0, 48, 12),
+        whm1st2se11 = cms.untracked.vint32(60, 58, 60, 15),
+        wh0st3se6 = cms.untracked.vint32(72, 58, 72, 18),
+        wh0st3se7 = cms.untracked.vint32(72, 58, 72, 18),
+        wh0st3se4 = cms.untracked.vint32(72, 58, 72, 18),
+        wh0st3se5 = cms.untracked.vint32(72, 58, 72, 18),
+        wh0st3se2 = cms.untracked.vint32(72, 58, 72, 18),
+        wh0st3se3 = cms.untracked.vint32(72, 58, 72, 18),
+        wh0st3se1 = cms.untracked.vint32(72, 58, 72, 18),
+        wh2st3se7 = cms.untracked.vint32(72, 58, 72, 18),
+        whm2st1se5 = cms.untracked.vint32(50, 58, 50, 13),
+        wh0st3se8 = cms.untracked.vint32(72, 58, 72, 18),
+        wh0st3se9 = cms.untracked.vint32(72, 58, 72, 18),
+        wh2st1se6 = cms.untracked.vint32(50, 58, 50, 13),
+        whm1st1se8 = cms.untracked.vint32(50, 58, 50, 13),
+        wh0st1se9 = cms.untracked.vint32(50, 58, 50, 13),
+        wh2st3se12 = cms.untracked.vint32(72, 58, 72, 18),
+        wh2st3se10 = cms.untracked.vint32(72, 58, 72, 18),
+        wh2st3se11 = cms.untracked.vint32(72, 58, 72, 18),
+        wh1st1se11 = cms.untracked.vint32(50, 58, 50, 13),
+        wh1st1se10 = cms.untracked.vint32(50, 58, 50, 13),
+        wh1st1se12 = cms.untracked.vint32(50, 58, 50, 13),
+        wh1st2se11 = cms.untracked.vint32(60, 58, 60, 15),
+        whm2st2se5 = cms.untracked.vint32(60, 58, 60, 15),
+        whm2st2se4 = cms.untracked.vint32(60, 58, 60, 15),
+        whm2st2se7 = cms.untracked.vint32(60, 58, 60, 15),
+        whm2st2se6 = cms.untracked.vint32(60, 58, 60, 15),
+        whm2st2se1 = cms.untracked.vint32(60, 58, 60, 15),
+        whm2st2se3 = cms.untracked.vint32(60, 58, 60, 15),
+        whm2st2se2 = cms.untracked.vint32(60, 58, 60, 15),
+        whm2st2se9 = cms.untracked.vint32(60, 58, 60, 15),
+        whm2st2se8 = cms.untracked.vint32(60, 58, 60, 15),
+        whm1st4se6 = cms.untracked.vint32(96, 0, 96, 24),
+        wh2st1se5 = cms.untracked.vint32(50, 58, 50, 13),
+        whm1st2se6 = cms.untracked.vint32(60, 58, 60, 15),
+        whm1st2se7 = cms.untracked.vint32(60, 58, 60, 15),
+        whm1st2se4 = cms.untracked.vint32(60, 58, 60, 15),
+        whm1st2se5 = cms.untracked.vint32(60, 58, 60, 15),
+        whm1st2se2 = cms.untracked.vint32(60, 58, 60, 15),
+        whm1st2se3 = cms.untracked.vint32(60, 48, 60, 15),
+        whm1st2se1 = cms.untracked.vint32(60, 58, 60, 15),
+        whm1st2se8 = cms.untracked.vint32(60, 58, 60, 15),
+        whm1st2se9 = cms.untracked.vint32(60, 58, 60, 15),
+        wh2st2se7 = cms.untracked.vint32(60, 58, 60, 15),
+        wh2st2se6 = cms.untracked.vint32(60, 58, 60, 15),
+        wh2st2se5 = cms.untracked.vint32(60, 58, 60, 15),
+        wh2st2se4 = cms.untracked.vint32(60, 58, 60, 15),
+        wh2st2se3 = cms.untracked.vint32(60, 58, 60, 15),
+        wh2st2se2 = cms.untracked.vint32(60, 58, 60, 15),
+        wh2st2se1 = cms.untracked.vint32(60, 58, 60, 15),
+        wh0st1se7 = cms.untracked.vint32(50, 58, 50, 13),
+        wh2st2se9 = cms.untracked.vint32(60, 58, 60, 15),
+        wh2st2se8 = cms.untracked.vint32(60, 58, 60, 15),
+        wh0st4se13 = cms.untracked.vint32(72, 0, 72, 18),
+        wh0st1se6 = cms.untracked.vint32(50, 58, 50, 13),
+        wh0st4se11 = cms.untracked.vint32(48, 0, 48, 12),
+        wh0st4se10 = cms.untracked.vint32(60, 0, 60, 15),
+        whm1st3se12 = cms.untracked.vint32(72, 58, 72, 18),
+        wh0st4se14 = cms.untracked.vint32(60, 0, 60, 15),
+        whm2st1se3 = cms.untracked.vint32(50, 58, 50, 13),
+        wh0st4se9 = cms.untracked.vint32(48, 0, 48, 12),
+        wh1st4se10 = cms.untracked.vint32(60, 0, 60, 15),
+        wh1st4se11 = cms.untracked.vint32(48, 0, 48, 12),
+        wh1st4se12 = cms.untracked.vint32(92, 0, 92, 23),
+        wh1st4se13 = cms.untracked.vint32(72, 0, 72, 18),
+        wh1st4se14 = cms.untracked.vint32(60, 0, 60, 15),
+        wh1st1se4 = cms.untracked.vint32(50, 48, 50, 13),
+        wh1st1se7 = cms.untracked.vint32(50, 58, 50, 13),
+        wh1st1se6 = cms.untracked.vint32(50, 58, 50, 13),
+        wh1st1se9 = cms.untracked.vint32(50, 58, 50, 13),
+        whm2st3se10 = cms.untracked.vint32(72, 58, 72, 18),
+        wh1st2se3 = cms.untracked.vint32(60, 58, 60, 15),
+        whm2st3se11 = cms.untracked.vint32(72, 58, 72, 18),
+        whm2st3se12 = cms.untracked.vint32(72, 58, 72, 18),
+        wh0st4se12 = cms.untracked.vint32(92, 0, 92, 23),
+        wh1st3se9 = cms.untracked.vint32(72, 58, 72, 18),
+        wh2st3se8 = cms.untracked.vint32(72, 58, 72, 18),
+        wh2st4se9 = cms.untracked.vint32(48, 0, 48, 12),
+        wh1st3se8 = cms.untracked.vint32(72, 58, 72, 18),
+        wh0st4se2 = cms.untracked.vint32(96, 0, 96, 24),
+        wh2st3se1 = cms.untracked.vint32(72, 58, 72, 18),
+        wh2st3se2 = cms.untracked.vint32(72, 58, 72, 18),
+        wh2st3se3 = cms.untracked.vint32(72, 58, 72, 18),
+        wh2st3se4 = cms.untracked.vint32(72, 58, 72, 18),
+        wh2st3se5 = cms.untracked.vint32(72, 58, 72, 18),
+        wh2st3se6 = cms.untracked.vint32(72, 58, 72, 18),
+        wh1st4se3 = cms.untracked.vint32(96, 0, 96, 24),
+        whm2st4se1 = cms.untracked.vint32(96, 0, 96, 24),
+        wh1st4se1 = cms.untracked.vint32(96, 0, 96, 24),
+        whm1st2se10 = cms.untracked.vint32(60, 58, 60, 15),
+        whm2st2se11 = cms.untracked.vint32(60, 58, 60, 15),
+        whm2st2se10 = cms.untracked.vint32(60, 58, 60, 15),
+        whm2st2se12 = cms.untracked.vint32(60, 58, 60, 15),
+        wh0st2se5 = cms.untracked.vint32(60, 58, 60, 15),
+        whm1st3se9 = cms.untracked.vint32(72, 58, 72, 18),
+        whm1st3se8 = cms.untracked.vint32(72, 58, 72, 18)
+    ),
+    debugLUTs = cms.bool(False),
+    UseT0 = cms.bool(False),
+    cfgConfig = cms.bool(False),
+    debugTST = cms.bool(False),
+    debugTSP = cms.bool(False),
+    bxOffset = cms.int32(19),
+    debug = cms.bool(False),
+    debugPed = cms.bool(False),
+    debugTU = cms.bool(False),
+    finePhase = cms.double(25.0),
+    UseBtiAcceptParam = cms.bool(True),
+    debugTraco = cms.int32(0)
+)
+
+
+process.L1MuGMTParameters = cms.ESProducer("L1MuGMTParametersProducer",
+    MergeMethodSRKFwd = cms.string('takeCSC'),
+    SubsystemMask = cms.uint32(0),
+    HaloOverwritesMatchedFwd = cms.bool(True),
+    PhiWeight_barrel = cms.double(1.0),
+    MergeMethodISOSpecialUseANDBrl = cms.bool(True),
+    HaloOverwritesMatchedBrl = cms.bool(True),
+    IsolationCellSizeEta = cms.int32(2),
+    MergeMethodEtaFwd = cms.string('Special'),
+    EtaPhiThreshold_COU = cms.double(0.127),
+    MergeMethodISOBrl = cms.string('Special'),
+    EtaWeight_barrel = cms.double(0.028),
+    MergeMethodMIPBrl = cms.string('Special'),
+    EtaPhiThreshold_barrel = cms.double(0.062),
+    IsolationCellSizePhi = cms.int32(2),
+    MergeMethodChargeBrl = cms.string('takeDT'),
+    VersionSortRankEtaQLUT = cms.uint32(275),
+    MergeMethodPtBrl = cms.string('byMinPt'),
+    CaloTrigger = cms.bool(True),
+    MergeMethodPtFwd = cms.string('byMinPt'),
+    PropagatePhi = cms.bool(False),
+    MergeMethodChargeFwd = cms.string('takeCSC'),
+    MergeMethodEtaBrl = cms.string('Special'),
+    CDLConfigWordfRPCDT = cms.uint32(1),
+    CDLConfigWordDTCSC = cms.uint32(2),
+    EtaWeight_endcap = cms.double(0.13),
+    DoOvlRpcAnd = cms.bool(False),
+    EtaWeight_COU = cms.double(0.316),
+    MergeMethodISOSpecialUseANDFwd = cms.bool(True),
+    MergeMethodMIPFwd = cms.string('Special'),
+    MergeMethodPhiBrl = cms.string('takeDT'),
+    EtaPhiThreshold_endcap = cms.double(0.062),
+    CDLConfigWordCSCDT = cms.uint32(3),
+    MergeMethodMIPSpecialUseANDFwd = cms.bool(False),
+    MergeMethodPhiFwd = cms.string('takeCSC'),
+    MergeMethodISOFwd = cms.string('Special'),
+    VersionLUTs = cms.uint32(1),
+    PhiWeight_COU = cms.double(1.0),
+    CDLConfigWordbRPCCSC = cms.uint32(16),
+    PhiWeight_endcap = cms.double(1.0),
+    SortRankOffsetBrl = cms.uint32(10),
+    MergeMethodSRKBrl = cms.string('takeDT'),
+    MergeMethodMIPSpecialUseANDBrl = cms.bool(False),
+    SortRankOffsetFwd = cms.uint32(10)
 )
 
 
@@ -9257,6 +20582,414 @@ process.ParabolicParametrizedMagneticFieldProducer = cms.ESProducer("Parametrize
         BValue = cms.string('')
     ),
     label = cms.untracked.string('ParabolicMf')
+)
+
+
+process.RCTConfigProducers = cms.ESProducer("RCTConfigProducers",
+    cross_terms_Lindsey = cms.vdouble(0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0),
+    eMinForFGCut = cms.double(6),
+    noiseVetoHEminus = cms.bool(False),
+    eGammaHCalScaleFactors = cms.vdouble(0.0, 0.0, 0.0, 0.0, 0.0, 
+        0.0, 0.0, 0.0, 0.0, 0.0, 
+        0.0, 0.0, 0.0, 0.0, 0.0, 
+        0.0, 0.0, 0.0, 0.0, 0.0, 
+        0.0, 0.0, 0.0, 0.0, 0.0, 
+        0.0, 0.0, 0.0),
+    noiseVetoHB = cms.bool(False),
+    HoverE_high_Lindsey = cms.vdouble(1, 1, 1, 1, 1, 
+        1, 1, 1, 1, 1, 
+        1, 1, 1, 1, 1, 
+        1, 1, 1, 1, 1, 
+        1, 1, 1, 1, 1, 
+        1, 1, 1),
+    jetMETLSB = cms.double(0.5),
+    HoverE_low_Lindsey = cms.vdouble(1, 1, 1, 1, 1, 
+        1, 1, 1, 1, 1, 
+        1, 1, 1, 1, 1, 
+        1, 1, 1, 1, 1, 
+        1, 1, 1, 1, 1, 
+        1, 1, 1),
+    eGammaLSB = cms.double(0.5),
+    jscQuietThresholdEndcap = cms.uint32(3),
+    hMinForHoECut = cms.double(5.0),
+    hcal_calib_Lindsey = cms.vdouble(0, 0, 1, 0, 0, 
+        1, 0, 0, 1, 0, 
+        0, 1, 0, 0, 1, 
+        0, 0, 1, 0, 0, 
+        1, 0, 0, 1, 0, 
+        0, 1, 0, 0, 1, 
+        0, 0, 1, 0, 0, 
+        1, 0, 0, 1, 0, 
+        0, 1, 0, 0, 1, 
+        0, 0, 1, 0, 0, 
+        1, 0, 0, 1, 0, 
+        0, 1, 0, 0, 1, 
+        0, 0, 1, 0, 0, 
+        1, 0, 0, 1, 0, 
+        0, 1, 0, 0, 1, 
+        0, 0, 1, 0, 0, 
+        1, 0, 0, 1),
+    hOeCut = cms.double(0.05),
+    eGammaECalScaleFactors = cms.vdouble(1.11, 1.11, 1.11, 1.13, 1.14, 
+        1.15, 1.13, 1.14, 1.16, 1.16, 
+        1.17, 1.19, 1.24, 1.27, 1.29, 
+        1.29, 1.3, 1.48, 1.3, 1.41, 
+        1.41, 1.4, 1.32, 1.3, 1.26, 
+        1.2, 1.22, 1.16),
+    noiseVetoHEplus = cms.bool(False),
+    eMinForHoECut = cms.double(5),
+    jetMETHCalScaleFactors = cms.vdouble(1.0, 1.0, 1.0, 1.0, 1.0, 
+        1.0, 1.0, 1.0, 1.0, 1.0, 
+        1.0, 1.0, 1.0, 1.0, 1.0, 
+        1.0, 1.0, 1.0, 1.0, 1.0, 
+        1.0, 1.0, 1.0, 1.0, 1.0, 
+        1.0, 1.0, 1.0),
+    ecal_calib_Lindsey = cms.vdouble(0, 0, 1, 0, 0, 
+        1, 0, 0, 1, 0, 
+        0, 1, 0, 0, 1, 
+        0, 0, 1, 0, 0, 
+        1, 0, 0, 1, 0, 
+        0, 1, 0, 0, 1, 
+        0, 0, 1, 0, 0, 
+        1, 0, 0, 1, 0, 
+        0, 1, 0, 0, 1, 
+        0, 0, 1, 0, 0, 
+        1, 0, 0, 1, 0, 
+        0, 1, 0, 0, 1, 
+        0, 0, 1, 0, 0, 
+        1, 0, 0, 1, 0, 
+        0, 1, 0, 0, 1, 
+        0, 0, 1, 0, 0, 
+        1, 0, 0, 1),
+    hActivityCut = cms.double(4.0),
+    eActivityCut = cms.double(4.0),
+    eMaxForFGCut = cms.double(999.0),
+    eMaxForHoECut = cms.double(100),
+    eicIsolationThreshold = cms.uint32(4),
+    useCorrectionsLindsey = cms.bool(False),
+    jscQuietThresholdBarrel = cms.uint32(3),
+    hcal_high_calib_Lindsey = cms.vdouble(0, 0, 1, 0, 0, 
+        1, 0, 0, 1, 0, 
+        0, 1, 0, 0, 1, 
+        0, 0, 1, 0, 0, 
+        1, 0, 0, 1, 0, 
+        0, 1, 0, 0, 1, 
+        0, 0, 1, 0, 0, 
+        1, 0, 0, 1, 0, 
+        0, 1, 0, 0, 1, 
+        0, 0, 1, 0, 0, 
+        1, 0, 0, 1, 0, 
+        0, 1, 0, 0, 1, 
+        0, 0, 1, 0, 0, 
+        1, 0, 0, 1, 0, 
+        0, 1, 0, 0, 1, 
+        0, 0, 1, 0, 0, 
+        1, 0, 0, 1),
+    jetMETECalScaleFactors = cms.vdouble(1.11, 1.11, 1.11, 1.13, 1.14, 
+        1.15, 1.13, 1.14, 1.16, 1.16, 
+        1.17, 1.19, 1.24, 1.27, 1.29, 
+        1.29, 1.3, 1.48, 1.3, 1.41, 
+        1.41, 1.4, 1.32, 1.3, 1.26, 
+        1.2, 1.22, 1.16)
+)
+
+
+process.RPCConeBuilder = cms.ESProducer("RPCConeBuilder",
+    towerEnd = cms.int32(16),
+    towerBeg = cms.int32(0)
+)
+
+
+process.RPCConeDefi = cms.ESProducer("L1RPCConeDefinitionProducer",
+    rollConnT_14_4 = cms.vint32(-1, -1, -1),
+    rollConnT_14_5 = cms.vint32(-1, -1, -1),
+    rollConnT_14_0 = cms.vint32(13, 14, -1),
+    rollConnT_14_1 = cms.vint32(13, -1, -1),
+    rollConnT_14_2 = cms.vint32(14, 15, -1),
+    rollConnT_14_3 = cms.vint32(15, 16, -1),
+    rollConnT_12_4 = cms.vint32(-1, -1, -1),
+    rollConnT_12_5 = cms.vint32(-1, -1, -1),
+    rollConnT_12_2 = cms.vint32(12, 13, -1),
+    rollConnT_12_3 = cms.vint32(13, 14, -1),
+    rollConnT_12_0 = cms.vint32(10, 11, -1),
+    rollConnT_12_1 = cms.vint32(11, -1, -1),
+    rollConnLP_0_3 = cms.vint32(0, 0, 0),
+    rollConnT_0_4 = cms.vint32(-1, -1, -1),
+    rollConnT_0_5 = cms.vint32(-1, -1, -1),
+    rollConnLP_13_2 = cms.vint32(3, 3, 0),
+    rollConnT_0_0 = cms.vint32(-1, -1, -1),
+    rollConnLP_7_3 = cms.vint32(6, 6, 0),
+    lpSizeTower14 = cms.vint32(72, 8, 40, 24, 0, 
+        0),
+    lpSizeTower15 = cms.vint32(72, 8, 40, 24, 0, 
+        0),
+    lpSizeTower16 = cms.vint32(72, 8, 40, 24, 0, 
+        0),
+    lpSizeTower10 = cms.vint32(72, 8, 40, 24, 0, 
+        0),
+    rollConnT_0_2 = cms.vint32(-1, -1, -1),
+    lpSizeTower12 = cms.vint32(72, 8, 40, 24, 0, 
+        0),
+    lpSizeTower13 = cms.vint32(72, 8, 40, 24, 0, 
+        0),
+    rollConnLP_7_1 = cms.vint32(3, -3, 0),
+    rollConnLP_8_1 = cms.vint32(0, 0, 0),
+    rollConnLP_10_4 = cms.vint32(0, 0, 0),
+    rollConnLP_8_0 = cms.vint32(0, 5, 0),
+    rollConnLP_8_3 = cms.vint32(4, 0, 0),
+    rollConnT_16_2 = cms.vint32(-1, -1, -1),
+    rollConnT_16_3 = cms.vint32(-1, -1, -1),
+    rollConnT_16_0 = cms.vint32(15, 16, -1),
+    rollConnT_6_1 = cms.vint32(-1, -1, -1),
+    rollConnLP_3_0 = cms.vint32(0, 0, 0),
+    rollConnT_16_4 = cms.vint32(-1, -1, -1),
+    rollConnT_16_5 = cms.vint32(-1, -1, -1),
+    rollConnT_15_5 = cms.vint32(-1, -1, -1),
+    rollConnT_15_4 = cms.vint32(-1, -1, -1),
+    rollConnLP_6_5 = cms.vint32(4, 0, 0),
+    rollConnLP_6_4 = cms.vint32(0, 0, 0),
+    rollConnLP_6_3 = cms.vint32(0, 0, 0),
+    rollConnLP_6_2 = cms.vint32(0, 0, 0),
+    rollConnT_8_2 = cms.vint32(9, -9, -1),
+    rollConnLP_6_0 = cms.vint32(0, 0, 0),
+    rollConnT_13_5 = cms.vint32(-1, -1, -1),
+    rollConnT_13_4 = cms.vint32(-1, -1, -1),
+    rollConnT_13_3 = cms.vint32(14, 15, -1),
+    rollConnT_13_2 = cms.vint32(13, 14, -1),
+    rollConnT_13_1 = cms.vint32(12, -1, -1),
+    rollConnT_13_0 = cms.vint32(11, 12, -1),
+    rollConnLP_4_1 = cms.vint32(3, 0, 0),
+    rollConnLP_4_0 = cms.vint32(1, 1, -1),
+    rollConnLP_4_3 = cms.vint32(6, 6, 0),
+    rollConnLP_4_2 = cms.vint32(5, 5, 5),
+    rollConnLP_4_5 = cms.vint32(4, 4, 0),
+    rollConnLP_4_4 = cms.vint32(2, 2, 0),
+    rollConnT_10_0 = cms.vint32(8, -1, -1),
+    rollConnLP_12_4 = cms.vint32(0, 0, 0),
+    rollConnT_4_0 = cms.vint32(4, 5, -6),
+    rollConnT_4_1 = cms.vint32(4, -1, -1),
+    rollConnT_4_2 = cms.vint32(2, 3, 4),
+    rollConnT_4_3 = cms.vint32(2, 3, -1),
+    rollConnT_4_4 = cms.vint32(4, 5, -1),
+    rollConnT_4_5 = cms.vint32(3, 4, -1),
+    rollConnLP_8_5 = cms.vint32(0, 0, 0),
+    rollConnLP_8_4 = cms.vint32(0, 0, 0),
+    rollConnT_6_4 = cms.vint32(-1, -1, -1),
+    rollConnT_6_5 = cms.vint32(6, -1, -1),
+    rollConnT_6_2 = cms.vint32(-1, -1, -1),
+    rollConnT_6_3 = cms.vint32(-1, -1, -1),
+    rollConnT_6_0 = cms.vint32(-1, -1, -1),
+    rollConnLP_8_2 = cms.vint32(3, -5, 0),
+    rollConnLP_5_0 = cms.vint32(1, 1, 1),
+    rollConnLP_9_4 = cms.vint32(0, 0, 0),
+    rollConnLP_5_1 = cms.vint32(3, -3, 3),
+    rollConnLP_3_1 = cms.vint32(3, 0, 0),
+    rollConnLP_16_0 = cms.vint32(1, 1, 0),
+    rollConnLP_5_2 = cms.vint32(5, 5, 0),
+    rollConnT_15_3 = cms.vint32(16, -1, -1),
+    rollConnT_2_1 = cms.vint32(2, -1, -1),
+    rollConnLP_2_3 = cms.vint32(6, 6, 0),
+    rollConnLP_2_2 = cms.vint32(5, 5, 0),
+    rollConnLP_2_1 = cms.vint32(3, 0, 0),
+    rollConnT_16_1 = cms.vint32(15, -1, -1),
+    rollConnLP_2_5 = cms.vint32(4, 4, 0),
+    rollConnLP_2_4 = cms.vint32(2, 2, 2),
+    rollConnT_11_1 = cms.vint32(10, -1, -1),
+    rollConnT_11_0 = cms.vint32(10, -1, -1),
+    rollConnT_11_3 = cms.vint32(12, 13, -1),
+    rollConnT_11_2 = cms.vint32(11, 12, -1),
+    rollConnT_11_5 = cms.vint32(-1, -1, -1),
+    rollConnT_11_4 = cms.vint32(-1, -1, -1),
+    rollConnLP_0_5 = cms.vint32(0, 0, 0),
+    rollConnT_17_2 = cms.vint32(-1, -1, -1),
+    rollConnT_17_1 = cms.vint32(16, -1, -1),
+    rollConnT_17_0 = cms.vint32(16, -1, -1),
+    rollConnLP_0_1 = cms.vint32(3, 0, 0),
+    lpSizeTower6 = cms.vint32(56, 72, 40, 8, 24, 
+        0),
+    rollConnT_17_5 = cms.vint32(-1, -1, -1),
+    rollConnLP_0_2 = cms.vint32(0, 0, 0),
+    rollConnT_8_4 = cms.vint32(-1, -1, -1),
+    rollConnLP_14_5 = cms.vint32(0, 0, 0),
+    rollConnLP_14_4 = cms.vint32(0, 0, 0),
+    rollConnLP_14_3 = cms.vint32(4, 4, 0),
+    rollConnLP_14_2 = cms.vint32(3, 3, 0),
+    rollConnLP_14_1 = cms.vint32(2, 0, 0),
+    rollConnLP_14_0 = cms.vint32(1, 1, 0),
+    rollConnT_9_5 = cms.vint32(-1, -1, -1),
+    rollConnT_9_4 = cms.vint32(-1, -1, -1),
+    rollConnLP_7_4 = cms.vint32(2, 2, 0),
+    rollConnLP_7_5 = cms.vint32(4, 0, 0),
+    rollConnT_9_1 = cms.vint32(8, -1, -1),
+    rollConnT_0_1 = cms.vint32(0, -1, -1),
+    rollConnT_9_3 = cms.vint32(10, 11, -1),
+    rollConnT_0_3 = cms.vint32(-1, -1, -1),
+    rollConnLP_16_1 = cms.vint32(2, 0, 0),
+    rollConnT_15_1 = cms.vint32(14, -1, -1),
+    rollConnLP_16_3 = cms.vint32(0, 0, 0),
+    rollConnLP_16_2 = cms.vint32(0, 0, 0),
+    rollConnLP_16_5 = cms.vint32(0, 0, 0),
+    rollConnLP_16_4 = cms.vint32(0, 0, 0),
+    rollConnT_15_0 = cms.vint32(14, 15, -1),
+    rollConnT_2_2 = cms.vint32(1, 2, -1),
+    rollConnT_2_3 = cms.vint32(1, 2, -1),
+    rollConnT_2_0 = cms.vint32(2, 3, 4),
+    rollConnLP_5_3 = cms.vint32(6, 0, 0),
+    rollConnLP_5_4 = cms.vint32(2, 2, 2),
+    rollConnLP_5_5 = cms.vint32(4, 0, 0),
+    rollConnT_2_4 = cms.vint32(2, 3, 4),
+    rollConnT_2_5 = cms.vint32(2, 3, -1),
+    rollConnT_8_3 = cms.vint32(10, -1, -1),
+    rollConnT_3_1 = cms.vint32(3, -1, -1),
+    rollConnT_5_1 = cms.vint32(5, -6, 6),
+    rollConnT_5_0 = cms.vint32(6, 7, 8),
+    rollConnT_5_3 = cms.vint32(4, -1, -1),
+    rollConnT_5_2 = cms.vint32(4, 5, -1),
+    rollConnT_5_5 = cms.vint32(5, -1, -1),
+    rollConnT_5_4 = cms.vint32(5, 6, 7),
+    rollConnLP_15_1 = cms.vint32(2, 0, 0),
+    rollConnT_9_0 = cms.vint32(7, 8, -1),
+    rollEnd = cms.int32(17),
+    rollConnLP_17_1 = cms.vint32(2, 0, 0),
+    rollConnLP_2_0 = cms.vint32(1, 1, 1),
+    rollConnLP_9_1 = cms.vint32(4, 0, 0),
+    hwPlaneEnd = cms.int32(5),
+    rollConnLP_10_3 = cms.vint32(4, 4, 0),
+    rollConnLP_10_2 = cms.vint32(3, 3, 0),
+    rollConnLP_10_1 = cms.vint32(2, 0, 0),
+    rollConnLP_10_0 = cms.vint32(3, 0, 0),
+    rollConnLP_10_5 = cms.vint32(0, 0, 0),
+    towerBeg = cms.int32(0),
+    rollConnLP_3_2 = cms.vint32(0, 0, 0),
+    rollConnLP_3_3 = cms.vint32(0, 0, 0),
+    rollConnT_15_2 = cms.vint32(15, 16, -1),
+    rollConnT_8_5 = cms.vint32(-1, -1, -1),
+    rollConnLP_6_1 = cms.vint32(0, 0, 0),
+    rollConnLP_3_4 = cms.vint32(0, 0, 0),
+    rollConnLP_3_5 = cms.vint32(0, 0, 0),
+    rollConnLP_12_5 = cms.vint32(0, 0, 0),
+    rollConnT_10_1 = cms.vint32(9, -1, -1),
+    rollConnT_10_2 = cms.vint32(10, 11, -1),
+    rollConnT_10_3 = cms.vint32(11, 12, -1),
+    rollConnT_10_4 = cms.vint32(-1, -1, -1),
+    rollConnLP_12_0 = cms.vint32(1, 1, 0),
+    rollConnLP_12_3 = cms.vint32(4, 4, 0),
+    rollConnLP_12_2 = cms.vint32(3, 3, 0),
+    rollConnLP_1_4 = cms.vint32(2, 2, -2),
+    rollConnLP_1_5 = cms.vint32(4, 4, 0),
+    rollBeg = cms.int32(0),
+    rollConnLP_1_0 = cms.vint32(1, 1, 1),
+    rollConnLP_1_1 = cms.vint32(3, 0, 0),
+    rollConnLP_1_2 = cms.vint32(5, 5, 0),
+    rollConnLP_1_3 = cms.vint32(6, 6, 0),
+    rollConnT_9_2 = cms.vint32(9, -9, 10),
+    rollConnLP_9_5 = cms.vint32(0, 0, 0),
+    rollConnT_7_5 = cms.vint32(7, -1, -1),
+    rollConnT_7_4 = cms.vint32(7, 8, -1),
+    rollConnLP_9_0 = cms.vint32(5, 3, 0),
+    rollConnT_7_2 = cms.vint32(5, 6, -1),
+    rollConnLP_9_2 = cms.vint32(3, -5, 3),
+    rollConnT_7_0 = cms.vint32(8, 9, -1),
+    lpSizeTower2 = cms.vint32(72, 56, 8, 40, 40, 
+        24),
+    rollConnLP_12_1 = cms.vint32(2, 0, 0),
+    lpSizeTower3 = cms.vint32(72, 56, 8, 40, 40, 
+        24),
+    rollConnT_1_5 = cms.vint32(0, 1, -1),
+    rollConnT_1_4 = cms.vint32(0, 1, -2),
+    rollConnLP_17_2 = cms.vint32(0, 0, 0),
+    rollConnLP_17_3 = cms.vint32(0, 0, 0),
+    rollConnLP_9_3 = cms.vint32(4, 4, 0),
+    rollConnLP_17_5 = cms.vint32(0, 0, 0),
+    rollConnT_1_3 = cms.vint32(0, 1, -1),
+    rollConnT_1_2 = cms.vint32(0, 1, -1),
+    rollConnT_1_1 = cms.vint32(1, -1, -1),
+    lpSizeTower1 = cms.vint32(72, 56, 8, 40, 40, 
+        24),
+    rollConnT_7_3 = cms.vint32(4, 5, -1),
+    rollConnT_17_3 = cms.vint32(-1, -1, -1),
+    rollConnLP_13_5 = cms.vint32(0, 0, 0),
+    rollConnLP_7_2 = cms.vint32(5, 5, 0),
+    rollConnLP_0_4 = cms.vint32(0, 0, 0),
+    rollConnT_3_3 = cms.vint32(-1, -1, -1),
+    rollConnT_3_2 = cms.vint32(-1, -1, -1),
+    rollConnLP_17_4 = cms.vint32(0, 0, 0),
+    rollConnT_3_0 = cms.vint32(-1, -1, -1),
+    rollConnLP_17_0 = cms.vint32(1, 0, 0),
+    rollConnT_3_5 = cms.vint32(-1, -1, -1),
+    rollConnT_3_4 = cms.vint32(-1, -1, -1),
+    rollConnT_1_0 = cms.vint32(0, 1, 2),
+    rollConnLP_0_0 = cms.vint32(0, 0, 0),
+    rollConnT_8_0 = cms.vint32(-1, 7, -1),
+    hwPlaneBeg = cms.int32(0),
+    rollConnT_17_4 = cms.vint32(-1, -1, -1),
+    rollConnT_10_5 = cms.vint32(-1, -1, -1),
+    rollConnLP_11_2 = cms.vint32(3, 3, 0),
+    rollConnLP_11_3 = cms.vint32(4, 4, 0),
+    rollConnLP_11_0 = cms.vint32(1, 0, 0),
+    rollConnLP_11_1 = cms.vint32(2, 0, 0),
+    rollConnLP_15_4 = cms.vint32(0, 0, 0),
+    rollConnLP_11_4 = cms.vint32(0, 0, 0),
+    rollConnLP_11_5 = cms.vint32(0, 0, 0),
+    rollConnT_8_1 = cms.vint32(-1, -1, -1),
+    rollConnLP_7_0 = cms.vint32(1, 1, 0),
+    lpSizeTower8 = cms.vint32(72, 24, 40, 8, 0, 
+        0),
+    lpSizeTower9 = cms.vint32(72, 8, 40, 0, 0, 
+        0),
+    rollConnLP_13_4 = cms.vint32(0, 0, 0),
+    lpSizeTower7 = cms.vint32(72, 56, 40, 8, 24, 
+        0),
+    lpSizeTower4 = cms.vint32(72, 56, 8, 40, 40, 
+        24),
+    lpSizeTower5 = cms.vint32(72, 56, 40, 8, 40, 
+        24),
+    rollConnLP_13_0 = cms.vint32(1, 1, 0),
+    rollConnLP_13_1 = cms.vint32(2, 0, 0),
+    lpSizeTower0 = cms.vint32(72, 56, 8, 40, 40, 
+        24),
+    rollConnLP_13_3 = cms.vint32(4, 4, 0),
+    rollConnLP_15_0 = cms.vint32(1, 1, 0),
+    rollConnT_7_1 = cms.vint32(7, -7, -1),
+    rollConnLP_15_5 = cms.vint32(0, 0, 0),
+    rollConnLP_15_2 = cms.vint32(3, 3, 0),
+    rollConnLP_15_3 = cms.vint32(4, 0, 0),
+    towerEnd = cms.int32(16),
+    lpSizeTower11 = cms.vint32(72, 8, 40, 24, 0, 
+        0)
 )
 
 
@@ -9379,7 +21112,7 @@ process.SteppingHelixPropagatorAny = cms.ESProducer("SteppingHelixPropagatorESPr
     NoErrorPropagation = cms.bool(False),
     SetVBFPointer = cms.bool(False),
     AssumeNoMaterial = cms.bool(False),
-    returnTangentPlane = cms.bool(True),
+    endcapShiftInZPos = cms.double(0.0),
     useInTeslaFromMagField = cms.bool(False),
     VBFName = cms.string('VolumeBasedMagneticField'),
     useEndcapShiftsInZ = cms.bool(False),
@@ -9388,7 +21121,7 @@ process.SteppingHelixPropagatorAny = cms.ESProducer("SteppingHelixPropagatorESPr
     debug = cms.bool(False),
     ApplyRadX0Correction = cms.bool(True),
     useMagVolumes = cms.bool(True),
-    endcapShiftInZPos = cms.double(0.0)
+    returnTangentPlane = cms.bool(True)
 )
 
 
@@ -9593,6 +21326,155 @@ process.caloDetIdAssociator = cms.ESProducer("DetIdAssociatorESProducer",
     etaBinSize = cms.double(0.087),
     nEta = cms.int32(70),
     nPhi = cms.int32(72)
+)
+
+
+process.caloStage1Params = cms.ESProducer("l1t::CaloParamsESProducer",
+    tauRelativeJetIsolationLimit = cms.double(100.0),
+    egIsoAreaNrTowersPhi = cms.uint32(4),
+    towerLsbH = cms.double(0.5),
+    jetPUSType = cms.string('None'),
+    egLsb = cms.double(1.0),
+    egIsoAreaNrTowersEta = cms.uint32(2),
+    tauSeedThreshold = cms.double(7.0),
+    jetSeedThreshold = cms.double(10.0),
+    egMaxHcalEt = cms.double(0.0),
+    switchOffTauVeto = cms.double(70.0),
+    egShapeIdLUTFile = cms.FileInPath('L1Trigger/L1TCalorimeter/data/egShapeIdLUT.txt'),
+    egIsoVetoNrTowersPhi = cms.uint32(3),
+    egIsoMaxEtaAbsForIsoSum = cms.uint32(27),
+    tauRelativeJetIsolationCut = cms.double(0.15),
+    egIsoLUTFile = cms.FileInPath('L1Trigger/L1TCalorimeter/data/egIsoLUT.txt'),
+    etSumLsb = cms.double(0.5),
+    regionPUSParams = cms.vdouble( (0.0, 0.0, 0.0, 0.0, 0.444444, 
+        0.55117, 0.770085, 0.958352, 1.21479, 1.486655, 
+        1.801059, 2.146229, 2.522583, 2.944799, 3.429136, 
+        3.984393, 4.67341, 6.388889, 0.0, 0.0, 
+        0.0, 0.0, 0.319444, 0.548246, 0.810256, 
+        0.97769, 1.229211, 1.510501, 1.82686, 2.178931, 
+        2.56252, 2.99361, 3.489558, 4.060866, 4.757649, 
+        5.527778, 0.0, 0.0, 0.0, 0.0, 
+        0.513889, 0.618421, 0.801496, 1.010128, 1.248957, 
+        1.524992, 1.843374, 2.196967, 2.585665, 3.024237, 
+        3.525665, 4.104405, 4.837409, 5.277778, 0.0, 
+        0.0, 0.0, 0.0, 0.138889, 0.178363, 
+        0.328846, 0.438023, 0.537074, 0.655743, 0.818238, 
+        0.997956, 1.198403, 1.428185, 1.693293, 1.998691, 
+        2.428744, 2.861111, 0.0, 0.0, 0.0, 
+        0.0, 0.222222, 0.355263, 0.568803, 0.681711, 
+        0.776114, 0.999194, 1.286749, 1.69019, 2.228222, 
+        2.944096, 3.893814, 5.151409, 7.084399, 8.5, 
+        0.0, 0.0, 0.0, 0.0, 0.347222, 
+        0.260234, 0.282479, 0.305702, 0.330235, 0.386729, 
+        0.472834, 0.574252, 0.713821, 0.883901, 1.117625, 
+        1.419786, 1.88753, 2.583333, 0.0, 0.0, 
+        0.0, 0.0, 0.333333, 0.181287, 0.294444, 
+        0.3115, 0.324732, 0.380449, 0.447851, 0.537887, 
+        0.643667, 0.770106, 0.932555, 1.137137, 1.425775, 
+        1.138889, 0.0, 0.0, 0.0, 0.0, 
+        0.069444, 0.144737, 0.329701, 0.345149, 0.361473, 
+        0.428805, 0.500501, 0.595122, 0.709161, 0.84907, 
+        1.01901, 1.234842, 1.563255, 3.944444, 0.0, 
+        0.0, 0.0, 0.0, 0.083333, 0.195906, 
+        0.232692, 0.309886, 0.383756, 0.439078, 0.515435, 
+        0.615713, 0.735333, 0.879855, 1.06285, 1.299136, 
+        1.575533, 1.861111, 0.0, 0.0, 0.0, 
+        0.0, 0.222222, 0.181287, 0.245085, 0.393035, 
+        0.42242, 0.496332, 0.583994, 0.694272, 0.829494, 
+        0.990583, 1.194619, 1.450821, 1.804499, 2.361111, 
+        0.0, 0.0, 0.0, 0.0, 0.388889, 
+        0.435673, 0.398077, 0.391201, 0.46479, 0.536569, 
+        0.632543, 0.749761, 0.889213, 1.05999, 1.267241, 
+        1.540288, 1.857136, 2.194444, 0.0, 0.0, 
+        0.0, 0.0, 0.125, 0.576023, 0.420513, 
+        0.396154, 0.485091, 0.546055, 0.641076, 0.754781, 
+        0.897755, 1.070265, 1.27816, 1.532439, 1.927529, 
+        1.805556, 0.0, 0.0, 0.0, 0.0, 
+        0.694444, 0.23538, 0.311111, 0.368633, 0.424446, 
+        0.499583, 0.595857, 0.712276, 0.844093, 1.011457, 
+        1.21695, 1.47243, 1.853009, 1.722222, 0.0, 
+        0.0, 0.0, 0.0, 0.166667, 0.336257, 
+        0.301923, 0.313005, 0.387602, 0.441673, 0.524899, 
+        0.625752, 0.744597, 0.88857, 1.073132, 1.318219, 
+        1.614533, 1.333333, 0.0, 0.0, 0.0, 
+        0.0, 0.111111, 0.368421, 0.269231, 0.302253, 
+        0.38031, 0.436402, 0.508579, 0.607197, 0.718574, 
+        0.857328, 1.03398, 1.245847, 1.534823, 1.972222, 
+        0.0, 0.0, 0.0, 0.0, 0.027778, 
+        0.22807, 0.195085, 0.278585, 0.322639, 0.374968, 
+        0.446104, 0.529719, 0.631725, 0.758136, 0.916622, 
+        1.111448, 1.417572, 2.277778, 0.0, 0.0, 
+        0.0, 0.0, 0.041667, 0.157895, 0.186752, 
+        0.254513, 0.320827, 0.378098, 0.46327, 0.5709, 
+        0.696241, 0.871445, 1.09761, 1.396127, 1.857488, 
+        2.75, 0.0, 0.0, 0.0, 0.0, 
+        0.138889, 0.612573, 0.624573, 0.634669, 0.790229, 
+        0.989867, 1.282201, 1.672201, 2.20561, 2.922829, 
+        3.850628, 5.10429, 6.823571, 10.972222, 0.0, 
+        0.0, 0.0, 0.0, 0.194444, 0.345029, 
+        0.353846, 0.411016, 0.509851, 0.661643, 0.81475, 
+        0.995329, 1.199998, 1.431079, 1.694189, 2.000995, 
+        2.378925, 3.111111, 0.0, 0.0, 0.0, 
+        0.0, 0.541667, 0.573099, 0.766453, 0.977836, 
+        1.239705, 1.530437, 1.840524, 2.197025, 2.585155, 
+        3.027299, 3.525292, 4.11254, 4.873339, 5.972222, 
+        0.0, 0.0, 0.0, 0.0, 0.486111, 
+        0.513158, 0.721581, 0.976956, 1.22595, 1.510261, 
+        1.824951, 2.17936, 2.561912, 2.995865, 3.485821, 
+        4.053826, 4.729921, 5.805556, 0.0, 0.0, 
+        0.0, 0.0, 0.319444, 0.564327, 0.694872, 
+        0.950903, 1.201596, 1.488093, 1.801121, 2.145727, 
+        2.52369, 2.94616, 3.422785, 3.963287, 4.633907, 
+        5.972222 ) ),
+    tauNeighbourThreshold = cms.double(0.0),
+    jetLsb = cms.double(0.5),
+    egRelativeJetIsolationBarrelCut = cms.double(0.3),
+    towerNBitsSum = cms.int32(9),
+    towerNBitsH = cms.int32(8),
+    egIsoMaxEtaAbsForTowerSum = cms.uint32(4),
+    towerNBitsE = cms.int32(8),
+    towerLsbE = cms.double(0.5),
+    tauIsoPUSType = cms.string('None'),
+    egHcalThreshold = cms.double(1.0),
+    jetCalibrationParams = cms.vdouble(1.27997, 10.0382, 1.45051, 6.49017, 1.52978, 
+        7.53412, 1.61689, 10.1012, 1.29395, 18.7129, 
+        1.22278, 23.6606, 1.25293, 24.4677, 1.22861, 
+        25.2746, 1.21071, 23.4553, 1.16955, 22.6286, 
+        1.1838, 20.9017, 1.18977, 21.1769, 1.21333, 
+        22.1565, 1.23575, 23.0727, 1.27147, 24.363, 
+        1.22103, 24.9567, 1.22637, 24.2517, 1.30175, 
+        18.7771, 1.61674, 10.2858, 1.53865, 7.30213, 
+        1.42139, 6.72587, 1.26112, 10.0601),
+    etSumEtaMin = cms.vint32(4, 4),
+    towerEncoding = cms.bool(False),
+    egMaxHOverE = cms.double(0.15),
+    egMaxHOverELUTFile = cms.FileInPath('L1Trigger/L1TCalorimeter/data/egMaxHOverELUT.txt'),
+    egIsoPUEstTowerGranularity = cms.uint32(1),
+    etSumEtaMax = cms.vint32(17, 17),
+    switchOffTauIso = cms.double(60.0),
+    egRelativeJetIsolationEndcapCut = cms.double(0.5),
+    jetNeighbourThreshold = cms.double(0.0),
+    tauLsb = cms.double(0.5),
+    egNeighbourThreshold = cms.double(1.0),
+    jetCalibrationType = cms.string('Stage1JEC'),
+    tauIsoLUTFile = cms.FileInPath('L1Trigger/L1TCalorimeter/data/tauIsoLUT.txt'),
+    regionLsb = cms.double(0.5),
+    tauCalibrationLUTFileEta = cms.FileInPath('L1Trigger/L1TCalorimeter/data/tauCalibrationLUTEta.txt'),
+    egSeedThreshold = cms.double(1.0),
+    etSumEtThreshold = cms.vdouble(0.0, 7.0),
+    egIsoPUSType = cms.string('None'),
+    tauCalibrationLUTFileBarrelA = cms.FileInPath('L1Trigger/L1TCalorimeter/data/tauCalibrationLUTBarrelA.txt'),
+    tauCalibrationLUTFileBarrelC = cms.FileInPath('L1Trigger/L1TCalorimeter/data/tauCalibrationLUTBarrelC.txt'),
+    tauCalibrationLUTFileBarrelB = cms.FileInPath('L1Trigger/L1TCalorimeter/data/tauCalibrationLUTBarrelB.txt'),
+    egCalibrationLUTFile = cms.FileInPath('L1Trigger/L1TCalorimeter/data/egCalibrationLUT.txt'),
+    jetPUSParams = cms.vdouble(),
+    tauCalibrationLUTFileEndcapsC = cms.FileInPath('L1Trigger/L1TCalorimeter/data/tauCalibrationLUTEndcapsC.txt'),
+    towerNBitsRatio = cms.int32(3),
+    egEtToRemoveHECut = cms.double(128.0),
+    towerLsbSum = cms.double(0.5),
+    tauCalibrationLUTFileEndcapsB = cms.FileInPath('L1Trigger/L1TCalorimeter/data/tauCalibrationLUTEndcapsB.txt'),
+    regionPUSType = cms.string('PUM0'),
+    tauCalibrationLUTFileEndcapsA = cms.FileInPath('L1Trigger/L1TCalorimeter/data/tauCalibrationLUTEndcapsA.txt')
 )
 
 
@@ -10021,7 +21903,7 @@ process.hltESPFastSteppingHelixPropagatorAny = cms.ESProducer("SteppingHelixProp
     NoErrorPropagation = cms.bool(False),
     SetVBFPointer = cms.bool(False),
     AssumeNoMaterial = cms.bool(False),
-    returnTangentPlane = cms.bool(True),
+    endcapShiftInZPos = cms.double(0.0),
     useInTeslaFromMagField = cms.bool(False),
     VBFName = cms.string('VolumeBasedMagneticField'),
     useEndcapShiftsInZ = cms.bool(False),
@@ -10030,7 +21912,7 @@ process.hltESPFastSteppingHelixPropagatorAny = cms.ESProducer("SteppingHelixProp
     debug = cms.bool(False),
     ApplyRadX0Correction = cms.bool(True),
     useMagVolumes = cms.bool(True),
-    endcapShiftInZPos = cms.double(0.0)
+    returnTangentPlane = cms.bool(True)
 )
 
 
@@ -10043,7 +21925,7 @@ process.hltESPFastSteppingHelixPropagatorOpposite = cms.ESProducer("SteppingHeli
     NoErrorPropagation = cms.bool(False),
     SetVBFPointer = cms.bool(False),
     AssumeNoMaterial = cms.bool(False),
-    returnTangentPlane = cms.bool(True),
+    endcapShiftInZPos = cms.double(0.0),
     useInTeslaFromMagField = cms.bool(False),
     VBFName = cms.string('VolumeBasedMagneticField'),
     useEndcapShiftsInZ = cms.bool(False),
@@ -10052,7 +21934,7 @@ process.hltESPFastSteppingHelixPropagatorOpposite = cms.ESProducer("SteppingHeli
     debug = cms.bool(False),
     ApplyRadX0Correction = cms.bool(True),
     useMagVolumes = cms.bool(True),
-    endcapShiftInZPos = cms.double(0.0)
+    returnTangentPlane = cms.bool(True)
 )
 
 
@@ -10337,10 +22219,9 @@ process.hltESPPixelCPEGeneric = cms.ESProducer("PixelCPEGenericESProducer",
     LoadTemplatesFromDB = cms.bool(True),
     EdgeClusterErrorY = cms.double(85.0),
     eff_charge_cut_highX = cms.double(1.0),
-    ComponentName = cms.string('hltESPPixelCPEGeneric'),
+    TruncatePixelCharge = cms.bool(True),
     size_cutY = cms.double(3.0),
     size_cutX = cms.double(3.0),
-    TruncatePixelCharge = cms.bool(True),
     useLAWidthFromDB = cms.bool(False),
     IrradiationBiasCorrection = cms.bool(False),
     inflate_errors = cms.bool(False),
@@ -10348,6 +22229,7 @@ process.hltESPPixelCPEGeneric = cms.ESProducer("PixelCPEGenericESProducer",
     eff_charge_cut_highY = cms.double(1.0),
     ClusterProbComputationFlag = cms.int32(0),
     UseErrorsFromTemplates = cms.bool(True),
+    ComponentName = cms.string('hltESPPixelCPEGeneric'),
     eff_charge_cut_lowY = cms.double(0.0),
     PixelErrorParametrization = cms.string('NOTcmsim'),
     eff_charge_cut_lowX = cms.double(0.0),
@@ -10474,7 +22356,7 @@ process.hltESPSteppingHelixPropagatorAlong = cms.ESProducer("SteppingHelixPropag
     NoErrorPropagation = cms.bool(False),
     SetVBFPointer = cms.bool(False),
     AssumeNoMaterial = cms.bool(False),
-    returnTangentPlane = cms.bool(True),
+    endcapShiftInZPos = cms.double(0.0),
     useInTeslaFromMagField = cms.bool(False),
     VBFName = cms.string('VolumeBasedMagneticField'),
     useEndcapShiftsInZ = cms.bool(False),
@@ -10483,7 +22365,7 @@ process.hltESPSteppingHelixPropagatorAlong = cms.ESProducer("SteppingHelixPropag
     debug = cms.bool(False),
     ApplyRadX0Correction = cms.bool(True),
     useMagVolumes = cms.bool(True),
-    endcapShiftInZPos = cms.double(0.0)
+    returnTangentPlane = cms.bool(True)
 )
 
 
@@ -10496,7 +22378,7 @@ process.hltESPSteppingHelixPropagatorOpposite = cms.ESProducer("SteppingHelixPro
     NoErrorPropagation = cms.bool(False),
     SetVBFPointer = cms.bool(False),
     AssumeNoMaterial = cms.bool(False),
-    returnTangentPlane = cms.bool(True),
+    endcapShiftInZPos = cms.double(0.0),
     useInTeslaFromMagField = cms.bool(False),
     VBFName = cms.string('VolumeBasedMagneticField'),
     useEndcapShiftsInZ = cms.bool(False),
@@ -10505,7 +22387,7 @@ process.hltESPSteppingHelixPropagatorOpposite = cms.ESProducer("SteppingHelixPro
     debug = cms.bool(False),
     ApplyRadX0Correction = cms.bool(True),
     useMagVolumes = cms.bool(True),
-    endcapShiftInZPos = cms.double(0.0)
+    returnTangentPlane = cms.bool(True)
 )
 
 
@@ -10659,6 +22541,605 @@ process.hoDetIdAssociator = cms.ESProducer("DetIdAssociatorESProducer",
 )
 
 
+process.l1CaloScales = cms.ESProducer("L1ScalesTrivialProducer",
+    L1CaloEmEtScaleLSB = cms.double(0.5),
+    L1HtMissThresholds = cms.vdouble(0.0, 2.0, 4.0, 6.0, 8.0, 
+        10.0, 12.0, 14.0, 16.0, 18.0, 
+        20.0, 22.0, 24.0, 26.0, 28.0, 
+        30.0, 32.0, 34.0, 36.0, 38.0, 
+        40.0, 42.0, 44.0, 46.0, 48.0, 
+        50.0, 52.0, 54.0, 56.0, 58.0, 
+        60.0, 62.0, 64.0, 66.0, 68.0, 
+        70.0, 72.0, 74.0, 76.0, 78.0, 
+        80.0, 82.0, 84.0, 86.0, 88.0, 
+        90.0, 92.0, 94.0, 96.0, 98.0, 
+        100.0, 102.0, 104.0, 106.0, 108.0, 
+        110.0, 112.0, 114.0, 116.0, 118.0, 
+        120.0, 122.0, 124.0, 126.0, 128.0, 
+        130.0, 132.0, 134.0, 136.0, 138.0, 
+        140.0, 142.0, 144.0, 146.0, 148.0, 
+        150.0, 152.0, 154.0, 156.0, 158.0, 
+        160.0, 162.0, 164.0, 166.0, 168.0, 
+        170.0, 172.0, 174.0, 176.0, 178.0, 
+        180.0, 182.0, 184.0, 186.0, 188.0, 
+        190.0, 192.0, 194.0, 196.0, 198.0, 
+        200.0, 202.0, 204.0, 206.0, 208.0, 
+        210.0, 212.0, 214.0, 216.0, 218.0, 
+        220.0, 222.0, 224.0, 226.0, 228.0, 
+        230.0, 232.0, 234.0, 236.0, 238.0, 
+        240.0, 242.0, 244.0, 246.0, 248.0, 
+        250.0, 252.0, 254.0),
+    L1CaloEmThresholds = cms.vdouble(0.0, 1.0, 2.0, 3.0, 4.0, 
+        5.0, 6.0, 7.0, 8.0, 9.0, 
+        10.0, 11.0, 12.0, 13.0, 14.0, 
+        15.0, 16.0, 17.0, 18.0, 19.0, 
+        20.0, 21.0, 22.0, 23.0, 24.0, 
+        25.0, 26.0, 27.0, 28.0, 29.0, 
+        30.0, 31.0, 32.0, 33.0, 34.0, 
+        35.0, 36.0, 37.0, 38.0, 39.0, 
+        40.0, 41.0, 42.0, 43.0, 44.0, 
+        45.0, 46.0, 47.0, 48.0, 49.0, 
+        50.0, 51.0, 52.0, 53.0, 54.0, 
+        55.0, 56.0, 57.0, 58.0, 59.0, 
+        60.0, 61.0, 62.0, 63.0),
+    L1HfRingThresholds = cms.vdouble(0.0, 2.0, 3.0, 4.0, 6.0, 
+        50.0, 200.0, 500.0),
+    L1CaloRegionEtScaleLSB = cms.double(0.5),
+    L1CaloJetThresholds = cms.vdouble(0.0, 4.0, 8.0, 12.0, 16.0, 
+        20.0, 24.0, 28.0, 32.0, 36.0, 
+        40.0, 44.0, 48.0, 52.0, 56.0, 
+        60.0, 64.0, 68.0, 72.0, 76.0, 
+        80.0, 84.0, 88.0, 92.0, 96.0, 
+        100.0, 104.0, 108.0, 112.0, 116.0, 
+        120.0, 124.0, 128.0, 132.0, 136.0, 
+        140.0, 144.0, 148.0, 152.0, 156.0, 
+        160.0, 164.0, 168.0, 172.0, 176.0, 
+        180.0, 184.0, 188.0, 192.0, 196.0, 
+        200.0, 204.0, 208.0, 212.0, 216.0, 
+        220.0, 224.0, 228.0, 232.0, 236.0, 
+        240.0, 244.0, 248.0, 252.0)
+)
+
+
+process.l1GtPrescaleFactorsAlgoTrig = cms.ESProducer("L1GtPrescaleFactorsAlgoTrigTrivialProducer",
+    PrescaleFactorsSet = cms.VPSet(cms.PSet(
+        PrescaleFactors = cms.vint32(1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 
+            1, 1, 1)
+    ), 
+        cms.PSet(
+            PrescaleFactors = cms.vint32(1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1)
+        ), 
+        cms.PSet(
+            PrescaleFactors = cms.vint32(1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1)
+        ), 
+        cms.PSet(
+            PrescaleFactors = cms.vint32(1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1)
+        ), 
+        cms.PSet(
+            PrescaleFactors = cms.vint32(1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1)
+        ), 
+        cms.PSet(
+            PrescaleFactors = cms.vint32(1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1)
+        ), 
+        cms.PSet(
+            PrescaleFactors = cms.vint32(1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1)
+        ), 
+        cms.PSet(
+            PrescaleFactors = cms.vint32(1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1)
+        ), 
+        cms.PSet(
+            PrescaleFactors = cms.vint32(1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1)
+        ), 
+        cms.PSet(
+            PrescaleFactors = cms.vint32(1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1)
+        ))
+)
+
+
+process.l1GtPrescaleFactorsTechTrig = cms.ESProducer("L1GtPrescaleFactorsTechTrigTrivialProducer",
+    PrescaleFactorsSet = cms.VPSet(cms.PSet(
+        PrescaleFactors = cms.vint32(1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 
+            1, 1, 1, 1, 1, 
+            1, 1, 1, 1)
+    ), 
+        cms.PSet(
+            PrescaleFactors = cms.vint32(1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1)
+        ), 
+        cms.PSet(
+            PrescaleFactors = cms.vint32(1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1)
+        ), 
+        cms.PSet(
+            PrescaleFactors = cms.vint32(1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1)
+        ), 
+        cms.PSet(
+            PrescaleFactors = cms.vint32(1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1)
+        ), 
+        cms.PSet(
+            PrescaleFactors = cms.vint32(1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1)
+        ), 
+        cms.PSet(
+            PrescaleFactors = cms.vint32(1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1)
+        ), 
+        cms.PSet(
+            PrescaleFactors = cms.vint32(1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1)
+        ), 
+        cms.PSet(
+            PrescaleFactors = cms.vint32(1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1)
+        ), 
+        cms.PSet(
+            PrescaleFactors = cms.vint32(1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1, 1, 
+                1, 1, 1, 1)
+        ))
+)
+
+
+process.l1GtTriggerMaskAlgoTrig = cms.ESProducer("L1GtTriggerMaskAlgoTrigTrivialProducer",
+    TriggerMask = cms.vuint32(0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0)
+)
+
+
+process.l1GtTriggerMaskTechTrig = cms.ESProducer("L1GtTriggerMaskTechTrigTrivialProducer",
+    TriggerMask = cms.vuint32(0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0)
+)
+
+
+process.l1GtTriggerMaskVetoAlgoTrig = cms.ESProducer("L1GtTriggerMaskVetoAlgoTrigTrivialProducer",
+    TriggerMask = cms.vuint32(0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0)
+)
+
+
+process.l1GtTriggerMaskVetoTechTrig = cms.ESProducer("L1GtTriggerMaskVetoTechTrigTrivialProducer",
+    TriggerMask = cms.vuint32(0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0)
+)
+
+
+process.l1GtTriggerMenuXml = cms.ESProducer("L1GtTriggerMenuXmlProducer",
+    VmeXmlFile = cms.string(''),
+    DefXmlFile = cms.string('L1Menu_Collisions2015_25ns_v1_L1T_Scales_20101224_Imp0_0x102f.xml'),
+    TriggerMenuLuminosity = cms.string('startup')
+)
+
+
 process.muonDetIdAssociator = cms.ESProducer("DetIdAssociatorESProducer",
     ComponentName = cms.string('MuonDetIdAssociator'),
     includeBadChambers = cms.bool(False),
@@ -10680,6 +23161,12 @@ process.preshowerDetIdAssociator = cms.ESProducer("DetIdAssociatorESProducer",
     etaBinSize = cms.double(0.1),
     nEta = cms.int32(60),
     nPhi = cms.int32(30)
+)
+
+
+process.rpcconf = cms.ESProducer("RPCTriggerConfig",
+    filedir = cms.untracked.string('L1Trigger/L1TCommon/data/rpc_patterns/xml/'),
+    PACsPerTower = cms.untracked.int32(12)
 )
 
 
@@ -10816,8 +23303,22 @@ process.CSCINdexerESSource = cms.ESSource("EmptyESSource",
 )
 
 
+process.CaloTPGTranscoder = cms.ESSource("CaloTPGTranscoderULUTs",
+    read_Ascii_Compression_LUTs = cms.bool(False),
+    LUTfactor = cms.vint32(1, 2, 5, 0),
+    ietaLowerBound = cms.vint32(1, 18, 27, 29),
+    hcalLUT1 = cms.FileInPath('CalibCalorimetry/CaloTPG/data/outputLUTtranscoder_physics.dat'),
+    hcalLUT2 = cms.FileInPath('CalibCalorimetry/CaloTPG/data/TPGcalcDecompress2.txt'),
+    read_Ascii_RCT_LUTs = cms.bool(False),
+    ietaUpperBound = cms.vint32(17, 26, 28, 32),
+    RCTLSB = cms.double(0.25),
+    nominal_gain = cms.double(0.177),
+    ZS = cms.vint32(4, 2, 1, 0)
+)
+
+
 process.GlobalTag = cms.ESSource("PoolDBESSource",
-    globaltag = cms.string(myGT),
+    globaltag = cms.string('PRE_LS172_V11'),
     RefreshEachRun = cms.untracked.bool(False),
     pfnPrefix = cms.untracked.string('frontier://FrontierProd/'),
     ReconnectEachRun = cms.untracked.bool(False),
@@ -10844,6 +23345,66 @@ process.GlobalTag = cms.ESSource("PoolDBESSource",
             tag = cms.string('JetCorrectorParametersCollection_HLT_BX25_V1_AK8PFHLT'),
             connect = cms.untracked.string('frontier://FrontierPrep/CMS_COND_PHYSICSTOOLS'),
             label = cms.untracked.string('AK8PFHLT')
+        ), 
+        cms.PSet(
+            record = cms.string('L1GctJetFinderParamsRcd'),
+            tag = cms.string('L1GctJetFinderParams_GCTPhysics_2012_04_27_JetSeedThresh5GeV_mc'),
+            connect = cms.untracked.string('frontier://FrontierProd/CMS_COND_31X_L1T')
+        ), 
+        cms.PSet(
+            record = cms.string('L1GtTriggerMenuRcd'),
+            tag = cms.string('L1GtTriggerMenu_L1Menu_Collisions2012_v3_mc'),
+            connect = cms.untracked.string('frontier://FrontierProd/CMS_COND_31X_L1T')
+        ), 
+        cms.PSet(
+            record = cms.string('L1HfRingEtScaleRcd'),
+            tag = cms.string('L1HfRingEtScale_GCTPhysics_2012_04_27_JetSeedThresh5GeV_mc'),
+            connect = cms.untracked.string('frontier://FrontierProd/CMS_COND_31X_L1T')
+        ), 
+        cms.PSet(
+            record = cms.string('L1HtMissScaleRcd'),
+            tag = cms.string('L1HtMissScale_GCTPhysics_2012_04_27_JetSeedThresh5GeV_mc'),
+            connect = cms.untracked.string('frontier://FrontierProd/CMS_COND_31X_L1T')
+        ), 
+        cms.PSet(
+            record = cms.string('L1JetEtScaleRcd'),
+            tag = cms.string('L1JetEtScale_GCTPhysics_2012_04_27_JetSeedThresh5GeV_mc'),
+            connect = cms.untracked.string('frontier://FrontierProd/CMS_COND_31X_L1T')
+        ), 
+        cms.PSet(
+            record = cms.string('L1MuCSCPtLutRcd'),
+            tag = cms.string('L1MuCSCPtLut_key-11_mc'),
+            connect = cms.untracked.string('frontier://FrontierProd/CMS_COND_31X_L1T')
+        ), 
+        cms.PSet(
+            record = cms.string('L1MuDTTFParametersRcd'),
+            tag = cms.string('L1MuDTTFParameters_dttf12_TSC_03_csc_col_mc'),
+            connect = cms.untracked.string('frontier://FrontierProd/CMS_COND_31X_L1T')
+        ), 
+        cms.PSet(
+            record = cms.string('L1MuDTEtaPatternLutRcd'),
+            tag = cms.string('L1MuDTEtaPatternLut_CRAFT09_hlt'),
+            connect = cms.untracked.string('sqlite:dttf_config.db')
+        ), 
+        cms.PSet(
+            record = cms.string('L1MuDTExtLutRcd'),
+            tag = cms.string('L1MuDTExtLut_CRAFT09_hlt'),
+            connect = cms.untracked.string('sqlite:dttf_config.db')
+        ), 
+        cms.PSet(
+            record = cms.string('L1MuDTPhiLutRcd'),
+            tag = cms.string('L1MuDTPhiLut_CRAFT09_hlt'),
+            connect = cms.untracked.string('sqlite:dttf_config.db')
+        ), 
+        cms.PSet(
+            record = cms.string('L1MuDTPtaLutRcd'),
+            tag = cms.string('L1MuDTPtaLut_CRAFT09_hlt'),
+            connect = cms.untracked.string('sqlite:dttf_config.db')
+        ), 
+        cms.PSet(
+            record = cms.string('L1MuDTQualPatternLutRcd'),
+            tag = cms.string('L1MuDTQualPatternLut_CRAFT09_hlt'),
+            connect = cms.untracked.string('sqlite:dttf_config.db')
         )),
     DBParameters = cms.PSet(
         authenticationPath = cms.untracked.string('.'),
@@ -10857,7 +23418,7 @@ process.GlobalTag = cms.ESSource("PoolDBESSource",
         connectionRetrialTimeOut = cms.untracked.int32(60)
     ),
     RefreshAlways = cms.untracked.bool(False),
-    connect = cms.string('frontier://FrontierProd/CMS_COND_31X_GLOBALTAG'),
+    connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
     RefreshOpenIOVs = cms.untracked.bool(False),
     BlobStreamerName = cms.untracked.string('TBufferBlobStreamingService')
 )
@@ -10868,6 +23429,69 @@ process.HepPDTESSource = cms.ESSource("HepPDTESSource",
 )
 
 
+process.L1GtPrescaleFactorsAlgoTrigRcdSource = cms.ESSource("EmptyESSource",
+    iovIsRunNotTime = cms.bool(True),
+    recordName = cms.string('L1GtPrescaleFactorsAlgoTrigRcd'),
+    firstValid = cms.vuint32(1)
+)
+
+
+process.L1GtPrescaleFactorsTechTrigRcdSource = cms.ESSource("EmptyESSource",
+    iovIsRunNotTime = cms.bool(True),
+    recordName = cms.string('L1GtPrescaleFactorsTechTrigRcd'),
+    firstValid = cms.vuint32(1)
+)
+
+
+process.L1GtTriggerMaskAlgoTrigRcdSource = cms.ESSource("EmptyESSource",
+    iovIsRunNotTime = cms.bool(True),
+    recordName = cms.string('L1GtTriggerMaskAlgoTrigRcd'),
+    firstValid = cms.vuint32(1)
+)
+
+
+process.L1GtTriggerMaskTechTrigRcdSource = cms.ESSource("EmptyESSource",
+    iovIsRunNotTime = cms.bool(True),
+    recordName = cms.string('L1GtTriggerMaskTechTrigRcd'),
+    firstValid = cms.vuint32(1)
+)
+
+
+process.L1GtTriggerMaskVetoAlgoTrigRcdSource = cms.ESSource("EmptyESSource",
+    iovIsRunNotTime = cms.bool(True),
+    recordName = cms.string('L1GtTriggerMaskVetoAlgoTrigRcd'),
+    firstValid = cms.vuint32(1)
+)
+
+
+process.L1GtTriggerMaskVetoTechTrigRcdSource = cms.ESSource("EmptyESSource",
+    iovIsRunNotTime = cms.bool(True),
+    recordName = cms.string('L1GtTriggerMaskVetoTechTrigRcd'),
+    firstValid = cms.vuint32(1)
+)
+
+
+process.L1GtTriggerMenuRcdSource = cms.ESSource("EmptyESSource",
+    iovIsRunNotTime = cms.bool(True),
+    recordName = cms.string('L1GtTriggerMenuRcd'),
+    firstValid = cms.vuint32(1)
+)
+
+
+process.RPCConeDefSrc = cms.ESSource("EmptyESSource",
+    iovIsRunNotTime = cms.bool(True),
+    recordName = cms.string('L1RPCConeDefinitionRcd'),
+    firstValid = cms.vuint32(1)
+)
+
+
+process.caloParamsSource = cms.ESSource("EmptyESSource",
+    iovIsRunNotTime = cms.bool(True),
+    recordName = cms.string('L1TCaloParamsRcd'),
+    firstValid = cms.vuint32(1)
+)
+
+
 process.eegeom = cms.ESSource("EmptyESSource",
     recordName = cms.string('EcalMappingRcd'),
     iovIsRunNotTime = cms.bool(True),
@@ -10875,9 +23499,23 @@ process.eegeom = cms.ESSource("EmptyESSource",
 )
 
 
+process.emrcdsrc = cms.ESSource("EmptyESSource",
+    iovIsRunNotTime = cms.bool(True),
+    recordName = cms.string('L1EmEtScaleRcd'),
+    firstValid = cms.vuint32(1)
+)
+
+
 process.es_hardcode = cms.ESSource("HcalHardcodeCalibrations",
     fromDDD = cms.untracked.bool(False),
     toGet = cms.untracked.vstring('GainWidths')
+)
+
+
+process.hfrrcdsrc = cms.ESSource("EmptyESSource",
+    iovIsRunNotTime = cms.bool(True),
+    recordName = cms.string('L1HfRingEtScaleRcd'),
+    firstValid = cms.vuint32(1)
 )
 
 
@@ -10902,6 +23540,48 @@ process.hltESSHcalSeverityLevel = cms.ESSource("EmptyESSource",
 )
 
 
+process.htmrcdsrc = cms.ESSource("EmptyESSource",
+    iovIsRunNotTime = cms.bool(True),
+    recordName = cms.string('L1HtMissScaleRcd'),
+    firstValid = cms.vuint32(1)
+)
+
+
+process.jetrcdsrc = cms.ESSource("EmptyESSource",
+    iovIsRunNotTime = cms.bool(True),
+    recordName = cms.string('L1JetEtScaleRcd'),
+    firstValid = cms.vuint32(1)
+)
+
+
+process.l1CaloEcalScaleRecord = cms.ESSource("EmptyESSource",
+    iovIsRunNotTime = cms.bool(True),
+    recordName = cms.string('L1CaloEcalScaleRcd'),
+    firstValid = cms.vuint32(1)
+)
+
+
+process.l1CaloHcalScaleRecord = cms.ESSource("EmptyESSource",
+    iovIsRunNotTime = cms.bool(True),
+    recordName = cms.string('L1CaloHcalScaleRcd'),
+    firstValid = cms.vuint32(1)
+)
+
+
+process.l1RctMaskRcds = cms.ESSource("EmptyESSource",
+    iovIsRunNotTime = cms.bool(True),
+    recordName = cms.string('L1RCTChannelMaskRcd'),
+    firstValid = cms.vuint32(1)
+)
+
+
+process.l1RctParamsRecords = cms.ESSource("EmptyESSource",
+    iovIsRunNotTime = cms.bool(True),
+    recordName = cms.string('L1RCTParametersRcd'),
+    firstValid = cms.vuint32(1)
+)
+
+
 process.magfield = cms.ESSource("XMLIdealGeometryESSource",
     geomXMLFiles = cms.vstring('Geometry/CMSCommonData/data/normal/cmsextent.xml', 
         'Geometry/CMSCommonData/data/cms.xml', 
@@ -10911,6 +23591,38 @@ process.magfield = cms.ESSource("XMLIdealGeometryESSource",
     rootNodeName = cms.string('cmsMagneticField:MAGF')
 )
 
+
+process.rpcconesrc = cms.ESSource("EmptyESSource",
+    iovIsRunNotTime = cms.bool(True),
+    recordName = cms.string('L1RPCConeBuilderRcd'),
+    firstValid = cms.vuint32(1)
+)
+
+
+process.rpcconfsrc = cms.ESSource("EmptyESSource",
+    iovIsRunNotTime = cms.bool(True),
+    recordName = cms.string('L1RPCConfigRcd'),
+    firstValid = cms.vuint32(1)
+)
+
+
+process.prefer("l1GtTriggerMaskTechTrig")
+
+process.prefer("l1GtPrescaleFactorsTechTrig")
+
+process.prefer("l1GtTriggerMaskVetoTechTrig")
+
+process.prefer("l1GtTriggerMaskVetoAlgoTrig")
+
+process.prefer("rpcconf")
+
+process.prefer("l1GtTriggerMenuXml")
+
+process.prefer("l1GtPrescaleFactorsAlgoTrig")
+
+process.prefer("l1GtTriggerMaskAlgoTrig")
+
+process.prefer("L1MuGMTParameters")
 
 process.ALCARECOEventContent = cms.PSet(
     splitLevel = cms.untracked.int32(0),
@@ -11257,10 +23969,10 @@ process.AODEventContent = cms.PSet(
         'drop doubles_*Jets_rhos_*', 
         'drop doubles_*Jets_sigmas_*', 
         'keep *_ca8PFJetsCHSPrunedLinks_*_*', 
-        'keep recoCaloMETs_met_*_*', 
-        'keep recoCaloMETs_metNoHF_*_*', 
-        'keep recoCaloMETs_metHO_*_*', 
-        'keep recoCaloMETs_corMetGlobalMuons_*_*', 
+        'keep recoCaloMETs_caloMet_*_*', 
+        'keep recoCaloMETs_caloMetBE_*_*', 
+        'keep recoCaloMETs_caloMetBEFO_*_*', 
+        'keep recoCaloMETs_caloMetM_*_*', 
         'keep recoPFMETs_pfMet_*_*', 
         'keep recoPFMETs_pfChMet_*_*', 
         'keep recoMuonMETCorrectionDataedmValueMap_muonMETValueMapProducer_*_*', 
@@ -11291,6 +24003,9 @@ process.AODEventContent = cms.PSet(
         'keep recoTracks_refittedStandAloneMuons_*_*', 
         'keep recoTrackExtras_refittedStandAloneMuons_*_*', 
         'keep TrackingRecHitsOwned_refittedStandAloneMuons_*_*', 
+        'keep recoTracks_displacedStandAloneMuons__*', 
+        'keep recoTrackExtras_displacedStandAloneMuons_*_*', 
+        'keep TrackingRecHitsOwned_displacedStandAloneMuons_*_*', 
         'keep *_trackCountingHighEffBJetTags_*_*', 
         'keep *_trackCountingHighPurBJetTags_*_*', 
         'keep *_jetProbabilityBJetTags_*_*', 
@@ -11300,12 +24015,14 @@ process.AODEventContent = cms.PSet(
         'keep *_simpleSecondaryVertexHighPurBJetTags_*_*', 
         'keep *_combinedSecondaryVertexBJetTags_*_*', 
         'keep *_combinedSecondaryVertexMVABJetTags_*_*', 
+        'keep *_combinedInclusiveSecondaryVertexV2BJetTags_*_*', 
         'keep *_ghostTrackBJetTags_*_*', 
         'keep *_softPFElectronBJetTags_*_*', 
         'keep *_softPFMuonBJetTags_*_*', 
         'keep *_softMuonBJetTags_*_*', 
         'keep *_softMuonByIP3dBJetTags_*_*', 
         'keep *_softMuonByPtBJetTags_*_*', 
+        'keep *_pfCombinedSecondaryVertexBJetTags_*_*', 
         'keep *_ak4PFJetsRecoTauPiZeros_*_*', 
         'keep *_hpsPFTauProducer_*_*', 
         'keep *_hpsPFTauDiscrimination*_*_*', 
@@ -11326,6 +24043,8 @@ process.AODEventContent = cms.PSet(
         'keep floatedmValueMap_eidRobustHighEnergy_*_*', 
         'keep floatedmValueMap_eidLoose_*_*', 
         'keep floatedmValueMap_eidTight_*_*', 
+        'keep *_egmGedGsfElectronPFIsolation_*_*', 
+        'keep *_egmGsfElectronIDs_*_*', 
         'keep recoPhotonCores_gedPhotonCore_*_*', 
         'keep recoPhotons_gedPhotons_*_*', 
         'keep *_particleBasedIsolation_*_*', 
@@ -11477,10 +24196,10 @@ process.AODSIMEventContent = cms.PSet(
         'drop doubles_*Jets_rhos_*', 
         'drop doubles_*Jets_sigmas_*', 
         'keep *_ca8PFJetsCHSPrunedLinks_*_*', 
-        'keep recoCaloMETs_met_*_*', 
-        'keep recoCaloMETs_metNoHF_*_*', 
-        'keep recoCaloMETs_metHO_*_*', 
-        'keep recoCaloMETs_corMetGlobalMuons_*_*', 
+        'keep recoCaloMETs_caloMet_*_*', 
+        'keep recoCaloMETs_caloMetBE_*_*', 
+        'keep recoCaloMETs_caloMetBEFO_*_*', 
+        'keep recoCaloMETs_caloMetM_*_*', 
         'keep recoPFMETs_pfMet_*_*', 
         'keep recoPFMETs_pfChMet_*_*', 
         'keep recoMuonMETCorrectionDataedmValueMap_muonMETValueMapProducer_*_*', 
@@ -11511,6 +24230,9 @@ process.AODSIMEventContent = cms.PSet(
         'keep recoTracks_refittedStandAloneMuons_*_*', 
         'keep recoTrackExtras_refittedStandAloneMuons_*_*', 
         'keep TrackingRecHitsOwned_refittedStandAloneMuons_*_*', 
+        'keep recoTracks_displacedStandAloneMuons__*', 
+        'keep recoTrackExtras_displacedStandAloneMuons_*_*', 
+        'keep TrackingRecHitsOwned_displacedStandAloneMuons_*_*', 
         'keep *_trackCountingHighEffBJetTags_*_*', 
         'keep *_trackCountingHighPurBJetTags_*_*', 
         'keep *_jetProbabilityBJetTags_*_*', 
@@ -11520,12 +24242,14 @@ process.AODSIMEventContent = cms.PSet(
         'keep *_simpleSecondaryVertexHighPurBJetTags_*_*', 
         'keep *_combinedSecondaryVertexBJetTags_*_*', 
         'keep *_combinedSecondaryVertexMVABJetTags_*_*', 
+        'keep *_combinedInclusiveSecondaryVertexV2BJetTags_*_*', 
         'keep *_ghostTrackBJetTags_*_*', 
         'keep *_softPFElectronBJetTags_*_*', 
         'keep *_softPFMuonBJetTags_*_*', 
         'keep *_softMuonBJetTags_*_*', 
         'keep *_softMuonByIP3dBJetTags_*_*', 
         'keep *_softMuonByPtBJetTags_*_*', 
+        'keep *_pfCombinedSecondaryVertexBJetTags_*_*', 
         'keep *_ak4PFJetsRecoTauPiZeros_*_*', 
         'keep *_hpsPFTauProducer_*_*', 
         'keep *_hpsPFTauDiscrimination*_*_*', 
@@ -11546,6 +24270,8 @@ process.AODSIMEventContent = cms.PSet(
         'keep floatedmValueMap_eidRobustHighEnergy_*_*', 
         'keep floatedmValueMap_eidLoose_*_*', 
         'keep floatedmValueMap_eidTight_*_*', 
+        'keep *_egmGedGsfElectronPFIsolation_*_*', 
+        'keep *_egmGsfElectronIDs_*_*', 
         'keep recoPhotonCores_gedPhotonCore_*_*', 
         'keep recoPhotons_gedPhotons_*_*', 
         'keep *_particleBasedIsolation_*_*', 
@@ -11633,6 +24359,7 @@ process.AODSIMEventContent = cms.PSet(
         'keep LHERunInfoProduct_*_*_*', 
         'keep LHEEventProduct_*_*_*', 
         'keep GenRunInfoProduct_generator_*_*', 
+        'keep GenLumiInfoProduct_generator_*_*', 
         'keep GenEventInfoProduct_generator_*_*', 
         'keep GenFilterInfo_*_*_*', 
         'keep *_genParticles_*_*', 
@@ -11660,15 +24387,100 @@ process.BeamSpotRECO = cms.PSet(
     outputCommands = cms.untracked.vstring('keep *_offlineBeamSpot_*_*')
 )
 
+process.BtiParametersBlock = cms.PSet(
+    BtiParameters = cms.PSet(
+        WEN8 = cms.int32(1),
+        ACH = cms.int32(1),
+        DEAD = cms.int32(31),
+        ACL = cms.int32(2),
+        PTMS20 = cms.int32(1),
+        XON = cms.bool(False),
+        PTMS22 = cms.int32(1),
+        PTMS23 = cms.int32(1),
+        PTMS24 = cms.int32(1),
+        PTMS25 = cms.int32(1),
+        PTMS26 = cms.int32(1),
+        PTMS27 = cms.int32(1),
+        PTMS28 = cms.int32(1),
+        PTMS29 = cms.int32(1),
+        SET = cms.int32(7),
+        RON = cms.bool(True),
+        WEN2 = cms.int32(1),
+        LL = cms.int32(2),
+        LH = cms.int32(21),
+        WEN3 = cms.int32(1),
+        RE43 = cms.int32(2),
+        WEN0 = cms.int32(1),
+        RL = cms.int32(42),
+        WEN1 = cms.int32(1),
+        RH = cms.int32(61),
+        LTS = cms.int32(3),
+        CH = cms.int32(41),
+        CL = cms.int32(22),
+        PTMS15 = cms.int32(1),
+        PTMS14 = cms.int32(1),
+        PTMS17 = cms.int32(1),
+        PTMS16 = cms.int32(1),
+        PTMS11 = cms.int32(1),
+        PTMS10 = cms.int32(1),
+        PTMS13 = cms.int32(1),
+        PTMS12 = cms.int32(1),
+        Debug = cms.untracked.int32(0),
+        WEN7 = cms.int32(1),
+        WEN4 = cms.int32(1),
+        WEN5 = cms.int32(1),
+        PTMS19 = cms.int32(1),
+        PTMS18 = cms.int32(1),
+        PTMS31 = cms.int32(0),
+        PTMS30 = cms.int32(0),
+        PTMS5 = cms.int32(1),
+        PTMS4 = cms.int32(1),
+        PTMS7 = cms.int32(1),
+        PTMS6 = cms.int32(1),
+        PTMS1 = cms.int32(0),
+        PTMS0 = cms.int32(0),
+        PTMS3 = cms.int32(0),
+        WEN6 = cms.int32(1),
+        KACCTHETA = cms.int32(1),
+        PTMS9 = cms.int32(1),
+        PTMS8 = cms.int32(1),
+        ST43 = cms.int32(42),
+        AC2 = cms.int32(3),
+        AC1 = cms.int32(0),
+        KMAX = cms.int32(64),
+        PTMS21 = cms.int32(1),
+        PTMS2 = cms.int32(0)
+    )
+)
+
+process.CSCCommonTrigger = cms.PSet(
+    MaxBX = cms.int32(9),
+    MinBX = cms.int32(3)
+)
+
 process.CommonEventContent = cms.PSet(
     outputCommands = cms.untracked.vstring('keep *_logErrorHarvester_*_*')
+)
+
+process.CondDBSetup = cms.PSet(
+    DBParameters = cms.PSet(
+        authenticationPath = cms.untracked.string(''),
+        enableReadOnlySessionOnUpdateConnection = cms.untracked.bool(False),
+        idleConnectionCleanupPeriod = cms.untracked.int32(10),
+        messageLevel = cms.untracked.int32(0),
+        enablePoolAutomaticCleanUp = cms.untracked.bool(False),
+        enableConnectionSharing = cms.untracked.bool(True),
+        connectionRetrialTimeOut = cms.untracked.int32(60),
+        connectionTimeOut = cms.untracked.int32(60),
+        authenticationSystem = cms.untracked.int32(0),
+        connectionRetrialPeriod = cms.untracked.int32(10)
+    )
 )
 
 process.DATAMIXEREventContent = cms.PSet(
     splitLevel = cms.untracked.int32(0),
     eventAutoFlushCompressedSize = cms.untracked.int32(5242880),
     outputCommands = cms.untracked.vstring('drop *', 
-        'keep CaloTowersSorted_calotoweroptmaker_*_*', 
         'keep CSCDetIdCSCALCTDigiMuonDigiCollection_muonCSCDigis_MuonCSCALCTDigi_*', 
         'keep CSCDetIdCSCCLCTDigiMuonDigiCollection_muonCSCDigis_MuonCSCCLCTDigi_*', 
         'keep CSCDetIdCSCComparatorDigiMuonDigiCollection_muonCSCDigis_MuonCSCComparatorDigi_*', 
@@ -11695,6 +24507,455 @@ process.DQMEventContent = cms.PSet(
     splitLevel = cms.untracked.int32(0),
     outputCommands = cms.untracked.vstring('drop *', 
         'keep *_MEtoEDMConverter_*_*')
+)
+
+process.DTTPGMapBlock = cms.PSet(
+    DTTPGMap = cms.untracked.PSet(
+        wh0st2se11 = cms.untracked.vint32(60, 58, 60, 15),
+        wh0st2se10 = cms.untracked.vint32(60, 58, 60, 15),
+        wh0st2se12 = cms.untracked.vint32(60, 58, 60, 15),
+        whm2st1se4 = cms.untracked.vint32(50, 58, 50, 13),
+        whm1st1se12 = cms.untracked.vint32(50, 58, 50, 13),
+        whm1st1se11 = cms.untracked.vint32(50, 58, 50, 13),
+        whm1st1se10 = cms.untracked.vint32(50, 58, 50, 13),
+        whm2st1se1 = cms.untracked.vint32(50, 58, 50, 13),
+        whm2st1se2 = cms.untracked.vint32(50, 58, 50, 13),
+        whm1st3se4 = cms.untracked.vint32(72, 58, 72, 18),
+        wh1st3se4 = cms.untracked.vint32(72, 48, 72, 18),
+        whm2st1se8 = cms.untracked.vint32(50, 58, 50, 13),
+        whm2st1se9 = cms.untracked.vint32(50, 58, 50, 13),
+        wh1st1se1 = cms.untracked.vint32(50, 58, 50, 13),
+        wh0st2se6 = cms.untracked.vint32(60, 58, 60, 15),
+        whm2st1se12 = cms.untracked.vint32(50, 58, 50, 13),
+        whm2st1se10 = cms.untracked.vint32(50, 58, 50, 13),
+        whm2st1se11 = cms.untracked.vint32(50, 58, 50, 13),
+        whm1st2se12 = cms.untracked.vint32(60, 58, 60, 15),
+        wh0st2se1 = cms.untracked.vint32(60, 58, 60, 15),
+        wh1st1se3 = cms.untracked.vint32(50, 58, 50, 13),
+        wh1st1se2 = cms.untracked.vint32(50, 58, 50, 13),
+        whm1st3se3 = cms.untracked.vint32(72, 48, 72, 18),
+        whm1st1se7 = cms.untracked.vint32(50, 58, 50, 13),
+        wh0st2se2 = cms.untracked.vint32(60, 58, 60, 15),
+        whm1st1se6 = cms.untracked.vint32(50, 58, 50, 13),
+        wh0st4se8 = cms.untracked.vint32(92, 0, 92, 23),
+        whm1st3se11 = cms.untracked.vint32(72, 58, 72, 18),
+        wh0st2se9 = cms.untracked.vint32(60, 58, 60, 15),
+        wh0st2se8 = cms.untracked.vint32(60, 58, 60, 15),
+        whm1st3se10 = cms.untracked.vint32(72, 58, 72, 18),
+        whm1st3se5 = cms.untracked.vint32(72, 58, 72, 18),
+        wh0st2se4 = cms.untracked.vint32(60, 58, 60, 15),
+        wh0st2se7 = cms.untracked.vint32(60, 58, 60, 15),
+        whm1st3se6 = cms.untracked.vint32(72, 58, 72, 18),
+        whm1st3se1 = cms.untracked.vint32(72, 58, 72, 18),
+        whm1st1se9 = cms.untracked.vint32(50, 58, 50, 13),
+        wh0st2se3 = cms.untracked.vint32(60, 58, 60, 15),
+        whm1st3se2 = cms.untracked.vint32(72, 58, 72, 18),
+        whm2st4se14 = cms.untracked.vint32(60, 0, 60, 15),
+        whm2st4se13 = cms.untracked.vint32(72, 0, 72, 18),
+        whm2st4se12 = cms.untracked.vint32(92, 0, 92, 23),
+        whm2st4se11 = cms.untracked.vint32(48, 0, 48, 12),
+        whm2st4se10 = cms.untracked.vint32(60, 0, 60, 15),
+        whm2st1se6 = cms.untracked.vint32(50, 58, 50, 13),
+        wh2st1se10 = cms.untracked.vint32(50, 58, 50, 13),
+        wh2st1se11 = cms.untracked.vint32(50, 58, 50, 13),
+        wh2st1se12 = cms.untracked.vint32(50, 58, 50, 13),
+        whm2st1se7 = cms.untracked.vint32(50, 58, 50, 13),
+        whm1st3se7 = cms.untracked.vint32(72, 58, 72, 18),
+        whm2st4se9 = cms.untracked.vint32(48, 0, 48, 12),
+        whm2st4se8 = cms.untracked.vint32(92, 0, 92, 23),
+        whm1st4se12 = cms.untracked.vint32(92, 0, 92, 23),
+        whm1st4se13 = cms.untracked.vint32(72, 0, 72, 18),
+        whm1st4se10 = cms.untracked.vint32(60, 0, 60, 15),
+        whm1st4se11 = cms.untracked.vint32(48, 0, 48, 12),
+        whm2st4se3 = cms.untracked.vint32(96, 0, 96, 24),
+        whm2st4se2 = cms.untracked.vint32(96, 0, 96, 24),
+        whm1st4se14 = cms.untracked.vint32(60, 0, 60, 15),
+        whm2st3se8 = cms.untracked.vint32(72, 58, 72, 18),
+        whm2st3se9 = cms.untracked.vint32(72, 58, 72, 18),
+        whm2st3se6 = cms.untracked.vint32(72, 58, 72, 18),
+        whm2st3se7 = cms.untracked.vint32(72, 58, 72, 18),
+        whm2st3se4 = cms.untracked.vint32(72, 58, 72, 18),
+        whm2st3se5 = cms.untracked.vint32(72, 58, 72, 18),
+        whm2st3se2 = cms.untracked.vint32(72, 58, 72, 18),
+        whm2st3se3 = cms.untracked.vint32(72, 58, 72, 18),
+        whm2st3se1 = cms.untracked.vint32(72, 58, 72, 18),
+        wh1st3se12 = cms.untracked.vint32(72, 58, 72, 18),
+        wh1st3se11 = cms.untracked.vint32(72, 58, 72, 18),
+        wh1st3se10 = cms.untracked.vint32(72, 58, 72, 18),
+        wh0st1se12 = cms.untracked.vint32(50, 58, 50, 13),
+        wh0st1se10 = cms.untracked.vint32(50, 58, 50, 13),
+        wh0st1se11 = cms.untracked.vint32(50, 58, 50, 13),
+        wh1st4se6 = cms.untracked.vint32(96, 0, 96, 24),
+        wh1st4se7 = cms.untracked.vint32(96, 0, 96, 24),
+        wh1st4se4 = cms.untracked.vint32(72, 0, 72, 18),
+        wh1st4se5 = cms.untracked.vint32(96, 0, 96, 24),
+        wh1st4se2 = cms.untracked.vint32(96, 0, 96, 24),
+        wh2st2se12 = cms.untracked.vint32(60, 58, 60, 15),
+        wh2st2se11 = cms.untracked.vint32(60, 58, 60, 15),
+        wh2st2se10 = cms.untracked.vint32(60, 58, 60, 15),
+        wh1st3se3 = cms.untracked.vint32(72, 58, 72, 18),
+        wh1st3se2 = cms.untracked.vint32(72, 58, 72, 18),
+        wh1st3se1 = cms.untracked.vint32(72, 58, 72, 18),
+        wh1st3se7 = cms.untracked.vint32(72, 58, 72, 18),
+        wh1st3se6 = cms.untracked.vint32(72, 58, 72, 18),
+        wh1st3se5 = cms.untracked.vint32(72, 58, 72, 18),
+        wh1st4se9 = cms.untracked.vint32(48, 0, 48, 12),
+        whm1st1se3 = cms.untracked.vint32(50, 48, 50, 13),
+        whm1st1se2 = cms.untracked.vint32(50, 58, 50, 13),
+        whm1st1se1 = cms.untracked.vint32(50, 58, 50, 13),
+        wh1st2se8 = cms.untracked.vint32(60, 58, 60, 15),
+        wh1st2se9 = cms.untracked.vint32(60, 58, 60, 15),
+        whm1st1se5 = cms.untracked.vint32(50, 58, 50, 13),
+        whm1st1se4 = cms.untracked.vint32(50, 58, 50, 13),
+        wh1st2se4 = cms.untracked.vint32(60, 48, 60, 15),
+        wh1st2se5 = cms.untracked.vint32(60, 58, 60, 15),
+        wh1st2se6 = cms.untracked.vint32(60, 58, 60, 15),
+        wh1st2se7 = cms.untracked.vint32(60, 58, 60, 15),
+        wh1st2se1 = cms.untracked.vint32(60, 58, 60, 15),
+        wh1st2se2 = cms.untracked.vint32(60, 58, 60, 15),
+        wh1st4se8 = cms.untracked.vint32(92, 0, 92, 23),
+        wh2st3se9 = cms.untracked.vint32(72, 58, 72, 18),
+        wh1st1se8 = cms.untracked.vint32(50, 58, 50, 13),
+        whm2st4se7 = cms.untracked.vint32(96, 0, 96, 24),
+        whm2st4se6 = cms.untracked.vint32(96, 0, 96, 24),
+        whm1st4se4 = cms.untracked.vint32(72, 0, 72, 18),
+        whm2st4se5 = cms.untracked.vint32(96, 0, 96, 24),
+        wh0st1se8 = cms.untracked.vint32(50, 58, 50, 13),
+        wh2st1se7 = cms.untracked.vint32(50, 58, 50, 13),
+        wh2st1se4 = cms.untracked.vint32(50, 58, 50, 13),
+        whm2st4se4 = cms.untracked.vint32(72, 0, 72, 18),
+        wh2st1se2 = cms.untracked.vint32(50, 58, 50, 13),
+        wh2st1se3 = cms.untracked.vint32(50, 58, 50, 13),
+        wh2st1se1 = cms.untracked.vint32(50, 58, 50, 13),
+        wh0st1se1 = cms.untracked.vint32(50, 58, 50, 13),
+        wh0st1se2 = cms.untracked.vint32(50, 58, 50, 13),
+        wh0st1se3 = cms.untracked.vint32(50, 58, 50, 13),
+        wh0st1se4 = cms.untracked.vint32(50, 58, 50, 13),
+        wh0st1se5 = cms.untracked.vint32(50, 58, 50, 13),
+        wh2st1se8 = cms.untracked.vint32(50, 58, 50, 13),
+        wh2st1se9 = cms.untracked.vint32(50, 58, 50, 13),
+        wh2st4se1 = cms.untracked.vint32(96, 0, 96, 24),
+        wh2st4se3 = cms.untracked.vint32(96, 0, 96, 24),
+        wh2st4se2 = cms.untracked.vint32(96, 0, 96, 24),
+        wh2st4se5 = cms.untracked.vint32(96, 0, 96, 24),
+        wh2st4se4 = cms.untracked.vint32(72, 0, 72, 18),
+        wh2st4se7 = cms.untracked.vint32(96, 0, 96, 24),
+        wh2st4se6 = cms.untracked.vint32(96, 0, 96, 24),
+        wh0st4se3 = cms.untracked.vint32(96, 0, 96, 24),
+        wh2st4se8 = cms.untracked.vint32(92, 0, 92, 23),
+        wh0st4se1 = cms.untracked.vint32(96, 0, 96, 24),
+        wh0st4se7 = cms.untracked.vint32(96, 0, 96, 24),
+        wh0st4se6 = cms.untracked.vint32(96, 0, 96, 24),
+        wh0st4se5 = cms.untracked.vint32(96, 0, 96, 24),
+        wh0st4se4 = cms.untracked.vint32(72, 0, 72, 18),
+        wh0st3se10 = cms.untracked.vint32(72, 58, 72, 18),
+        wh0st3se11 = cms.untracked.vint32(72, 58, 72, 18),
+        wh0st3se12 = cms.untracked.vint32(72, 58, 72, 18),
+        wh2st4se11 = cms.untracked.vint32(48, 0, 48, 12),
+        wh2st4se10 = cms.untracked.vint32(60, 0, 60, 15),
+        wh2st4se13 = cms.untracked.vint32(72, 0, 72, 18),
+        wh2st4se12 = cms.untracked.vint32(92, 0, 92, 23),
+        wh2st4se14 = cms.untracked.vint32(60, 0, 60, 15),
+        wh1st1se5 = cms.untracked.vint32(50, 58, 50, 13),
+        whm1st4se1 = cms.untracked.vint32(96, 0, 96, 24),
+        whm1st4se2 = cms.untracked.vint32(96, 0, 96, 24),
+        whm1st4se3 = cms.untracked.vint32(96, 0, 96, 24),
+        wh1st2se12 = cms.untracked.vint32(60, 58, 60, 15),
+        whm1st4se5 = cms.untracked.vint32(96, 0, 96, 24),
+        wh1st2se10 = cms.untracked.vint32(60, 58, 60, 15),
+        whm1st4se7 = cms.untracked.vint32(96, 0, 96, 24),
+        whm1st4se8 = cms.untracked.vint32(92, 0, 92, 23),
+        whm1st4se9 = cms.untracked.vint32(48, 0, 48, 12),
+        whm1st2se11 = cms.untracked.vint32(60, 58, 60, 15),
+        wh0st3se6 = cms.untracked.vint32(72, 58, 72, 18),
+        wh0st3se7 = cms.untracked.vint32(72, 58, 72, 18),
+        wh0st3se4 = cms.untracked.vint32(72, 58, 72, 18),
+        wh0st3se5 = cms.untracked.vint32(72, 58, 72, 18),
+        wh0st3se2 = cms.untracked.vint32(72, 58, 72, 18),
+        wh0st3se3 = cms.untracked.vint32(72, 58, 72, 18),
+        wh0st3se1 = cms.untracked.vint32(72, 58, 72, 18),
+        wh2st3se7 = cms.untracked.vint32(72, 58, 72, 18),
+        whm2st1se5 = cms.untracked.vint32(50, 58, 50, 13),
+        wh0st3se8 = cms.untracked.vint32(72, 58, 72, 18),
+        wh0st3se9 = cms.untracked.vint32(72, 58, 72, 18),
+        wh2st1se6 = cms.untracked.vint32(50, 58, 50, 13),
+        whm1st1se8 = cms.untracked.vint32(50, 58, 50, 13),
+        wh0st1se9 = cms.untracked.vint32(50, 58, 50, 13),
+        wh2st3se12 = cms.untracked.vint32(72, 58, 72, 18),
+        wh2st3se10 = cms.untracked.vint32(72, 58, 72, 18),
+        wh2st3se11 = cms.untracked.vint32(72, 58, 72, 18),
+        wh1st1se11 = cms.untracked.vint32(50, 58, 50, 13),
+        wh1st1se10 = cms.untracked.vint32(50, 58, 50, 13),
+        wh1st1se12 = cms.untracked.vint32(50, 58, 50, 13),
+        wh1st2se11 = cms.untracked.vint32(60, 58, 60, 15),
+        whm2st2se5 = cms.untracked.vint32(60, 58, 60, 15),
+        whm2st2se4 = cms.untracked.vint32(60, 58, 60, 15),
+        whm2st2se7 = cms.untracked.vint32(60, 58, 60, 15),
+        whm2st2se6 = cms.untracked.vint32(60, 58, 60, 15),
+        whm2st2se1 = cms.untracked.vint32(60, 58, 60, 15),
+        whm2st2se3 = cms.untracked.vint32(60, 58, 60, 15),
+        whm2st2se2 = cms.untracked.vint32(60, 58, 60, 15),
+        whm2st2se9 = cms.untracked.vint32(60, 58, 60, 15),
+        whm2st2se8 = cms.untracked.vint32(60, 58, 60, 15),
+        whm1st4se6 = cms.untracked.vint32(96, 0, 96, 24),
+        wh2st1se5 = cms.untracked.vint32(50, 58, 50, 13),
+        whm1st2se6 = cms.untracked.vint32(60, 58, 60, 15),
+        whm1st2se7 = cms.untracked.vint32(60, 58, 60, 15),
+        whm1st2se4 = cms.untracked.vint32(60, 58, 60, 15),
+        whm1st2se5 = cms.untracked.vint32(60, 58, 60, 15),
+        whm1st2se2 = cms.untracked.vint32(60, 58, 60, 15),
+        whm1st2se3 = cms.untracked.vint32(60, 48, 60, 15),
+        whm1st2se1 = cms.untracked.vint32(60, 58, 60, 15),
+        whm1st2se8 = cms.untracked.vint32(60, 58, 60, 15),
+        whm1st2se9 = cms.untracked.vint32(60, 58, 60, 15),
+        wh2st2se7 = cms.untracked.vint32(60, 58, 60, 15),
+        wh2st2se6 = cms.untracked.vint32(60, 58, 60, 15),
+        wh2st2se5 = cms.untracked.vint32(60, 58, 60, 15),
+        wh2st2se4 = cms.untracked.vint32(60, 58, 60, 15),
+        wh2st2se3 = cms.untracked.vint32(60, 58, 60, 15),
+        wh2st2se2 = cms.untracked.vint32(60, 58, 60, 15),
+        wh2st2se1 = cms.untracked.vint32(60, 58, 60, 15),
+        wh0st1se7 = cms.untracked.vint32(50, 58, 50, 13),
+        wh2st2se9 = cms.untracked.vint32(60, 58, 60, 15),
+        wh2st2se8 = cms.untracked.vint32(60, 58, 60, 15),
+        wh0st4se13 = cms.untracked.vint32(72, 0, 72, 18),
+        wh0st1se6 = cms.untracked.vint32(50, 58, 50, 13),
+        wh0st4se11 = cms.untracked.vint32(48, 0, 48, 12),
+        wh0st4se10 = cms.untracked.vint32(60, 0, 60, 15),
+        whm1st3se12 = cms.untracked.vint32(72, 58, 72, 18),
+        wh0st4se14 = cms.untracked.vint32(60, 0, 60, 15),
+        whm2st1se3 = cms.untracked.vint32(50, 58, 50, 13),
+        wh0st4se9 = cms.untracked.vint32(48, 0, 48, 12),
+        wh1st4se10 = cms.untracked.vint32(60, 0, 60, 15),
+        wh1st4se11 = cms.untracked.vint32(48, 0, 48, 12),
+        wh1st4se12 = cms.untracked.vint32(92, 0, 92, 23),
+        wh1st4se13 = cms.untracked.vint32(72, 0, 72, 18),
+        wh1st4se14 = cms.untracked.vint32(60, 0, 60, 15),
+        wh1st1se4 = cms.untracked.vint32(50, 48, 50, 13),
+        wh1st1se7 = cms.untracked.vint32(50, 58, 50, 13),
+        wh1st1se6 = cms.untracked.vint32(50, 58, 50, 13),
+        wh1st1se9 = cms.untracked.vint32(50, 58, 50, 13),
+        whm2st3se10 = cms.untracked.vint32(72, 58, 72, 18),
+        wh1st2se3 = cms.untracked.vint32(60, 58, 60, 15),
+        whm2st3se11 = cms.untracked.vint32(72, 58, 72, 18),
+        whm2st3se12 = cms.untracked.vint32(72, 58, 72, 18),
+        wh0st4se12 = cms.untracked.vint32(92, 0, 92, 23),
+        wh1st3se9 = cms.untracked.vint32(72, 58, 72, 18),
+        wh2st3se8 = cms.untracked.vint32(72, 58, 72, 18),
+        wh2st4se9 = cms.untracked.vint32(48, 0, 48, 12),
+        wh1st3se8 = cms.untracked.vint32(72, 58, 72, 18),
+        wh0st4se2 = cms.untracked.vint32(96, 0, 96, 24),
+        wh2st3se1 = cms.untracked.vint32(72, 58, 72, 18),
+        wh2st3se2 = cms.untracked.vint32(72, 58, 72, 18),
+        wh2st3se3 = cms.untracked.vint32(72, 58, 72, 18),
+        wh2st3se4 = cms.untracked.vint32(72, 58, 72, 18),
+        wh2st3se5 = cms.untracked.vint32(72, 58, 72, 18),
+        wh2st3se6 = cms.untracked.vint32(72, 58, 72, 18),
+        wh1st4se3 = cms.untracked.vint32(96, 0, 96, 24),
+        whm2st4se1 = cms.untracked.vint32(96, 0, 96, 24),
+        wh1st4se1 = cms.untracked.vint32(96, 0, 96, 24),
+        whm1st2se10 = cms.untracked.vint32(60, 58, 60, 15),
+        whm2st2se11 = cms.untracked.vint32(60, 58, 60, 15),
+        whm2st2se10 = cms.untracked.vint32(60, 58, 60, 15),
+        whm2st2se12 = cms.untracked.vint32(60, 58, 60, 15),
+        wh0st2se5 = cms.untracked.vint32(60, 58, 60, 15),
+        whm1st3se9 = cms.untracked.vint32(72, 58, 72, 18),
+        whm1st3se8 = cms.untracked.vint32(72, 58, 72, 18)
+    )
+)
+
+process.DTTPGParametersBlock = cms.PSet(
+    DTTPGParameters = cms.PSet(
+        Debug = cms.untracked.bool(False),
+        SectCollParameters = cms.PSet(
+            SCCSP5 = cms.int32(0),
+            SCCSP2 = cms.int32(0),
+            SCCSP3 = cms.int32(0),
+            SCECF4 = cms.bool(False),
+            SCCSP1 = cms.int32(0),
+            SCECF2 = cms.bool(False),
+            SCECF3 = cms.bool(False),
+            SCCSP4 = cms.int32(0),
+            SCECF1 = cms.bool(False),
+            Debug = cms.untracked.bool(False)
+        ),
+        TUParameters = cms.PSet(
+            TSPhiParameters = cms.PSet(
+                TSMNOE1 = cms.bool(True),
+                TSMNOE2 = cms.bool(False),
+                TSSMSK1 = cms.int32(312),
+                TSTREN9 = cms.bool(True),
+                TSTREN8 = cms.bool(True),
+                TSTREN11 = cms.bool(True),
+                TSTREN3 = cms.bool(True),
+                TSTREN2 = cms.bool(True),
+                TSTREN1 = cms.bool(True),
+                TSTREN0 = cms.bool(True),
+                TSTREN7 = cms.bool(True),
+                TSTREN6 = cms.bool(True),
+                TSTREN5 = cms.bool(True),
+                TSTREN4 = cms.bool(True),
+                TSSCCE1 = cms.bool(True),
+                TSSCCE2 = cms.bool(False),
+                TSMCCE2 = cms.bool(False),
+                TSTREN19 = cms.bool(True),
+                TSMCCE1 = cms.bool(True),
+                TSTREN17 = cms.bool(True),
+                TSTREN16 = cms.bool(True),
+                TSTREN15 = cms.bool(True),
+                TSTREN14 = cms.bool(True),
+                TSTREN13 = cms.bool(True),
+                TSTREN12 = cms.bool(True),
+                TSSMSK2 = cms.int32(312),
+                TSTREN10 = cms.bool(True),
+                TSMMSK2 = cms.int32(312),
+                TSMMSK1 = cms.int32(312),
+                TSMHSP = cms.int32(1),
+                TSSNOE2 = cms.bool(False),
+                TSSNOE1 = cms.bool(True),
+                TSSCGS2 = cms.bool(True),
+                TSSCCEC = cms.bool(False),
+                TSMCCEC = cms.bool(False),
+                TSMHTE2 = cms.bool(False),
+                Debug = cms.untracked.bool(False),
+                TSSHTE2 = cms.bool(False),
+                TSMCGS1 = cms.bool(True),
+                TSMCGS2 = cms.bool(True),
+                TSSHTE1 = cms.bool(True),
+                TSTREN22 = cms.bool(True),
+                TSSNOEC = cms.bool(False),
+                TSTREN20 = cms.bool(True),
+                TSTREN21 = cms.bool(True),
+                TSMGS1 = cms.int32(1),
+                TSMGS2 = cms.int32(1),
+                TSSHTEC = cms.bool(False),
+                TSMWORD = cms.int32(255),
+                TSMHTEC = cms.bool(False),
+                TSSCGS1 = cms.bool(True),
+                TSTREN23 = cms.bool(True),
+                TSSGS2 = cms.int32(1),
+                TSMNOEC = cms.bool(False),
+                TSSGS1 = cms.int32(1),
+                TSTREN18 = cms.bool(True),
+                TSMHTE1 = cms.bool(True)
+            ),
+            TSThetaParameters = cms.PSet(
+                Debug = cms.untracked.bool(False)
+            ),
+            TracoParameters = cms.PSet(
+                SPRGCOMP = cms.int32(2),
+                FHTMSK = cms.int32(0),
+                DD = cms.int32(18),
+                SSLMSK = cms.int32(0),
+                LVALIDIFH = cms.int32(0),
+                Debug = cms.untracked.int32(0),
+                FSLMSK = cms.int32(0),
+                SHTPRF = cms.int32(1),
+                SHTMSK = cms.int32(0),
+                TRGENB3 = cms.int32(1),
+                SHISM = cms.int32(0),
+                IBTIOFF = cms.int32(0),
+                KPRGCOM = cms.int32(255),
+                KRAD = cms.int32(0),
+                FLTMSK = cms.int32(1),
+                LTS = cms.int32(0),
+                SLTMSK = cms.int32(1),
+                FPRGCOMP = cms.int32(2),
+                TRGENB9 = cms.int32(1),
+                TRGENB8 = cms.int32(1),
+                FHTPRF = cms.int32(1),
+                LTF = cms.int32(0),
+                TRGENB1 = cms.int32(1),
+                TRGENB0 = cms.int32(1),
+                FHISM = cms.int32(0),
+                TRGENB2 = cms.int32(1),
+                TRGENB5 = cms.int32(1),
+                TRGENB4 = cms.int32(1),
+                TRGENB7 = cms.int32(1),
+                TRGENB6 = cms.int32(1),
+                TRGENB15 = cms.int32(1),
+                TRGENB14 = cms.int32(1),
+                TRGENB11 = cms.int32(1),
+                TRGENB10 = cms.int32(1),
+                TRGENB13 = cms.int32(1),
+                TRGENB12 = cms.int32(1),
+                REUSEO = cms.int32(1),
+                REUSEI = cms.int32(1),
+                BTIC = cms.int32(32)
+            ),
+            BtiParameters = cms.PSet(
+                WEN8 = cms.int32(1),
+                ACH = cms.int32(1),
+                DEAD = cms.int32(31),
+                ACL = cms.int32(2),
+                PTMS20 = cms.int32(1),
+                XON = cms.bool(False),
+                PTMS22 = cms.int32(1),
+                PTMS23 = cms.int32(1),
+                PTMS24 = cms.int32(1),
+                PTMS25 = cms.int32(1),
+                PTMS26 = cms.int32(1),
+                PTMS27 = cms.int32(1),
+                PTMS28 = cms.int32(1),
+                PTMS29 = cms.int32(1),
+                SET = cms.int32(7),
+                RON = cms.bool(True),
+                WEN2 = cms.int32(1),
+                LL = cms.int32(2),
+                LH = cms.int32(21),
+                WEN3 = cms.int32(1),
+                RE43 = cms.int32(2),
+                WEN0 = cms.int32(1),
+                RL = cms.int32(42),
+                WEN1 = cms.int32(1),
+                RH = cms.int32(61),
+                LTS = cms.int32(3),
+                CH = cms.int32(41),
+                CL = cms.int32(22),
+                PTMS15 = cms.int32(1),
+                PTMS14 = cms.int32(1),
+                PTMS17 = cms.int32(1),
+                PTMS16 = cms.int32(1),
+                PTMS11 = cms.int32(1),
+                PTMS10 = cms.int32(1),
+                PTMS13 = cms.int32(1),
+                PTMS12 = cms.int32(1),
+                Debug = cms.untracked.int32(0),
+                WEN7 = cms.int32(1),
+                WEN4 = cms.int32(1),
+                WEN5 = cms.int32(1),
+                PTMS19 = cms.int32(1),
+                PTMS18 = cms.int32(1),
+                PTMS31 = cms.int32(0),
+                PTMS30 = cms.int32(0),
+                PTMS5 = cms.int32(1),
+                PTMS4 = cms.int32(1),
+                PTMS7 = cms.int32(1),
+                PTMS6 = cms.int32(1),
+                PTMS1 = cms.int32(0),
+                PTMS0 = cms.int32(0),
+                PTMS3 = cms.int32(0),
+                WEN6 = cms.int32(1),
+                KACCTHETA = cms.int32(1),
+                PTMS9 = cms.int32(1),
+                PTMS8 = cms.int32(1),
+                ST43 = cms.int32(42),
+                AC2 = cms.int32(3),
+                AC1 = cms.int32(0),
+                KMAX = cms.int32(64),
+                PTMS21 = cms.int32(1),
+                PTMS2 = cms.int32(0)
+            ),
+            Debug = cms.untracked.bool(False),
+            LutParameters = cms.PSet(
+                WHEEL = cms.untracked.int32(-1),
+                Debug = cms.untracked.bool(False),
+                BTIC = cms.untracked.int32(0),
+                XCN = cms.untracked.double(0),
+                D = cms.untracked.double(0)
+            )
+        )
+    )
 )
 
 process.DigiToRawFEVT = cms.PSet(
@@ -11763,6 +25024,7 @@ process.FEVTDEBUGEventContent = cms.PSet(
         'keep LHERunInfoProduct_*_*_*', 
         'keep LHEEventProduct_*_*_*', 
         'keep GenRunInfoProduct_generator_*_*', 
+        'keep GenLumiInfoProduct_generator_*_*', 
         'keep GenEventInfoProduct_generator_*_*', 
         'keep edmHepMCProduct_generator_*_*', 
         'keep GenFilterInfo_*_*_*', 
@@ -11787,6 +25049,7 @@ process.FEVTDEBUGEventContent = cms.PSet(
         'keep *_cscSegments_*_*', 
         'keep *_rpcRecHits_*_*', 
         'keep *_hbhereco_*_*', 
+        'keep *_hbheprereco_*_*', 
         'keep *_hfreco_*_*', 
         'keep *_horeco_*_*', 
         'keep HBHERecHitsSorted_hbherecoMB_*_*', 
@@ -11892,10 +25155,10 @@ process.FEVTDEBUGEventContent = cms.PSet(
         'keep double_kt6PFJetsCentralNeutralTight_*_*', 
         'keep *_fixedGridRho*_*_*', 
         'keep *_ca8PFJetsCHSPrunedLinks_*_*', 
-        'keep recoCaloMETs_met_*_*', 
-        'keep recoCaloMETs_metNoHF_*_*', 
-        'keep recoCaloMETs_metHO_*_*', 
-        'keep recoCaloMETs_corMetGlobalMuons_*_*', 
+        'keep recoCaloMETs_caloMet_*_*', 
+        'keep recoCaloMETs_caloMetBE_*_*', 
+        'keep recoCaloMETs_caloMetBEFO_*_*', 
+        'keep recoCaloMETs_caloMetM_*_*', 
         'keep recoPFMETs_pfMet_*_*', 
         'keep recoPFMETs_pfChMet_*_*', 
         'keep recoMuonMETCorrectionDataedmValueMap_muonMETValueMapProducer_*_*', 
@@ -11905,6 +25168,7 @@ process.FEVTDEBUGEventContent = cms.PSet(
         'keep *BeamHaloSummary_BeamHaloSummary_*_*', 
         'keep *_MuonSeed_*_*', 
         'keep *_ancientMuonSeed_*_*', 
+        'keep *_displacedMuonSeeds_*_*', 
         'keep *_mergedStandAloneMuonSeeds_*_*', 
         'keep TrackingRecHitsOwned_globalMuons_*_*', 
         'keep TrackingRecHitsOwned_tevMuons_*_*', 
@@ -11950,6 +25214,9 @@ process.FEVTDEBUGEventContent = cms.PSet(
         'keep recoTracks_refittedStandAloneMuons_*_*', 
         'keep recoTrackExtras_refittedStandAloneMuons_*_*', 
         'keep TrackingRecHitsOwned_refittedStandAloneMuons_*_*', 
+        'keep recoTracks_displacedStandAloneMuons__*', 
+        'keep recoTrackExtras_displacedStandAloneMuons_*_*', 
+        'keep TrackingRecHitsOwned_displacedStandAloneMuons_*_*', 
         'keep *_muIsoDepositTk_*_*', 
         'keep *_muIsoDepositCalByAssociatorTowers_*_*', 
         'keep *_muIsoDepositCalByAssociatorHits_*_*', 
@@ -11964,12 +25231,14 @@ process.FEVTDEBUGEventContent = cms.PSet(
         'keep *_jetProbabilityBJetTags_*_*', 
         'keep *_jetBProbabilityBJetTags_*_*', 
         'keep *_secondaryVertexTagInfos_*_*', 
+        'keep *_inclusiveSecondaryVertexFinderTagInfos_*_*', 
         'keep *_ghostTrackVertexTagInfos_*_*', 
         'keep *_simpleSecondaryVertexBJetTags_*_*', 
         'keep *_simpleSecondaryVertexHighEffBJetTags_*_*', 
         'keep *_simpleSecondaryVertexHighPurBJetTags_*_*', 
         'keep *_combinedSecondaryVertexBJetTags_*_*', 
         'keep *_combinedSecondaryVertexMVABJetTags_*_*', 
+        'keep *_combinedInclusiveSecondaryVertexV2BJetTags_*_*', 
         'keep *_ghostTrackBJetTags_*_*', 
         'keep *_softPFMuonsTagInfos_*_*', 
         'keep *_softPFElectronsTagInfos_*_*', 
@@ -11979,6 +25248,9 @@ process.FEVTDEBUGEventContent = cms.PSet(
         'keep *_softMuonBJetTags_*_*', 
         'keep *_softMuonByIP3dBJetTags_*_*', 
         'keep *_softMuonByPtBJetTags_*_*', 
+        'keep *_pfImpactParameterTagInfos_*_*', 
+        'keep *_pfSecondaryVertexTagInfos_*_*', 
+        'keep *_pfCombinedSecondaryVertexBJetTags_*_*', 
         'keep *_ak4PFJetsRecoTauPiZeros_*_*', 
         'keep *_hpsPFTauProducer_*_*', 
         'keep *_hpsPFTauDiscrimination*_*_*', 
@@ -11999,6 +25271,8 @@ process.FEVTDEBUGEventContent = cms.PSet(
         'keep floatedmValueMap_eidRobustHighEnergy_*_*', 
         'keep floatedmValueMap_eidLoose_*_*', 
         'keep floatedmValueMap_eidTight_*_*', 
+        'keep *_egmGedGsfElectronPFIsolation_*_*', 
+        'keep *_egmGsfElectronIDs_*_*', 
         'keep *_gedPhotonCore_*_*', 
         'keep *_gedPhotons_*_*', 
         'keep *_particleBasedIsolation_*_*', 
@@ -12091,6 +25365,7 @@ process.FEVTDEBUGEventContent = cms.PSet(
         'keep LHERunInfoProduct_*_*_*', 
         'keep LHEEventProduct_*_*_*', 
         'keep GenRunInfoProduct_generator_*_*', 
+        'keep GenLumiInfoProduct_generator_*_*', 
         'keep GenEventInfoProduct_generator_*_*', 
         'keep edmHepMCProduct_generator_*_*', 
         'keep GenFilterInfo_*_*_*', 
@@ -12214,6 +25489,7 @@ process.FEVTDEBUGHLTEventContent = cms.PSet(
         'keep LHERunInfoProduct_*_*_*', 
         'keep LHEEventProduct_*_*_*', 
         'keep GenRunInfoProduct_generator_*_*', 
+        'keep GenLumiInfoProduct_generator_*_*', 
         'keep GenEventInfoProduct_generator_*_*', 
         'keep edmHepMCProduct_generator_*_*', 
         'keep GenFilterInfo_*_*_*', 
@@ -12238,6 +25514,7 @@ process.FEVTDEBUGHLTEventContent = cms.PSet(
         'keep *_cscSegments_*_*', 
         'keep *_rpcRecHits_*_*', 
         'keep *_hbhereco_*_*', 
+        'keep *_hbheprereco_*_*', 
         'keep *_hfreco_*_*', 
         'keep *_horeco_*_*', 
         'keep HBHERecHitsSorted_hbherecoMB_*_*', 
@@ -12343,10 +25620,10 @@ process.FEVTDEBUGHLTEventContent = cms.PSet(
         'keep double_kt6PFJetsCentralNeutralTight_*_*', 
         'keep *_fixedGridRho*_*_*', 
         'keep *_ca8PFJetsCHSPrunedLinks_*_*', 
-        'keep recoCaloMETs_met_*_*', 
-        'keep recoCaloMETs_metNoHF_*_*', 
-        'keep recoCaloMETs_metHO_*_*', 
-        'keep recoCaloMETs_corMetGlobalMuons_*_*', 
+        'keep recoCaloMETs_caloMet_*_*', 
+        'keep recoCaloMETs_caloMetBE_*_*', 
+        'keep recoCaloMETs_caloMetBEFO_*_*', 
+        'keep recoCaloMETs_caloMetM_*_*', 
         'keep recoPFMETs_pfMet_*_*', 
         'keep recoPFMETs_pfChMet_*_*', 
         'keep recoMuonMETCorrectionDataedmValueMap_muonMETValueMapProducer_*_*', 
@@ -12356,6 +25633,7 @@ process.FEVTDEBUGHLTEventContent = cms.PSet(
         'keep *BeamHaloSummary_BeamHaloSummary_*_*', 
         'keep *_MuonSeed_*_*', 
         'keep *_ancientMuonSeed_*_*', 
+        'keep *_displacedMuonSeeds_*_*', 
         'keep *_mergedStandAloneMuonSeeds_*_*', 
         'keep TrackingRecHitsOwned_globalMuons_*_*', 
         'keep TrackingRecHitsOwned_tevMuons_*_*', 
@@ -12401,6 +25679,9 @@ process.FEVTDEBUGHLTEventContent = cms.PSet(
         'keep recoTracks_refittedStandAloneMuons_*_*', 
         'keep recoTrackExtras_refittedStandAloneMuons_*_*', 
         'keep TrackingRecHitsOwned_refittedStandAloneMuons_*_*', 
+        'keep recoTracks_displacedStandAloneMuons__*', 
+        'keep recoTrackExtras_displacedStandAloneMuons_*_*', 
+        'keep TrackingRecHitsOwned_displacedStandAloneMuons_*_*', 
         'keep *_muIsoDepositTk_*_*', 
         'keep *_muIsoDepositCalByAssociatorTowers_*_*', 
         'keep *_muIsoDepositCalByAssociatorHits_*_*', 
@@ -12415,12 +25696,14 @@ process.FEVTDEBUGHLTEventContent = cms.PSet(
         'keep *_jetProbabilityBJetTags_*_*', 
         'keep *_jetBProbabilityBJetTags_*_*', 
         'keep *_secondaryVertexTagInfos_*_*', 
+        'keep *_inclusiveSecondaryVertexFinderTagInfos_*_*', 
         'keep *_ghostTrackVertexTagInfos_*_*', 
         'keep *_simpleSecondaryVertexBJetTags_*_*', 
         'keep *_simpleSecondaryVertexHighEffBJetTags_*_*', 
         'keep *_simpleSecondaryVertexHighPurBJetTags_*_*', 
         'keep *_combinedSecondaryVertexBJetTags_*_*', 
         'keep *_combinedSecondaryVertexMVABJetTags_*_*', 
+        'keep *_combinedInclusiveSecondaryVertexV2BJetTags_*_*', 
         'keep *_ghostTrackBJetTags_*_*', 
         'keep *_softPFMuonsTagInfos_*_*', 
         'keep *_softPFElectronsTagInfos_*_*', 
@@ -12430,6 +25713,9 @@ process.FEVTDEBUGHLTEventContent = cms.PSet(
         'keep *_softMuonBJetTags_*_*', 
         'keep *_softMuonByIP3dBJetTags_*_*', 
         'keep *_softMuonByPtBJetTags_*_*', 
+        'keep *_pfImpactParameterTagInfos_*_*', 
+        'keep *_pfSecondaryVertexTagInfos_*_*', 
+        'keep *_pfCombinedSecondaryVertexBJetTags_*_*', 
         'keep *_ak4PFJetsRecoTauPiZeros_*_*', 
         'keep *_hpsPFTauProducer_*_*', 
         'keep *_hpsPFTauDiscrimination*_*_*', 
@@ -12450,6 +25736,8 @@ process.FEVTDEBUGHLTEventContent = cms.PSet(
         'keep floatedmValueMap_eidRobustHighEnergy_*_*', 
         'keep floatedmValueMap_eidLoose_*_*', 
         'keep floatedmValueMap_eidTight_*_*', 
+        'keep *_egmGedGsfElectronPFIsolation_*_*', 
+        'keep *_egmGsfElectronIDs_*_*', 
         'keep *_gedPhotonCore_*_*', 
         'keep *_gedPhotons_*_*', 
         'keep *_particleBasedIsolation_*_*', 
@@ -12542,6 +25830,7 @@ process.FEVTDEBUGHLTEventContent = cms.PSet(
         'keep LHERunInfoProduct_*_*_*', 
         'keep LHEEventProduct_*_*_*', 
         'keep GenRunInfoProduct_generator_*_*', 
+        'keep GenLumiInfoProduct_generator_*_*', 
         'keep GenEventInfoProduct_generator_*_*', 
         'keep edmHepMCProduct_generator_*_*', 
         'keep GenFilterInfo_*_*_*', 
@@ -12946,6 +26235,7 @@ process.FEVTEventContent = cms.PSet(
         'keep *_cscSegments_*_*', 
         'keep *_rpcRecHits_*_*', 
         'keep *_hbhereco_*_*', 
+        'keep *_hbheprereco_*_*', 
         'keep *_hfreco_*_*', 
         'keep *_horeco_*_*', 
         'keep HBHERecHitsSorted_hbherecoMB_*_*', 
@@ -13051,10 +26341,10 @@ process.FEVTEventContent = cms.PSet(
         'keep double_kt6PFJetsCentralNeutralTight_*_*', 
         'keep *_fixedGridRho*_*_*', 
         'keep *_ca8PFJetsCHSPrunedLinks_*_*', 
-        'keep recoCaloMETs_met_*_*', 
-        'keep recoCaloMETs_metNoHF_*_*', 
-        'keep recoCaloMETs_metHO_*_*', 
-        'keep recoCaloMETs_corMetGlobalMuons_*_*', 
+        'keep recoCaloMETs_caloMet_*_*', 
+        'keep recoCaloMETs_caloMetBE_*_*', 
+        'keep recoCaloMETs_caloMetBEFO_*_*', 
+        'keep recoCaloMETs_caloMetM_*_*', 
         'keep recoPFMETs_pfMet_*_*', 
         'keep recoPFMETs_pfChMet_*_*', 
         'keep recoMuonMETCorrectionDataedmValueMap_muonMETValueMapProducer_*_*', 
@@ -13064,6 +26354,7 @@ process.FEVTEventContent = cms.PSet(
         'keep *BeamHaloSummary_BeamHaloSummary_*_*', 
         'keep *_MuonSeed_*_*', 
         'keep *_ancientMuonSeed_*_*', 
+        'keep *_displacedMuonSeeds_*_*', 
         'keep *_mergedStandAloneMuonSeeds_*_*', 
         'keep TrackingRecHitsOwned_globalMuons_*_*', 
         'keep TrackingRecHitsOwned_tevMuons_*_*', 
@@ -13109,6 +26400,9 @@ process.FEVTEventContent = cms.PSet(
         'keep recoTracks_refittedStandAloneMuons_*_*', 
         'keep recoTrackExtras_refittedStandAloneMuons_*_*', 
         'keep TrackingRecHitsOwned_refittedStandAloneMuons_*_*', 
+        'keep recoTracks_displacedStandAloneMuons__*', 
+        'keep recoTrackExtras_displacedStandAloneMuons_*_*', 
+        'keep TrackingRecHitsOwned_displacedStandAloneMuons_*_*', 
         'keep *_muIsoDepositTk_*_*', 
         'keep *_muIsoDepositCalByAssociatorTowers_*_*', 
         'keep *_muIsoDepositCalByAssociatorHits_*_*', 
@@ -13123,12 +26417,14 @@ process.FEVTEventContent = cms.PSet(
         'keep *_jetProbabilityBJetTags_*_*', 
         'keep *_jetBProbabilityBJetTags_*_*', 
         'keep *_secondaryVertexTagInfos_*_*', 
+        'keep *_inclusiveSecondaryVertexFinderTagInfos_*_*', 
         'keep *_ghostTrackVertexTagInfos_*_*', 
         'keep *_simpleSecondaryVertexBJetTags_*_*', 
         'keep *_simpleSecondaryVertexHighEffBJetTags_*_*', 
         'keep *_simpleSecondaryVertexHighPurBJetTags_*_*', 
         'keep *_combinedSecondaryVertexBJetTags_*_*', 
         'keep *_combinedSecondaryVertexMVABJetTags_*_*', 
+        'keep *_combinedInclusiveSecondaryVertexV2BJetTags_*_*', 
         'keep *_ghostTrackBJetTags_*_*', 
         'keep *_softPFMuonsTagInfos_*_*', 
         'keep *_softPFElectronsTagInfos_*_*', 
@@ -13138,6 +26434,9 @@ process.FEVTEventContent = cms.PSet(
         'keep *_softMuonBJetTags_*_*', 
         'keep *_softMuonByIP3dBJetTags_*_*', 
         'keep *_softMuonByPtBJetTags_*_*', 
+        'keep *_pfImpactParameterTagInfos_*_*', 
+        'keep *_pfSecondaryVertexTagInfos_*_*', 
+        'keep *_pfCombinedSecondaryVertexBJetTags_*_*', 
         'keep *_ak4PFJetsRecoTauPiZeros_*_*', 
         'keep *_hpsPFTauProducer_*_*', 
         'keep *_hpsPFTauDiscrimination*_*_*', 
@@ -13158,6 +26457,8 @@ process.FEVTEventContent = cms.PSet(
         'keep floatedmValueMap_eidRobustHighEnergy_*_*', 
         'keep floatedmValueMap_eidLoose_*_*', 
         'keep floatedmValueMap_eidTight_*_*', 
+        'keep *_egmGedGsfElectronPFIsolation_*_*', 
+        'keep *_egmGsfElectronIDs_*_*', 
         'keep *_gedPhotonCore_*_*', 
         'keep *_gedPhotons_*_*', 
         'keep *_particleBasedIsolation_*_*', 
@@ -13295,6 +26596,7 @@ process.FEVTHLTALLEventContent = cms.PSet(
         'keep *_cscSegments_*_*', 
         'keep *_rpcRecHits_*_*', 
         'keep *_hbhereco_*_*', 
+        'keep *_hbheprereco_*_*', 
         'keep *_hfreco_*_*', 
         'keep *_horeco_*_*', 
         'keep HBHERecHitsSorted_hbherecoMB_*_*', 
@@ -13400,10 +26702,10 @@ process.FEVTHLTALLEventContent = cms.PSet(
         'keep double_kt6PFJetsCentralNeutralTight_*_*', 
         'keep *_fixedGridRho*_*_*', 
         'keep *_ca8PFJetsCHSPrunedLinks_*_*', 
-        'keep recoCaloMETs_met_*_*', 
-        'keep recoCaloMETs_metNoHF_*_*', 
-        'keep recoCaloMETs_metHO_*_*', 
-        'keep recoCaloMETs_corMetGlobalMuons_*_*', 
+        'keep recoCaloMETs_caloMet_*_*', 
+        'keep recoCaloMETs_caloMetBE_*_*', 
+        'keep recoCaloMETs_caloMetBEFO_*_*', 
+        'keep recoCaloMETs_caloMetM_*_*', 
         'keep recoPFMETs_pfMet_*_*', 
         'keep recoPFMETs_pfChMet_*_*', 
         'keep recoMuonMETCorrectionDataedmValueMap_muonMETValueMapProducer_*_*', 
@@ -13413,6 +26715,7 @@ process.FEVTHLTALLEventContent = cms.PSet(
         'keep *BeamHaloSummary_BeamHaloSummary_*_*', 
         'keep *_MuonSeed_*_*', 
         'keep *_ancientMuonSeed_*_*', 
+        'keep *_displacedMuonSeeds_*_*', 
         'keep *_mergedStandAloneMuonSeeds_*_*', 
         'keep TrackingRecHitsOwned_globalMuons_*_*', 
         'keep TrackingRecHitsOwned_tevMuons_*_*', 
@@ -13458,6 +26761,9 @@ process.FEVTHLTALLEventContent = cms.PSet(
         'keep recoTracks_refittedStandAloneMuons_*_*', 
         'keep recoTrackExtras_refittedStandAloneMuons_*_*', 
         'keep TrackingRecHitsOwned_refittedStandAloneMuons_*_*', 
+        'keep recoTracks_displacedStandAloneMuons__*', 
+        'keep recoTrackExtras_displacedStandAloneMuons_*_*', 
+        'keep TrackingRecHitsOwned_displacedStandAloneMuons_*_*', 
         'keep *_muIsoDepositTk_*_*', 
         'keep *_muIsoDepositCalByAssociatorTowers_*_*', 
         'keep *_muIsoDepositCalByAssociatorHits_*_*', 
@@ -13472,12 +26778,14 @@ process.FEVTHLTALLEventContent = cms.PSet(
         'keep *_jetProbabilityBJetTags_*_*', 
         'keep *_jetBProbabilityBJetTags_*_*', 
         'keep *_secondaryVertexTagInfos_*_*', 
+        'keep *_inclusiveSecondaryVertexFinderTagInfos_*_*', 
         'keep *_ghostTrackVertexTagInfos_*_*', 
         'keep *_simpleSecondaryVertexBJetTags_*_*', 
         'keep *_simpleSecondaryVertexHighEffBJetTags_*_*', 
         'keep *_simpleSecondaryVertexHighPurBJetTags_*_*', 
         'keep *_combinedSecondaryVertexBJetTags_*_*', 
         'keep *_combinedSecondaryVertexMVABJetTags_*_*', 
+        'keep *_combinedInclusiveSecondaryVertexV2BJetTags_*_*', 
         'keep *_ghostTrackBJetTags_*_*', 
         'keep *_softPFMuonsTagInfos_*_*', 
         'keep *_softPFElectronsTagInfos_*_*', 
@@ -13487,6 +26795,9 @@ process.FEVTHLTALLEventContent = cms.PSet(
         'keep *_softMuonBJetTags_*_*', 
         'keep *_softMuonByIP3dBJetTags_*_*', 
         'keep *_softMuonByPtBJetTags_*_*', 
+        'keep *_pfImpactParameterTagInfos_*_*', 
+        'keep *_pfSecondaryVertexTagInfos_*_*', 
+        'keep *_pfCombinedSecondaryVertexBJetTags_*_*', 
         'keep *_ak4PFJetsRecoTauPiZeros_*_*', 
         'keep *_hpsPFTauProducer_*_*', 
         'keep *_hpsPFTauDiscrimination*_*_*', 
@@ -13507,6 +26818,8 @@ process.FEVTHLTALLEventContent = cms.PSet(
         'keep floatedmValueMap_eidRobustHighEnergy_*_*', 
         'keep floatedmValueMap_eidLoose_*_*', 
         'keep floatedmValueMap_eidTight_*_*', 
+        'keep *_egmGedGsfElectronPFIsolation_*_*', 
+        'keep *_egmGsfElectronIDs_*_*', 
         'keep *_gedPhotonCore_*_*', 
         'keep *_gedPhotons_*_*', 
         'keep *_particleBasedIsolation_*_*', 
@@ -13645,6 +26958,7 @@ process.FEVTSIMEventContent = cms.PSet(
         'keep LHERunInfoProduct_*_*_*', 
         'keep LHEEventProduct_*_*_*', 
         'keep GenRunInfoProduct_generator_*_*', 
+        'keep GenLumiInfoProduct_generator_*_*', 
         'keep GenEventInfoProduct_generator_*_*', 
         'keep edmHepMCProduct_generator_*_*', 
         'keep GenFilterInfo_*_*_*', 
@@ -13669,6 +26983,7 @@ process.FEVTSIMEventContent = cms.PSet(
         'keep *_cscSegments_*_*', 
         'keep *_rpcRecHits_*_*', 
         'keep *_hbhereco_*_*', 
+        'keep *_hbheprereco_*_*', 
         'keep *_hfreco_*_*', 
         'keep *_horeco_*_*', 
         'keep HBHERecHitsSorted_hbherecoMB_*_*', 
@@ -13774,10 +27089,10 @@ process.FEVTSIMEventContent = cms.PSet(
         'keep double_kt6PFJetsCentralNeutralTight_*_*', 
         'keep *_fixedGridRho*_*_*', 
         'keep *_ca8PFJetsCHSPrunedLinks_*_*', 
-        'keep recoCaloMETs_met_*_*', 
-        'keep recoCaloMETs_metNoHF_*_*', 
-        'keep recoCaloMETs_metHO_*_*', 
-        'keep recoCaloMETs_corMetGlobalMuons_*_*', 
+        'keep recoCaloMETs_caloMet_*_*', 
+        'keep recoCaloMETs_caloMetBE_*_*', 
+        'keep recoCaloMETs_caloMetBEFO_*_*', 
+        'keep recoCaloMETs_caloMetM_*_*', 
         'keep recoPFMETs_pfMet_*_*', 
         'keep recoPFMETs_pfChMet_*_*', 
         'keep recoMuonMETCorrectionDataedmValueMap_muonMETValueMapProducer_*_*', 
@@ -13787,6 +27102,7 @@ process.FEVTSIMEventContent = cms.PSet(
         'keep *BeamHaloSummary_BeamHaloSummary_*_*', 
         'keep *_MuonSeed_*_*', 
         'keep *_ancientMuonSeed_*_*', 
+        'keep *_displacedMuonSeeds_*_*', 
         'keep *_mergedStandAloneMuonSeeds_*_*', 
         'keep TrackingRecHitsOwned_globalMuons_*_*', 
         'keep TrackingRecHitsOwned_tevMuons_*_*', 
@@ -13832,6 +27148,9 @@ process.FEVTSIMEventContent = cms.PSet(
         'keep recoTracks_refittedStandAloneMuons_*_*', 
         'keep recoTrackExtras_refittedStandAloneMuons_*_*', 
         'keep TrackingRecHitsOwned_refittedStandAloneMuons_*_*', 
+        'keep recoTracks_displacedStandAloneMuons__*', 
+        'keep recoTrackExtras_displacedStandAloneMuons_*_*', 
+        'keep TrackingRecHitsOwned_displacedStandAloneMuons_*_*', 
         'keep *_muIsoDepositTk_*_*', 
         'keep *_muIsoDepositCalByAssociatorTowers_*_*', 
         'keep *_muIsoDepositCalByAssociatorHits_*_*', 
@@ -13846,12 +27165,14 @@ process.FEVTSIMEventContent = cms.PSet(
         'keep *_jetProbabilityBJetTags_*_*', 
         'keep *_jetBProbabilityBJetTags_*_*', 
         'keep *_secondaryVertexTagInfos_*_*', 
+        'keep *_inclusiveSecondaryVertexFinderTagInfos_*_*', 
         'keep *_ghostTrackVertexTagInfos_*_*', 
         'keep *_simpleSecondaryVertexBJetTags_*_*', 
         'keep *_simpleSecondaryVertexHighEffBJetTags_*_*', 
         'keep *_simpleSecondaryVertexHighPurBJetTags_*_*', 
         'keep *_combinedSecondaryVertexBJetTags_*_*', 
         'keep *_combinedSecondaryVertexMVABJetTags_*_*', 
+        'keep *_combinedInclusiveSecondaryVertexV2BJetTags_*_*', 
         'keep *_ghostTrackBJetTags_*_*', 
         'keep *_softPFMuonsTagInfos_*_*', 
         'keep *_softPFElectronsTagInfos_*_*', 
@@ -13861,6 +27182,9 @@ process.FEVTSIMEventContent = cms.PSet(
         'keep *_softMuonBJetTags_*_*', 
         'keep *_softMuonByIP3dBJetTags_*_*', 
         'keep *_softMuonByPtBJetTags_*_*', 
+        'keep *_pfImpactParameterTagInfos_*_*', 
+        'keep *_pfSecondaryVertexTagInfos_*_*', 
+        'keep *_pfCombinedSecondaryVertexBJetTags_*_*', 
         'keep *_ak4PFJetsRecoTauPiZeros_*_*', 
         'keep *_hpsPFTauProducer_*_*', 
         'keep *_hpsPFTauDiscrimination*_*_*', 
@@ -13881,6 +27205,8 @@ process.FEVTSIMEventContent = cms.PSet(
         'keep floatedmValueMap_eidRobustHighEnergy_*_*', 
         'keep floatedmValueMap_eidLoose_*_*', 
         'keep floatedmValueMap_eidTight_*_*', 
+        'keep *_egmGedGsfElectronPFIsolation_*_*', 
+        'keep *_egmGsfElectronIDs_*_*', 
         'keep *_gedPhotonCore_*_*', 
         'keep *_gedPhotons_*_*', 
         'keep *_particleBasedIsolation_*_*', 
@@ -13973,6 +27299,7 @@ process.FEVTSIMEventContent = cms.PSet(
         'keep LHERunInfoProduct_*_*_*', 
         'keep LHEEventProduct_*_*_*', 
         'keep GenRunInfoProduct_generator_*_*', 
+        'keep GenLumiInfoProduct_generator_*_*', 
         'keep GenEventInfoProduct_generator_*_*', 
         'keep edmHepMCProduct_generator_*_*', 
         'keep GenFilterInfo_*_*_*', 
@@ -14030,6 +27357,7 @@ process.GENRAWEventContent = cms.PSet(
         'keep LHERunInfoProduct_*_*_*', 
         'keep LHEEventProduct_*_*_*', 
         'keep GenRunInfoProduct_generator_*_*', 
+        'keep GenLumiInfoProduct_generator_*_*', 
         'keep GenEventInfoProduct_generator_*_*', 
         'keep edmHepMCProduct_generator_*_*', 
         'keep GenFilterInfo_*_*_*', 
@@ -14056,6 +27384,7 @@ process.GeneratorInterfaceAOD = cms.PSet(
     outputCommands = cms.untracked.vstring('keep LHERunInfoProduct_*_*_*', 
         'keep LHEEventProduct_*_*_*', 
         'keep GenRunInfoProduct_generator_*_*', 
+        'keep GenLumiInfoProduct_generator_*_*', 
         'keep GenEventInfoProduct_generator_*_*', 
         'keep GenFilterInfo_*_*_*', 
         'keep *_genParticles_*_*')
@@ -14071,6 +27400,7 @@ process.GeneratorInterfaceRAW = cms.PSet(
     outputCommands = cms.untracked.vstring('keep LHERunInfoProduct_*_*_*', 
         'keep LHEEventProduct_*_*_*', 
         'keep GenRunInfoProduct_generator_*_*', 
+        'keep GenLumiInfoProduct_generator_*_*', 
         'keep GenEventInfoProduct_generator_*_*', 
         'keep edmHepMCProduct_generator_*_*', 
         'keep GenFilterInfo_*_*_*', 
@@ -14081,6 +27411,7 @@ process.GeneratorInterfaceRECO = cms.PSet(
     outputCommands = cms.untracked.vstring('keep LHERunInfoProduct_*_*_*', 
         'keep LHEEventProduct_*_*_*', 
         'keep GenRunInfoProduct_generator_*_*', 
+        'keep GenLumiInfoProduct_generator_*_*', 
         'keep GenEventInfoProduct_generator_*_*', 
         'keep edmHepMCProduct_generator_*_*', 
         'keep GenFilterInfo_*_*_*', 
@@ -14088,7 +27419,7 @@ process.GeneratorInterfaceRECO = cms.PSet(
 )
 
 process.HLTConfigVersion = cms.PSet(
-    tableName = cms.string('/users/algomez/HTBoostedTriggers/V22')
+    tableName = cms.string('/users/algomez/HTBoostedTriggers/V23')
 )
 
 process.HLTDEBUGEventContent = cms.PSet(
@@ -15584,6 +28915,16 @@ process.LHEEventContent = cms.PSet(
         'keep *_externalLHEProducer_LHEScriptOutput_*')
 )
 
+process.LutParametersBlock = cms.PSet(
+    LutParameters = cms.PSet(
+        WHEEL = cms.untracked.int32(-1),
+        Debug = cms.untracked.bool(False),
+        BTIC = cms.untracked.int32(0),
+        XCN = cms.untracked.double(0),
+        D = cms.untracked.double(0)
+    )
+)
+
 process.MEtoEDMConverterAOD = cms.PSet(
     outputCommands = cms.untracked.vstring()
 )
@@ -17041,6 +30382,7 @@ process.PREMIXEventContent = cms.PSet(
         'keep LHERunInfoProduct_*_*_*', 
         'keep LHEEventProduct_*_*_*', 
         'keep GenRunInfoProduct_generator_*_*', 
+        'keep GenLumiInfoProduct_generator_*_*', 
         'keep GenEventInfoProduct_generator_*_*', 
         'keep edmHepMCProduct_generator_*_*', 
         'keep GenFilterInfo_*_*_*', 
@@ -17095,6 +30437,7 @@ process.PREMIXRAWEventContent = cms.PSet(
         'keep LHERunInfoProduct_*_*_*', 
         'keep LHEEventProduct_*_*_*', 
         'keep GenRunInfoProduct_generator_*_*', 
+        'keep GenLumiInfoProduct_generator_*_*', 
         'keep GenEventInfoProduct_generator_*_*', 
         'keep edmHepMCProduct_generator_*_*', 
         'keep GenFilterInfo_*_*_*', 
@@ -17142,6 +30485,7 @@ process.RAWDEBUGEventContent = cms.PSet(
         'keep LHERunInfoProduct_*_*_*', 
         'keep LHEEventProduct_*_*_*', 
         'keep GenRunInfoProduct_generator_*_*', 
+        'keep GenLumiInfoProduct_generator_*_*', 
         'keep GenEventInfoProduct_generator_*_*', 
         'keep edmHepMCProduct_generator_*_*', 
         'keep GenFilterInfo_*_*_*', 
@@ -17203,6 +30547,7 @@ process.RAWDEBUGHLTEventContent = cms.PSet(
         'keep LHERunInfoProduct_*_*_*', 
         'keep LHEEventProduct_*_*_*', 
         'keep GenRunInfoProduct_generator_*_*', 
+        'keep GenLumiInfoProduct_generator_*_*', 
         'keep GenEventInfoProduct_generator_*_*', 
         'keep edmHepMCProduct_generator_*_*', 
         'keep GenFilterInfo_*_*_*', 
@@ -17553,6 +30898,7 @@ process.RAWRECODEBUGHLTEventContent = cms.PSet(
         'keep *_cscSegments_*_*', 
         'keep *_rpcRecHits_*_*', 
         'keep *_hbhereco_*_*', 
+        'keep *_hbheprereco_*_*', 
         'keep *_hfreco_*_*', 
         'keep *_horeco_*_*', 
         'keep HBHERecHitsSorted_hbherecoMB_*_*', 
@@ -17658,10 +31004,10 @@ process.RAWRECODEBUGHLTEventContent = cms.PSet(
         'keep double_kt6PFJetsCentralNeutralTight_*_*', 
         'keep *_fixedGridRho*_*_*', 
         'keep *_ca8PFJetsCHSPrunedLinks_*_*', 
-        'keep recoCaloMETs_met_*_*', 
-        'keep recoCaloMETs_metNoHF_*_*', 
-        'keep recoCaloMETs_metHO_*_*', 
-        'keep recoCaloMETs_corMetGlobalMuons_*_*', 
+        'keep recoCaloMETs_caloMet_*_*', 
+        'keep recoCaloMETs_caloMetBE_*_*', 
+        'keep recoCaloMETs_caloMetBEFO_*_*', 
+        'keep recoCaloMETs_caloMetM_*_*', 
         'keep recoPFMETs_pfMet_*_*', 
         'keep recoPFMETs_pfChMet_*_*', 
         'keep recoMuonMETCorrectionDataedmValueMap_muonMETValueMapProducer_*_*', 
@@ -17671,6 +31017,7 @@ process.RAWRECODEBUGHLTEventContent = cms.PSet(
         'keep *BeamHaloSummary_BeamHaloSummary_*_*', 
         'keep *_MuonSeed_*_*', 
         'keep *_ancientMuonSeed_*_*', 
+        'keep *_displacedMuonSeeds_*_*', 
         'keep *_mergedStandAloneMuonSeeds_*_*', 
         'keep TrackingRecHitsOwned_globalMuons_*_*', 
         'keep TrackingRecHitsOwned_tevMuons_*_*', 
@@ -17716,6 +31063,9 @@ process.RAWRECODEBUGHLTEventContent = cms.PSet(
         'keep recoTracks_refittedStandAloneMuons_*_*', 
         'keep recoTrackExtras_refittedStandAloneMuons_*_*', 
         'keep TrackingRecHitsOwned_refittedStandAloneMuons_*_*', 
+        'keep recoTracks_displacedStandAloneMuons__*', 
+        'keep recoTrackExtras_displacedStandAloneMuons_*_*', 
+        'keep TrackingRecHitsOwned_displacedStandAloneMuons_*_*', 
         'keep *_muIsoDepositTk_*_*', 
         'keep *_muIsoDepositCalByAssociatorTowers_*_*', 
         'keep *_muIsoDepositCalByAssociatorHits_*_*', 
@@ -17730,12 +31080,14 @@ process.RAWRECODEBUGHLTEventContent = cms.PSet(
         'keep *_jetProbabilityBJetTags_*_*', 
         'keep *_jetBProbabilityBJetTags_*_*', 
         'keep *_secondaryVertexTagInfos_*_*', 
+        'keep *_inclusiveSecondaryVertexFinderTagInfos_*_*', 
         'keep *_ghostTrackVertexTagInfos_*_*', 
         'keep *_simpleSecondaryVertexBJetTags_*_*', 
         'keep *_simpleSecondaryVertexHighEffBJetTags_*_*', 
         'keep *_simpleSecondaryVertexHighPurBJetTags_*_*', 
         'keep *_combinedSecondaryVertexBJetTags_*_*', 
         'keep *_combinedSecondaryVertexMVABJetTags_*_*', 
+        'keep *_combinedInclusiveSecondaryVertexV2BJetTags_*_*', 
         'keep *_ghostTrackBJetTags_*_*', 
         'keep *_softPFMuonsTagInfos_*_*', 
         'keep *_softPFElectronsTagInfos_*_*', 
@@ -17745,6 +31097,9 @@ process.RAWRECODEBUGHLTEventContent = cms.PSet(
         'keep *_softMuonBJetTags_*_*', 
         'keep *_softMuonByIP3dBJetTags_*_*', 
         'keep *_softMuonByPtBJetTags_*_*', 
+        'keep *_pfImpactParameterTagInfos_*_*', 
+        'keep *_pfSecondaryVertexTagInfos_*_*', 
+        'keep *_pfCombinedSecondaryVertexBJetTags_*_*', 
         'keep *_ak4PFJetsRecoTauPiZeros_*_*', 
         'keep *_hpsPFTauProducer_*_*', 
         'keep *_hpsPFTauDiscrimination*_*_*', 
@@ -17765,6 +31120,8 @@ process.RAWRECODEBUGHLTEventContent = cms.PSet(
         'keep floatedmValueMap_eidRobustHighEnergy_*_*', 
         'keep floatedmValueMap_eidLoose_*_*', 
         'keep floatedmValueMap_eidTight_*_*', 
+        'keep *_egmGedGsfElectronPFIsolation_*_*', 
+        'keep *_egmGsfElectronIDs_*_*', 
         'keep *_gedPhotonCore_*_*', 
         'keep *_gedPhotons_*_*', 
         'keep *_particleBasedIsolation_*_*', 
@@ -17876,6 +31233,7 @@ process.RAWRECODEBUGHLTEventContent = cms.PSet(
         'keep LHERunInfoProduct_*_*_*', 
         'keep LHEEventProduct_*_*_*', 
         'keep GenRunInfoProduct_generator_*_*', 
+        'keep GenLumiInfoProduct_generator_*_*', 
         'keep GenEventInfoProduct_generator_*_*', 
         'keep edmHepMCProduct_generator_*_*', 
         'keep GenFilterInfo_*_*_*', 
@@ -18209,6 +31567,7 @@ process.RAWRECOEventContent = cms.PSet(
         'keep *_cscSegments_*_*', 
         'keep *_rpcRecHits_*_*', 
         'keep *_hbhereco_*_*', 
+        'keep *_hbheprereco_*_*', 
         'keep *_hfreco_*_*', 
         'keep *_horeco_*_*', 
         'keep HBHERecHitsSorted_hbherecoMB_*_*', 
@@ -18314,10 +31673,10 @@ process.RAWRECOEventContent = cms.PSet(
         'keep double_kt6PFJetsCentralNeutralTight_*_*', 
         'keep *_fixedGridRho*_*_*', 
         'keep *_ca8PFJetsCHSPrunedLinks_*_*', 
-        'keep recoCaloMETs_met_*_*', 
-        'keep recoCaloMETs_metNoHF_*_*', 
-        'keep recoCaloMETs_metHO_*_*', 
-        'keep recoCaloMETs_corMetGlobalMuons_*_*', 
+        'keep recoCaloMETs_caloMet_*_*', 
+        'keep recoCaloMETs_caloMetBE_*_*', 
+        'keep recoCaloMETs_caloMetBEFO_*_*', 
+        'keep recoCaloMETs_caloMetM_*_*', 
         'keep recoPFMETs_pfMet_*_*', 
         'keep recoPFMETs_pfChMet_*_*', 
         'keep recoMuonMETCorrectionDataedmValueMap_muonMETValueMapProducer_*_*', 
@@ -18327,6 +31686,7 @@ process.RAWRECOEventContent = cms.PSet(
         'keep *BeamHaloSummary_BeamHaloSummary_*_*', 
         'keep *_MuonSeed_*_*', 
         'keep *_ancientMuonSeed_*_*', 
+        'keep *_displacedMuonSeeds_*_*', 
         'keep *_mergedStandAloneMuonSeeds_*_*', 
         'keep TrackingRecHitsOwned_globalMuons_*_*', 
         'keep TrackingRecHitsOwned_tevMuons_*_*', 
@@ -18372,6 +31732,9 @@ process.RAWRECOEventContent = cms.PSet(
         'keep recoTracks_refittedStandAloneMuons_*_*', 
         'keep recoTrackExtras_refittedStandAloneMuons_*_*', 
         'keep TrackingRecHitsOwned_refittedStandAloneMuons_*_*', 
+        'keep recoTracks_displacedStandAloneMuons__*', 
+        'keep recoTrackExtras_displacedStandAloneMuons_*_*', 
+        'keep TrackingRecHitsOwned_displacedStandAloneMuons_*_*', 
         'keep *_muIsoDepositTk_*_*', 
         'keep *_muIsoDepositCalByAssociatorTowers_*_*', 
         'keep *_muIsoDepositCalByAssociatorHits_*_*', 
@@ -18386,12 +31749,14 @@ process.RAWRECOEventContent = cms.PSet(
         'keep *_jetProbabilityBJetTags_*_*', 
         'keep *_jetBProbabilityBJetTags_*_*', 
         'keep *_secondaryVertexTagInfos_*_*', 
+        'keep *_inclusiveSecondaryVertexFinderTagInfos_*_*', 
         'keep *_ghostTrackVertexTagInfos_*_*', 
         'keep *_simpleSecondaryVertexBJetTags_*_*', 
         'keep *_simpleSecondaryVertexHighEffBJetTags_*_*', 
         'keep *_simpleSecondaryVertexHighPurBJetTags_*_*', 
         'keep *_combinedSecondaryVertexBJetTags_*_*', 
         'keep *_combinedSecondaryVertexMVABJetTags_*_*', 
+        'keep *_combinedInclusiveSecondaryVertexV2BJetTags_*_*', 
         'keep *_ghostTrackBJetTags_*_*', 
         'keep *_softPFMuonsTagInfos_*_*', 
         'keep *_softPFElectronsTagInfos_*_*', 
@@ -18401,6 +31766,9 @@ process.RAWRECOEventContent = cms.PSet(
         'keep *_softMuonBJetTags_*_*', 
         'keep *_softMuonByIP3dBJetTags_*_*', 
         'keep *_softMuonByPtBJetTags_*_*', 
+        'keep *_pfImpactParameterTagInfos_*_*', 
+        'keep *_pfSecondaryVertexTagInfos_*_*', 
+        'keep *_pfCombinedSecondaryVertexBJetTags_*_*', 
         'keep *_ak4PFJetsRecoTauPiZeros_*_*', 
         'keep *_hpsPFTauProducer_*_*', 
         'keep *_hpsPFTauDiscrimination*_*_*', 
@@ -18421,6 +31789,8 @@ process.RAWRECOEventContent = cms.PSet(
         'keep floatedmValueMap_eidRobustHighEnergy_*_*', 
         'keep floatedmValueMap_eidLoose_*_*', 
         'keep floatedmValueMap_eidTight_*_*', 
+        'keep *_egmGedGsfElectronPFIsolation_*_*', 
+        'keep *_egmGsfElectronIDs_*_*', 
         'keep *_gedPhotonCore_*_*', 
         'keep *_gedPhotons_*_*', 
         'keep *_particleBasedIsolation_*_*', 
@@ -18550,6 +31920,7 @@ process.RAWRECOSIMHLTEventContent = cms.PSet(
         'keep *_cscSegments_*_*', 
         'keep *_rpcRecHits_*_*', 
         'keep *_hbhereco_*_*', 
+        'keep *_hbheprereco_*_*', 
         'keep *_hfreco_*_*', 
         'keep *_horeco_*_*', 
         'keep HBHERecHitsSorted_hbherecoMB_*_*', 
@@ -18655,10 +32026,10 @@ process.RAWRECOSIMHLTEventContent = cms.PSet(
         'keep double_kt6PFJetsCentralNeutralTight_*_*', 
         'keep *_fixedGridRho*_*_*', 
         'keep *_ca8PFJetsCHSPrunedLinks_*_*', 
-        'keep recoCaloMETs_met_*_*', 
-        'keep recoCaloMETs_metNoHF_*_*', 
-        'keep recoCaloMETs_metHO_*_*', 
-        'keep recoCaloMETs_corMetGlobalMuons_*_*', 
+        'keep recoCaloMETs_caloMet_*_*', 
+        'keep recoCaloMETs_caloMetBE_*_*', 
+        'keep recoCaloMETs_caloMetBEFO_*_*', 
+        'keep recoCaloMETs_caloMetM_*_*', 
         'keep recoPFMETs_pfMet_*_*', 
         'keep recoPFMETs_pfChMet_*_*', 
         'keep recoMuonMETCorrectionDataedmValueMap_muonMETValueMapProducer_*_*', 
@@ -18668,6 +32039,7 @@ process.RAWRECOSIMHLTEventContent = cms.PSet(
         'keep *BeamHaloSummary_BeamHaloSummary_*_*', 
         'keep *_MuonSeed_*_*', 
         'keep *_ancientMuonSeed_*_*', 
+        'keep *_displacedMuonSeeds_*_*', 
         'keep *_mergedStandAloneMuonSeeds_*_*', 
         'keep TrackingRecHitsOwned_globalMuons_*_*', 
         'keep TrackingRecHitsOwned_tevMuons_*_*', 
@@ -18713,6 +32085,9 @@ process.RAWRECOSIMHLTEventContent = cms.PSet(
         'keep recoTracks_refittedStandAloneMuons_*_*', 
         'keep recoTrackExtras_refittedStandAloneMuons_*_*', 
         'keep TrackingRecHitsOwned_refittedStandAloneMuons_*_*', 
+        'keep recoTracks_displacedStandAloneMuons__*', 
+        'keep recoTrackExtras_displacedStandAloneMuons_*_*', 
+        'keep TrackingRecHitsOwned_displacedStandAloneMuons_*_*', 
         'keep *_muIsoDepositTk_*_*', 
         'keep *_muIsoDepositCalByAssociatorTowers_*_*', 
         'keep *_muIsoDepositCalByAssociatorHits_*_*', 
@@ -18727,12 +32102,14 @@ process.RAWRECOSIMHLTEventContent = cms.PSet(
         'keep *_jetProbabilityBJetTags_*_*', 
         'keep *_jetBProbabilityBJetTags_*_*', 
         'keep *_secondaryVertexTagInfos_*_*', 
+        'keep *_inclusiveSecondaryVertexFinderTagInfos_*_*', 
         'keep *_ghostTrackVertexTagInfos_*_*', 
         'keep *_simpleSecondaryVertexBJetTags_*_*', 
         'keep *_simpleSecondaryVertexHighEffBJetTags_*_*', 
         'keep *_simpleSecondaryVertexHighPurBJetTags_*_*', 
         'keep *_combinedSecondaryVertexBJetTags_*_*', 
         'keep *_combinedSecondaryVertexMVABJetTags_*_*', 
+        'keep *_combinedInclusiveSecondaryVertexV2BJetTags_*_*', 
         'keep *_ghostTrackBJetTags_*_*', 
         'keep *_softPFMuonsTagInfos_*_*', 
         'keep *_softPFElectronsTagInfos_*_*', 
@@ -18742,6 +32119,9 @@ process.RAWRECOSIMHLTEventContent = cms.PSet(
         'keep *_softMuonBJetTags_*_*', 
         'keep *_softMuonByIP3dBJetTags_*_*', 
         'keep *_softMuonByPtBJetTags_*_*', 
+        'keep *_pfImpactParameterTagInfos_*_*', 
+        'keep *_pfSecondaryVertexTagInfos_*_*', 
+        'keep *_pfCombinedSecondaryVertexBJetTags_*_*', 
         'keep *_ak4PFJetsRecoTauPiZeros_*_*', 
         'keep *_hpsPFTauProducer_*_*', 
         'keep *_hpsPFTauDiscrimination*_*_*', 
@@ -18762,6 +32142,8 @@ process.RAWRECOSIMHLTEventContent = cms.PSet(
         'keep floatedmValueMap_eidRobustHighEnergy_*_*', 
         'keep floatedmValueMap_eidLoose_*_*', 
         'keep floatedmValueMap_eidTight_*_*', 
+        'keep *_egmGedGsfElectronPFIsolation_*_*', 
+        'keep *_egmGsfElectronIDs_*_*', 
         'keep *_gedPhotonCore_*_*', 
         'keep *_gedPhotons_*_*', 
         'keep *_particleBasedIsolation_*_*', 
@@ -18873,6 +32255,7 @@ process.RAWRECOSIMHLTEventContent = cms.PSet(
         'keep LHERunInfoProduct_*_*_*', 
         'keep LHEEventProduct_*_*_*', 
         'keep GenRunInfoProduct_generator_*_*', 
+        'keep GenLumiInfoProduct_generator_*_*', 
         'keep GenEventInfoProduct_generator_*_*', 
         'keep edmHepMCProduct_generator_*_*', 
         'keep GenFilterInfo_*_*_*', 
@@ -19208,6 +32591,7 @@ process.RAWSIMEventContent = cms.PSet(
         'keep LHERunInfoProduct_*_*_*', 
         'keep LHEEventProduct_*_*_*', 
         'keep GenRunInfoProduct_generator_*_*', 
+        'keep GenLumiInfoProduct_generator_*_*', 
         'keep GenEventInfoProduct_generator_*_*', 
         'keep edmHepMCProduct_generator_*_*', 
         'keep GenFilterInfo_*_*_*', 
@@ -19252,6 +32636,7 @@ process.RAWSIMHLTEventContent = cms.PSet(
         'keep LHERunInfoProduct_*_*_*', 
         'keep LHEEventProduct_*_*_*', 
         'keep GenRunInfoProduct_generator_*_*', 
+        'keep GenLumiInfoProduct_generator_*_*', 
         'keep GenEventInfoProduct_generator_*_*', 
         'keep edmHepMCProduct_generator_*_*', 
         'keep GenFilterInfo_*_*_*', 
@@ -19569,6 +32954,7 @@ process.RECODEBUGEventContent = cms.PSet(
         'keep *_cscSegments_*_*', 
         'keep *_rpcRecHits_*_*', 
         'keep *_hbhereco_*_*', 
+        'keep *_hbheprereco_*_*', 
         'keep *_hfreco_*_*', 
         'keep *_horeco_*_*', 
         'keep HBHERecHitsSorted_hbherecoMB_*_*', 
@@ -19674,10 +33060,10 @@ process.RECODEBUGEventContent = cms.PSet(
         'keep double_kt6PFJetsCentralNeutralTight_*_*', 
         'keep *_fixedGridRho*_*_*', 
         'keep *_ca8PFJetsCHSPrunedLinks_*_*', 
-        'keep recoCaloMETs_met_*_*', 
-        'keep recoCaloMETs_metNoHF_*_*', 
-        'keep recoCaloMETs_metHO_*_*', 
-        'keep recoCaloMETs_corMetGlobalMuons_*_*', 
+        'keep recoCaloMETs_caloMet_*_*', 
+        'keep recoCaloMETs_caloMetBE_*_*', 
+        'keep recoCaloMETs_caloMetBEFO_*_*', 
+        'keep recoCaloMETs_caloMetM_*_*', 
         'keep recoPFMETs_pfMet_*_*', 
         'keep recoPFMETs_pfChMet_*_*', 
         'keep recoMuonMETCorrectionDataedmValueMap_muonMETValueMapProducer_*_*', 
@@ -19687,6 +33073,7 @@ process.RECODEBUGEventContent = cms.PSet(
         'keep *BeamHaloSummary_BeamHaloSummary_*_*', 
         'keep *_MuonSeed_*_*', 
         'keep *_ancientMuonSeed_*_*', 
+        'keep *_displacedMuonSeeds_*_*', 
         'keep *_mergedStandAloneMuonSeeds_*_*', 
         'keep TrackingRecHitsOwned_globalMuons_*_*', 
         'keep TrackingRecHitsOwned_tevMuons_*_*', 
@@ -19732,6 +33119,9 @@ process.RECODEBUGEventContent = cms.PSet(
         'keep recoTracks_refittedStandAloneMuons_*_*', 
         'keep recoTrackExtras_refittedStandAloneMuons_*_*', 
         'keep TrackingRecHitsOwned_refittedStandAloneMuons_*_*', 
+        'keep recoTracks_displacedStandAloneMuons__*', 
+        'keep recoTrackExtras_displacedStandAloneMuons_*_*', 
+        'keep TrackingRecHitsOwned_displacedStandAloneMuons_*_*', 
         'keep *_muIsoDepositTk_*_*', 
         'keep *_muIsoDepositCalByAssociatorTowers_*_*', 
         'keep *_muIsoDepositCalByAssociatorHits_*_*', 
@@ -19746,12 +33136,14 @@ process.RECODEBUGEventContent = cms.PSet(
         'keep *_jetProbabilityBJetTags_*_*', 
         'keep *_jetBProbabilityBJetTags_*_*', 
         'keep *_secondaryVertexTagInfos_*_*', 
+        'keep *_inclusiveSecondaryVertexFinderTagInfos_*_*', 
         'keep *_ghostTrackVertexTagInfos_*_*', 
         'keep *_simpleSecondaryVertexBJetTags_*_*', 
         'keep *_simpleSecondaryVertexHighEffBJetTags_*_*', 
         'keep *_simpleSecondaryVertexHighPurBJetTags_*_*', 
         'keep *_combinedSecondaryVertexBJetTags_*_*', 
         'keep *_combinedSecondaryVertexMVABJetTags_*_*', 
+        'keep *_combinedInclusiveSecondaryVertexV2BJetTags_*_*', 
         'keep *_ghostTrackBJetTags_*_*', 
         'keep *_softPFMuonsTagInfos_*_*', 
         'keep *_softPFElectronsTagInfos_*_*', 
@@ -19761,6 +33153,9 @@ process.RECODEBUGEventContent = cms.PSet(
         'keep *_softMuonBJetTags_*_*', 
         'keep *_softMuonByIP3dBJetTags_*_*', 
         'keep *_softMuonByPtBJetTags_*_*', 
+        'keep *_pfImpactParameterTagInfos_*_*', 
+        'keep *_pfSecondaryVertexTagInfos_*_*', 
+        'keep *_pfCombinedSecondaryVertexBJetTags_*_*', 
         'keep *_ak4PFJetsRecoTauPiZeros_*_*', 
         'keep *_hpsPFTauProducer_*_*', 
         'keep *_hpsPFTauDiscrimination*_*_*', 
@@ -19781,6 +33176,8 @@ process.RECODEBUGEventContent = cms.PSet(
         'keep floatedmValueMap_eidRobustHighEnergy_*_*', 
         'keep floatedmValueMap_eidLoose_*_*', 
         'keep floatedmValueMap_eidTight_*_*', 
+        'keep *_egmGedGsfElectronPFIsolation_*_*', 
+        'keep *_egmGsfElectronIDs_*_*', 
         'keep *_gedPhotonCore_*_*', 
         'keep *_gedPhotons_*_*', 
         'keep *_particleBasedIsolation_*_*', 
@@ -19890,6 +33287,7 @@ process.RECODEBUGEventContent = cms.PSet(
         'keep LHERunInfoProduct_*_*_*', 
         'keep LHEEventProduct_*_*_*', 
         'keep GenRunInfoProduct_generator_*_*', 
+        'keep GenLumiInfoProduct_generator_*_*', 
         'keep GenEventInfoProduct_generator_*_*', 
         'keep edmHepMCProduct_generator_*_*', 
         'keep GenFilterInfo_*_*_*', 
@@ -19938,6 +33336,7 @@ process.RECOEventContent = cms.PSet(
         'keep *_cscSegments_*_*', 
         'keep *_rpcRecHits_*_*', 
         'keep *_hbhereco_*_*', 
+        'keep *_hbheprereco_*_*', 
         'keep *_hfreco_*_*', 
         'keep *_horeco_*_*', 
         'keep HBHERecHitsSorted_hbherecoMB_*_*', 
@@ -20043,10 +33442,10 @@ process.RECOEventContent = cms.PSet(
         'keep double_kt6PFJetsCentralNeutralTight_*_*', 
         'keep *_fixedGridRho*_*_*', 
         'keep *_ca8PFJetsCHSPrunedLinks_*_*', 
-        'keep recoCaloMETs_met_*_*', 
-        'keep recoCaloMETs_metNoHF_*_*', 
-        'keep recoCaloMETs_metHO_*_*', 
-        'keep recoCaloMETs_corMetGlobalMuons_*_*', 
+        'keep recoCaloMETs_caloMet_*_*', 
+        'keep recoCaloMETs_caloMetBE_*_*', 
+        'keep recoCaloMETs_caloMetBEFO_*_*', 
+        'keep recoCaloMETs_caloMetM_*_*', 
         'keep recoPFMETs_pfMet_*_*', 
         'keep recoPFMETs_pfChMet_*_*', 
         'keep recoMuonMETCorrectionDataedmValueMap_muonMETValueMapProducer_*_*', 
@@ -20056,6 +33455,7 @@ process.RECOEventContent = cms.PSet(
         'keep *BeamHaloSummary_BeamHaloSummary_*_*', 
         'keep *_MuonSeed_*_*', 
         'keep *_ancientMuonSeed_*_*', 
+        'keep *_displacedMuonSeeds_*_*', 
         'keep *_mergedStandAloneMuonSeeds_*_*', 
         'keep TrackingRecHitsOwned_globalMuons_*_*', 
         'keep TrackingRecHitsOwned_tevMuons_*_*', 
@@ -20101,6 +33501,9 @@ process.RECOEventContent = cms.PSet(
         'keep recoTracks_refittedStandAloneMuons_*_*', 
         'keep recoTrackExtras_refittedStandAloneMuons_*_*', 
         'keep TrackingRecHitsOwned_refittedStandAloneMuons_*_*', 
+        'keep recoTracks_displacedStandAloneMuons__*', 
+        'keep recoTrackExtras_displacedStandAloneMuons_*_*', 
+        'keep TrackingRecHitsOwned_displacedStandAloneMuons_*_*', 
         'keep *_muIsoDepositTk_*_*', 
         'keep *_muIsoDepositCalByAssociatorTowers_*_*', 
         'keep *_muIsoDepositCalByAssociatorHits_*_*', 
@@ -20115,12 +33518,14 @@ process.RECOEventContent = cms.PSet(
         'keep *_jetProbabilityBJetTags_*_*', 
         'keep *_jetBProbabilityBJetTags_*_*', 
         'keep *_secondaryVertexTagInfos_*_*', 
+        'keep *_inclusiveSecondaryVertexFinderTagInfos_*_*', 
         'keep *_ghostTrackVertexTagInfos_*_*', 
         'keep *_simpleSecondaryVertexBJetTags_*_*', 
         'keep *_simpleSecondaryVertexHighEffBJetTags_*_*', 
         'keep *_simpleSecondaryVertexHighPurBJetTags_*_*', 
         'keep *_combinedSecondaryVertexBJetTags_*_*', 
         'keep *_combinedSecondaryVertexMVABJetTags_*_*', 
+        'keep *_combinedInclusiveSecondaryVertexV2BJetTags_*_*', 
         'keep *_ghostTrackBJetTags_*_*', 
         'keep *_softPFMuonsTagInfos_*_*', 
         'keep *_softPFElectronsTagInfos_*_*', 
@@ -20130,6 +33535,9 @@ process.RECOEventContent = cms.PSet(
         'keep *_softMuonBJetTags_*_*', 
         'keep *_softMuonByIP3dBJetTags_*_*', 
         'keep *_softMuonByPtBJetTags_*_*', 
+        'keep *_pfImpactParameterTagInfos_*_*', 
+        'keep *_pfSecondaryVertexTagInfos_*_*', 
+        'keep *_pfCombinedSecondaryVertexBJetTags_*_*', 
         'keep *_ak4PFJetsRecoTauPiZeros_*_*', 
         'keep *_hpsPFTauProducer_*_*', 
         'keep *_hpsPFTauDiscrimination*_*_*', 
@@ -20150,6 +33558,8 @@ process.RECOEventContent = cms.PSet(
         'keep floatedmValueMap_eidRobustHighEnergy_*_*', 
         'keep floatedmValueMap_eidLoose_*_*', 
         'keep floatedmValueMap_eidTight_*_*', 
+        'keep *_egmGedGsfElectronPFIsolation_*_*', 
+        'keep *_egmGsfElectronIDs_*_*', 
         'keep *_gedPhotonCore_*_*', 
         'keep *_gedPhotons_*_*', 
         'keep *_particleBasedIsolation_*_*', 
@@ -20276,6 +33686,7 @@ process.RECOSIMEventContent = cms.PSet(
         'keep *_cscSegments_*_*', 
         'keep *_rpcRecHits_*_*', 
         'keep *_hbhereco_*_*', 
+        'keep *_hbheprereco_*_*', 
         'keep *_hfreco_*_*', 
         'keep *_horeco_*_*', 
         'keep HBHERecHitsSorted_hbherecoMB_*_*', 
@@ -20381,10 +33792,10 @@ process.RECOSIMEventContent = cms.PSet(
         'keep double_kt6PFJetsCentralNeutralTight_*_*', 
         'keep *_fixedGridRho*_*_*', 
         'keep *_ca8PFJetsCHSPrunedLinks_*_*', 
-        'keep recoCaloMETs_met_*_*', 
-        'keep recoCaloMETs_metNoHF_*_*', 
-        'keep recoCaloMETs_metHO_*_*', 
-        'keep recoCaloMETs_corMetGlobalMuons_*_*', 
+        'keep recoCaloMETs_caloMet_*_*', 
+        'keep recoCaloMETs_caloMetBE_*_*', 
+        'keep recoCaloMETs_caloMetBEFO_*_*', 
+        'keep recoCaloMETs_caloMetM_*_*', 
         'keep recoPFMETs_pfMet_*_*', 
         'keep recoPFMETs_pfChMet_*_*', 
         'keep recoMuonMETCorrectionDataedmValueMap_muonMETValueMapProducer_*_*', 
@@ -20394,6 +33805,7 @@ process.RECOSIMEventContent = cms.PSet(
         'keep *BeamHaloSummary_BeamHaloSummary_*_*', 
         'keep *_MuonSeed_*_*', 
         'keep *_ancientMuonSeed_*_*', 
+        'keep *_displacedMuonSeeds_*_*', 
         'keep *_mergedStandAloneMuonSeeds_*_*', 
         'keep TrackingRecHitsOwned_globalMuons_*_*', 
         'keep TrackingRecHitsOwned_tevMuons_*_*', 
@@ -20439,6 +33851,9 @@ process.RECOSIMEventContent = cms.PSet(
         'keep recoTracks_refittedStandAloneMuons_*_*', 
         'keep recoTrackExtras_refittedStandAloneMuons_*_*', 
         'keep TrackingRecHitsOwned_refittedStandAloneMuons_*_*', 
+        'keep recoTracks_displacedStandAloneMuons__*', 
+        'keep recoTrackExtras_displacedStandAloneMuons_*_*', 
+        'keep TrackingRecHitsOwned_displacedStandAloneMuons_*_*', 
         'keep *_muIsoDepositTk_*_*', 
         'keep *_muIsoDepositCalByAssociatorTowers_*_*', 
         'keep *_muIsoDepositCalByAssociatorHits_*_*', 
@@ -20453,12 +33868,14 @@ process.RECOSIMEventContent = cms.PSet(
         'keep *_jetProbabilityBJetTags_*_*', 
         'keep *_jetBProbabilityBJetTags_*_*', 
         'keep *_secondaryVertexTagInfos_*_*', 
+        'keep *_inclusiveSecondaryVertexFinderTagInfos_*_*', 
         'keep *_ghostTrackVertexTagInfos_*_*', 
         'keep *_simpleSecondaryVertexBJetTags_*_*', 
         'keep *_simpleSecondaryVertexHighEffBJetTags_*_*', 
         'keep *_simpleSecondaryVertexHighPurBJetTags_*_*', 
         'keep *_combinedSecondaryVertexBJetTags_*_*', 
         'keep *_combinedSecondaryVertexMVABJetTags_*_*', 
+        'keep *_combinedInclusiveSecondaryVertexV2BJetTags_*_*', 
         'keep *_ghostTrackBJetTags_*_*', 
         'keep *_softPFMuonsTagInfos_*_*', 
         'keep *_softPFElectronsTagInfos_*_*', 
@@ -20468,6 +33885,9 @@ process.RECOSIMEventContent = cms.PSet(
         'keep *_softMuonBJetTags_*_*', 
         'keep *_softMuonByIP3dBJetTags_*_*', 
         'keep *_softMuonByPtBJetTags_*_*', 
+        'keep *_pfImpactParameterTagInfos_*_*', 
+        'keep *_pfSecondaryVertexTagInfos_*_*', 
+        'keep *_pfCombinedSecondaryVertexBJetTags_*_*', 
         'keep *_ak4PFJetsRecoTauPiZeros_*_*', 
         'keep *_hpsPFTauProducer_*_*', 
         'keep *_hpsPFTauDiscrimination*_*_*', 
@@ -20488,6 +33908,8 @@ process.RECOSIMEventContent = cms.PSet(
         'keep floatedmValueMap_eidRobustHighEnergy_*_*', 
         'keep floatedmValueMap_eidLoose_*_*', 
         'keep floatedmValueMap_eidTight_*_*', 
+        'keep *_egmGedGsfElectronPFIsolation_*_*', 
+        'keep *_egmGsfElectronIDs_*_*', 
         'keep *_gedPhotonCore_*_*', 
         'keep *_gedPhotons_*_*', 
         'keep *_particleBasedIsolation_*_*', 
@@ -20597,6 +34019,7 @@ process.RECOSIMEventContent = cms.PSet(
         'keep LHERunInfoProduct_*_*_*', 
         'keep LHEEventProduct_*_*_*', 
         'keep GenRunInfoProduct_generator_*_*', 
+        'keep GenLumiInfoProduct_generator_*_*', 
         'keep GenEventInfoProduct_generator_*_*', 
         'keep edmHepMCProduct_generator_*_*', 
         'keep GenFilterInfo_*_*_*', 
@@ -20627,6 +34050,7 @@ process.REDIGIEventContent = cms.PSet(
         'keep LHERunInfoProduct_*_*_*', 
         'keep LHEEventProduct_*_*_*', 
         'keep GenRunInfoProduct_generator_*_*', 
+        'keep GenLumiInfoProduct_generator_*_*', 
         'keep GenEventInfoProduct_generator_*_*', 
         'keep edmHepMCProduct_generator_*_*', 
         'keep GenFilterInfo_*_*_*', 
@@ -20699,6 +34123,7 @@ process.REPACKRAWSIMEventContent = cms.PSet(
         'keep LHERunInfoProduct_*_*_*', 
         'keep LHEEventProduct_*_*_*', 
         'keep GenRunInfoProduct_generator_*_*', 
+        'keep GenLumiInfoProduct_generator_*_*', 
         'keep GenEventInfoProduct_generator_*_*', 
         'keep edmHepMCProduct_generator_*_*', 
         'keep GenFilterInfo_*_*_*', 
@@ -20721,6 +34146,7 @@ process.RESIMEventContent = cms.PSet(
         'keep LHERunInfoProduct_*_*_*', 
         'keep LHEEventProduct_*_*_*', 
         'keep GenRunInfoProduct_generator_*_*', 
+        'keep GenLumiInfoProduct_generator_*_*', 
         'keep GenEventInfoProduct_generator_*_*', 
         'keep edmHepMCProduct_generator_*_*', 
         'keep GenFilterInfo_*_*_*', 
@@ -20737,12 +34163,14 @@ process.RecoBTagAOD = cms.PSet(
         'keep *_simpleSecondaryVertexHighPurBJetTags_*_*', 
         'keep *_combinedSecondaryVertexBJetTags_*_*', 
         'keep *_combinedSecondaryVertexMVABJetTags_*_*', 
+        'keep *_combinedInclusiveSecondaryVertexV2BJetTags_*_*', 
         'keep *_ghostTrackBJetTags_*_*', 
         'keep *_softPFElectronBJetTags_*_*', 
         'keep *_softPFMuonBJetTags_*_*', 
         'keep *_softMuonBJetTags_*_*', 
         'keep *_softMuonByIP3dBJetTags_*_*', 
-        'keep *_softMuonByPtBJetTags_*_*')
+        'keep *_softMuonByPtBJetTags_*_*', 
+        'keep *_pfCombinedSecondaryVertexBJetTags_*_*')
 )
 
 process.RecoBTagFEVT = cms.PSet(
@@ -20752,12 +34180,14 @@ process.RecoBTagFEVT = cms.PSet(
         'keep *_jetProbabilityBJetTags_*_*', 
         'keep *_jetBProbabilityBJetTags_*_*', 
         'keep *_secondaryVertexTagInfos_*_*', 
+        'keep *_inclusiveSecondaryVertexFinderTagInfos_*_*', 
         'keep *_ghostTrackVertexTagInfos_*_*', 
         'keep *_simpleSecondaryVertexBJetTags_*_*', 
         'keep *_simpleSecondaryVertexHighEffBJetTags_*_*', 
         'keep *_simpleSecondaryVertexHighPurBJetTags_*_*', 
         'keep *_combinedSecondaryVertexBJetTags_*_*', 
         'keep *_combinedSecondaryVertexMVABJetTags_*_*', 
+        'keep *_combinedInclusiveSecondaryVertexV2BJetTags_*_*', 
         'keep *_ghostTrackBJetTags_*_*', 
         'keep *_softPFMuonsTagInfos_*_*', 
         'keep *_softPFElectronsTagInfos_*_*', 
@@ -20766,7 +34196,10 @@ process.RecoBTagFEVT = cms.PSet(
         'keep *_softMuonTagInfos_*_*', 
         'keep *_softMuonBJetTags_*_*', 
         'keep *_softMuonByIP3dBJetTags_*_*', 
-        'keep *_softMuonByPtBJetTags_*_*')
+        'keep *_softMuonByPtBJetTags_*_*', 
+        'keep *_pfImpactParameterTagInfos_*_*', 
+        'keep *_pfSecondaryVertexTagInfos_*_*', 
+        'keep *_pfCombinedSecondaryVertexBJetTags_*_*')
 )
 
 process.RecoBTagRECO = cms.PSet(
@@ -20776,12 +34209,14 @@ process.RecoBTagRECO = cms.PSet(
         'keep *_jetProbabilityBJetTags_*_*', 
         'keep *_jetBProbabilityBJetTags_*_*', 
         'keep *_secondaryVertexTagInfos_*_*', 
+        'keep *_inclusiveSecondaryVertexFinderTagInfos_*_*', 
         'keep *_ghostTrackVertexTagInfos_*_*', 
         'keep *_simpleSecondaryVertexBJetTags_*_*', 
         'keep *_simpleSecondaryVertexHighEffBJetTags_*_*', 
         'keep *_simpleSecondaryVertexHighPurBJetTags_*_*', 
         'keep *_combinedSecondaryVertexBJetTags_*_*', 
         'keep *_combinedSecondaryVertexMVABJetTags_*_*', 
+        'keep *_combinedInclusiveSecondaryVertexV2BJetTags_*_*', 
         'keep *_ghostTrackBJetTags_*_*', 
         'keep *_softPFMuonsTagInfos_*_*', 
         'keep *_softPFElectronsTagInfos_*_*', 
@@ -20790,7 +34225,10 @@ process.RecoBTagRECO = cms.PSet(
         'keep *_softMuonTagInfos_*_*', 
         'keep *_softMuonBJetTags_*_*', 
         'keep *_softMuonByIP3dBJetTags_*_*', 
-        'keep *_softMuonByPtBJetTags_*_*')
+        'keep *_softMuonByPtBJetTags_*_*', 
+        'keep *_pfImpactParameterTagInfos_*_*', 
+        'keep *_pfSecondaryVertexTagInfos_*_*', 
+        'keep *_pfCombinedSecondaryVertexBJetTags_*_*')
 )
 
 process.RecoBTauAOD = cms.PSet(
@@ -20870,6 +34308,8 @@ process.RecoEgammaAOD = cms.PSet(
         'keep floatedmValueMap_eidRobustHighEnergy_*_*', 
         'keep floatedmValueMap_eidLoose_*_*', 
         'keep floatedmValueMap_eidTight_*_*', 
+        'keep *_egmGedGsfElectronPFIsolation_*_*', 
+        'keep *_egmGsfElectronIDs_*_*', 
         'keep recoPhotonCores_gedPhotonCore_*_*', 
         'keep recoPhotons_gedPhotons_*_*', 
         'keep *_particleBasedIsolation_*_*', 
@@ -20904,6 +34344,8 @@ process.RecoEgammaFEVT = cms.PSet(
         'keep *_eidRobustHighEnergy_*_*', 
         'keep *_eidLoose_*_*', 
         'keep *_eidTight_*_*', 
+        'keep *_egmGedGsfElectronPF*Isolation_*_*', 
+        'keep *_egmGsfElectronIDs_*_*', 
         'keep *_conversions_*_*', 
         'keep *_mustacheConversions_*_*', 
         'drop *_conversions_uncleanedConversions_*', 
@@ -20940,6 +34382,8 @@ process.RecoEgammaRECO = cms.PSet(
         'keep floatedmValueMap_eidRobustHighEnergy_*_*', 
         'keep floatedmValueMap_eidLoose_*_*', 
         'keep floatedmValueMap_eidTight_*_*', 
+        'keep *_egmGedGsfElectronPFIsolation_*_*', 
+        'keep *_egmGsfElectronIDs_*_*', 
         'keep *_gedPhotonCore_*_*', 
         'keep *_gedPhotons_*_*', 
         'keep *_particleBasedIsolation_*_*', 
@@ -21166,13 +34610,14 @@ process.RecoLocalCaloFEVT = cms.PSet(
         'keep *_reducedHcalRecHits_*_*', 
         'keep *_castorreco_*_*', 
         'keep HcalUnpackerReport_*_*_*', 
-        'keep *_ecalGlobalUncalibRecHit_*_*', 
+        'keep *_ecalMultiFitUncalibRecHit_*_*', 
         'keep *_ecalPreshowerRecHit_*_*', 
         'keep *_ecalRecHit_*_*')
 )
 
 process.RecoLocalCaloRECO = cms.PSet(
     outputCommands = cms.untracked.vstring('keep *_hbhereco_*_*', 
+        'keep *_hbheprereco_*_*', 
         'keep *_hfreco_*_*', 
         'keep *_horeco_*_*', 
         'keep HBHERecHitsSorted_hbherecoMB_*_*', 
@@ -21232,10 +34677,10 @@ process.RecoLocalTrackerRECO = cms.PSet(
 )
 
 process.RecoMETAOD = cms.PSet(
-    outputCommands = cms.untracked.vstring('keep recoCaloMETs_met_*_*', 
-        'keep recoCaloMETs_metNoHF_*_*', 
-        'keep recoCaloMETs_metHO_*_*', 
-        'keep recoCaloMETs_corMetGlobalMuons_*_*', 
+    outputCommands = cms.untracked.vstring('keep recoCaloMETs_caloMet_*_*', 
+        'keep recoCaloMETs_caloMetBE_*_*', 
+        'keep recoCaloMETs_caloMetBEFO_*_*', 
+        'keep recoCaloMETs_caloMetM_*_*', 
         'keep recoPFMETs_pfMet_*_*', 
         'keep recoPFMETs_pfChMet_*_*', 
         'keep recoMuonMETCorrectionDataedmValueMap_muonMETValueMapProducer_*_*', 
@@ -21246,10 +34691,10 @@ process.RecoMETAOD = cms.PSet(
 )
 
 process.RecoMETFEVT = cms.PSet(
-    outputCommands = cms.untracked.vstring('keep recoCaloMETs_met_*_*', 
-        'keep recoCaloMETs_metNoHF_*_*', 
-        'keep recoCaloMETs_metHO_*_*', 
-        'keep recoCaloMETs_corMetGlobalMuons_*_*', 
+    outputCommands = cms.untracked.vstring('keep recoCaloMETs_caloMet_*_*', 
+        'keep recoCaloMETs_caloMetBE_*_*', 
+        'keep recoCaloMETs_caloMetBEFO_*_*', 
+        'keep recoCaloMETs_caloMetM_*_*', 
         'keep recoPFMETs_pfMet_*_*', 
         'keep recoPFMETs_pfChMet_*_*', 
         'keep recoMuonMETCorrectionDataedmValueMap_muonMETValueMapProducer_*_*', 
@@ -21260,10 +34705,10 @@ process.RecoMETFEVT = cms.PSet(
 )
 
 process.RecoMETRECO = cms.PSet(
-    outputCommands = cms.untracked.vstring('keep recoCaloMETs_met_*_*', 
-        'keep recoCaloMETs_metNoHF_*_*', 
-        'keep recoCaloMETs_metHO_*_*', 
-        'keep recoCaloMETs_corMetGlobalMuons_*_*', 
+    outputCommands = cms.untracked.vstring('keep recoCaloMETs_caloMet_*_*', 
+        'keep recoCaloMETs_caloMetBE_*_*', 
+        'keep recoCaloMETs_caloMetBEFO_*_*', 
+        'keep recoCaloMETs_caloMetM_*_*', 
         'keep recoPFMETs_pfMet_*_*', 
         'keep recoPFMETs_pfChMet_*_*', 
         'keep recoMuonMETCorrectionDataedmValueMap_muonMETValueMapProducer_*_*', 
@@ -21296,12 +34741,16 @@ process.RecoMuonAOD = cms.PSet(
         'keep recoMuons_muonsFromCosmics1Leg_*_*', 
         'keep recoTracks_refittedStandAloneMuons_*_*', 
         'keep recoTrackExtras_refittedStandAloneMuons_*_*', 
-        'keep TrackingRecHitsOwned_refittedStandAloneMuons_*_*')
+        'keep TrackingRecHitsOwned_refittedStandAloneMuons_*_*', 
+        'keep recoTracks_displacedStandAloneMuons__*', 
+        'keep recoTrackExtras_displacedStandAloneMuons_*_*', 
+        'keep TrackingRecHitsOwned_displacedStandAloneMuons_*_*')
 )
 
 process.RecoMuonFEVT = cms.PSet(
     outputCommands = cms.untracked.vstring('keep *_MuonSeed_*_*', 
         'keep *_ancientMuonSeed_*_*', 
+        'keep *_displacedMuonSeeds_*_*', 
         'keep *_mergedStandAloneMuonSeeds_*_*', 
         'keep TrackingRecHitsOwned_globalMuons_*_*', 
         'keep TrackingRecHitsOwned_tevMuons_*_*', 
@@ -21347,6 +34796,9 @@ process.RecoMuonFEVT = cms.PSet(
         'keep recoTracks_refittedStandAloneMuons_*_*', 
         'keep recoTrackExtras_refittedStandAloneMuons_*_*', 
         'keep TrackingRecHitsOwned_refittedStandAloneMuons_*_*', 
+        'keep recoTracks_displacedStandAloneMuons__*', 
+        'keep recoTrackExtras_displacedStandAloneMuons_*_*', 
+        'keep TrackingRecHitsOwned_displacedStandAloneMuons_*_*', 
         'keep *_muIsoDepositTk_*_*', 
         'keep *_muIsoDepositCalByAssociatorTowers_*_*', 
         'keep *_muIsoDepositCalByAssociatorHits_*_*', 
@@ -21396,6 +34848,7 @@ process.RecoMuonIsolationRECO = cms.PSet(
 process.RecoMuonRECO = cms.PSet(
     outputCommands = cms.untracked.vstring('keep *_MuonSeed_*_*', 
         'keep *_ancientMuonSeed_*_*', 
+        'keep *_displacedMuonSeeds_*_*', 
         'keep *_mergedStandAloneMuonSeeds_*_*', 
         'keep TrackingRecHitsOwned_globalMuons_*_*', 
         'keep TrackingRecHitsOwned_tevMuons_*_*', 
@@ -21441,6 +34894,9 @@ process.RecoMuonRECO = cms.PSet(
         'keep recoTracks_refittedStandAloneMuons_*_*', 
         'keep recoTrackExtras_refittedStandAloneMuons_*_*', 
         'keep TrackingRecHitsOwned_refittedStandAloneMuons_*_*', 
+        'keep recoTracks_displacedStandAloneMuons__*', 
+        'keep recoTrackExtras_displacedStandAloneMuons_*_*', 
+        'keep TrackingRecHitsOwned_displacedStandAloneMuons_*_*', 
         'keep *_muIsoDepositTk_*_*', 
         'keep *_muIsoDepositCalByAssociatorTowers_*_*', 
         'keep *_muIsoDepositCalByAssociatorHits_*_*', 
@@ -21682,6 +35138,21 @@ process.RecoVertexRECO = cms.PSet(
         'keep *_inclusiveSecondaryVertices_*_*')
 )
 
+process.SectCollParametersBlock = cms.PSet(
+    SectCollParameters = cms.PSet(
+        SCCSP5 = cms.int32(0),
+        SCCSP2 = cms.int32(0),
+        SCCSP3 = cms.int32(0),
+        SCECF4 = cms.bool(False),
+        SCCSP1 = cms.int32(0),
+        SCECF2 = cms.bool(False),
+        SCECF3 = cms.bool(False),
+        SCCSP4 = cms.int32(0),
+        SCECF1 = cms.bool(False),
+        Debug = cms.untracked.bool(False)
+    )
+)
+
 process.SimCalorimetryAOD = cms.PSet(
     outputCommands = cms.untracked.vstring()
 )
@@ -21797,6 +35268,78 @@ process.SimTrackerRECO = cms.PSet(
     outputCommands = cms.untracked.vstring('keep *_allTrackMCMatch_*_*')
 )
 
+process.TSPhiParametersBlock = cms.PSet(
+    TSPhiParameters = cms.PSet(
+        TSMNOE1 = cms.bool(True),
+        TSMNOE2 = cms.bool(False),
+        TSSMSK1 = cms.int32(312),
+        TSTREN9 = cms.bool(True),
+        TSTREN8 = cms.bool(True),
+        TSTREN11 = cms.bool(True),
+        TSTREN3 = cms.bool(True),
+        TSTREN2 = cms.bool(True),
+        TSTREN1 = cms.bool(True),
+        TSTREN0 = cms.bool(True),
+        TSTREN7 = cms.bool(True),
+        TSTREN6 = cms.bool(True),
+        TSTREN5 = cms.bool(True),
+        TSTREN4 = cms.bool(True),
+        TSSCCE1 = cms.bool(True),
+        TSSCCE2 = cms.bool(False),
+        TSMCCE2 = cms.bool(False),
+        TSTREN19 = cms.bool(True),
+        TSMCCE1 = cms.bool(True),
+        TSTREN17 = cms.bool(True),
+        TSTREN16 = cms.bool(True),
+        TSTREN15 = cms.bool(True),
+        TSTREN14 = cms.bool(True),
+        TSTREN13 = cms.bool(True),
+        TSTREN12 = cms.bool(True),
+        TSSMSK2 = cms.int32(312),
+        TSTREN10 = cms.bool(True),
+        TSMMSK2 = cms.int32(312),
+        TSMMSK1 = cms.int32(312),
+        TSMHSP = cms.int32(1),
+        TSSNOE2 = cms.bool(False),
+        TSSNOE1 = cms.bool(True),
+        TSSCGS2 = cms.bool(True),
+        TSSCCEC = cms.bool(False),
+        TSMCCEC = cms.bool(False),
+        TSMHTE2 = cms.bool(False),
+        Debug = cms.untracked.bool(False),
+        TSSHTE2 = cms.bool(False),
+        TSMCGS1 = cms.bool(True),
+        TSMCGS2 = cms.bool(True),
+        TSSHTE1 = cms.bool(True),
+        TSTREN22 = cms.bool(True),
+        TSSNOEC = cms.bool(False),
+        TSTREN20 = cms.bool(True),
+        TSTREN21 = cms.bool(True),
+        TSMGS1 = cms.int32(1),
+        TSMGS2 = cms.int32(1),
+        TSSHTEC = cms.bool(False),
+        TSMWORD = cms.int32(255),
+        TSMHTEC = cms.bool(False),
+        TSSCGS1 = cms.bool(True),
+        TSTREN23 = cms.bool(True),
+        TSSGS2 = cms.int32(1),
+        TSMNOEC = cms.bool(False),
+        TSSGS1 = cms.int32(1),
+        TSTREN18 = cms.bool(True),
+        TSMHTE1 = cms.bool(True)
+    )
+)
+
+process.TSThetaParametersBlock = cms.PSet(
+    TSThetaParameters = cms.PSet(
+        Debug = cms.untracked.bool(False)
+    )
+)
+
+process.TUParamsBlock = cms.PSet(
+    Debug = cms.untracked.bool(False)
+)
+
 process.TrackingToolsAOD = cms.PSet(
     outputCommands = cms.untracked.vstring('keep recoTracks_GsfGlobalElectronTest_*_*', 
         'keep recoGsfTracks_electronGsfTracks_*_*')
@@ -21819,6 +35362,50 @@ process.TrackingToolsRECO = cms.PSet(
         'keep TrackingRecHitsOwned_electronGsfTracks_*_*')
 )
 
+process.TracoParametersBlock = cms.PSet(
+    TracoParameters = cms.PSet(
+        SPRGCOMP = cms.int32(2),
+        FHTMSK = cms.int32(0),
+        DD = cms.int32(18),
+        SSLMSK = cms.int32(0),
+        LVALIDIFH = cms.int32(0),
+        Debug = cms.untracked.int32(0),
+        FSLMSK = cms.int32(0),
+        SHTPRF = cms.int32(1),
+        SHTMSK = cms.int32(0),
+        TRGENB3 = cms.int32(1),
+        SHISM = cms.int32(0),
+        IBTIOFF = cms.int32(0),
+        KPRGCOM = cms.int32(255),
+        KRAD = cms.int32(0),
+        FLTMSK = cms.int32(1),
+        LTS = cms.int32(0),
+        SLTMSK = cms.int32(1),
+        FPRGCOMP = cms.int32(2),
+        TRGENB9 = cms.int32(1),
+        TRGENB8 = cms.int32(1),
+        FHTPRF = cms.int32(1),
+        LTF = cms.int32(0),
+        TRGENB1 = cms.int32(1),
+        TRGENB0 = cms.int32(1),
+        FHISM = cms.int32(0),
+        TRGENB2 = cms.int32(1),
+        TRGENB5 = cms.int32(1),
+        TRGENB4 = cms.int32(1),
+        TRGENB7 = cms.int32(1),
+        TRGENB6 = cms.int32(1),
+        TRGENB15 = cms.int32(1),
+        TRGENB14 = cms.int32(1),
+        TRGENB11 = cms.int32(1),
+        TRGENB10 = cms.int32(1),
+        TRGENB13 = cms.int32(1),
+        TRGENB12 = cms.int32(1),
+        REUSEO = cms.int32(1),
+        REUSEI = cms.int32(1),
+        BTIC = cms.int32(32)
+    )
+)
+
 process.datasets = cms.PSet(
     Templates = cms.vstring('HLT_PFJet260_v1', 
         'HLT_ReducedIterativeTracking_v1'),
@@ -21829,12 +35416,14 @@ process.datasets = cms.PSet(
         'HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_MW_v1', 
         'HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v1', 
         'HLT_DoubleMediumIsoPFTau40_Trk1_eta2p1_Reg_v1', 
+        'HLT_DoubleMu33NoFiltersNoVtx_v1', 
+        'HLT_DoubleMu38NoFiltersNoVtx_v1', 
         'HLT_DoubleMu4_3_Bs_v1', 
         'HLT_DoubleMu4_3_Jpsi_Displaced_v1', 
         'HLT_DoubleMu4_JpsiTrk_Displaced_v1', 
         'HLT_DoubleMu4_LowMassNonResonantTrk_Displaced_v1', 
         'HLT_DoubleMu4_PsiPrimeTrk_Displaced_v1', 
-        'HLT_DoublePho85_v1', 
+        'HLT_DoublePhoton85_v1', 
         'HLT_Ele17_Ele12_Ele10_CaloId_TrackId_v1', 
         'HLT_Ele20WP60_Ele8_Mass55_v1', 
         'HLT_Ele22_eta2p1_WP85_Gsf_LooseIsoPFTau20_v1', 
@@ -21856,6 +35445,9 @@ process.datasets = cms.PSet(
         'HLT_JetE30_NoBPTX_v1', 
         'HLT_JetE50_NoBPTX3BX_NoHalo_v1', 
         'HLT_JetE70_NoBPTX3BX_NoHalo_v1', 
+        'HLT_L2DoubleMu23_NoVertex_v1', 
+        'HLT_L2DoubleMu28_NoVertex_2Cha_Angle2p5_Mass10_v1', 
+        'HLT_L2DoubleMu38_NoVertex_2Cha_Angle2p5_Mass10_v1', 
         'HLT_L2Mu10_NoVertex_NoBPTX3BX_NoHalo_v1', 
         'HLT_L2Mu10_NoVertex_NoBPTX_v1', 
         'HLT_L2Mu20_NoVertex_3Sta_NoBPTX3BX_NoHalo_v1', 
@@ -21868,8 +35460,10 @@ process.datasets = cms.PSet(
         'HLT_Mu23_TrkIsoVVL_Ele12_Gsf_CaloId_TrackId_Iso_MediumWP_v1', 
         'HLT_Mu25_TkMu0_dEta18_Onia_v1', 
         'HLT_Mu30_TkMu11_v1', 
+        'HLT_Mu38NoFiltersNoVtx_Photon38_CaloIdL_v1', 
         'HLT_Mu40_eta2p1_PFJet200_PFJet50_v1', 
         'HLT_Mu40_v1', 
+        'HLT_Mu42NoFiltersNoVtx_Photon42_CaloIdL_v1', 
         'HLT_Mu8_TrkIsoVVL_Ele23_Gsf_CaloId_TrackId_Iso_MediumWP_v1', 
         'HLT_PFHT350_PFMET120_NoiseCleaned_v1', 
         'HLT_PFHT900_v1', 
@@ -21906,7 +35500,7 @@ process.ecalLocalRecoAOD = cms.PSet(
 )
 
 process.ecalLocalRecoFEVT = cms.PSet(
-    outputCommands = cms.untracked.vstring('keep *_ecalGlobalUncalibRecHit_*_*', 
+    outputCommands = cms.untracked.vstring('keep *_ecalMultiFitUncalibRecHit_*_*', 
         'keep *_ecalPreshowerRecHit_*_*', 
         'keep *_ecalRecHit_*_*')
 )
@@ -21924,6 +35518,106 @@ process.maxEvents = cms.untracked.PSet(
 
 process.options = cms.untracked.PSet(
     wantSummary = cms.untracked.bool(True)
+)
+
+process.rct_calibration = cms.PSet(
+    HoverE_high_Lindsey = cms.vdouble(1, 1, 1, 1, 1, 
+        1, 1, 1, 1, 1, 
+        1, 1, 1, 1, 1, 
+        1, 1, 1, 1, 1, 
+        1, 1, 1, 1, 1, 
+        1, 1, 1),
+    hcal_high_calib_Lindsey = cms.vdouble(0, 0, 1, 0, 0, 
+        1, 0, 0, 1, 0, 
+        0, 1, 0, 0, 1, 
+        0, 0, 1, 0, 0, 
+        1, 0, 0, 1, 0, 
+        0, 1, 0, 0, 1, 
+        0, 0, 1, 0, 0, 
+        1, 0, 0, 1, 0, 
+        0, 1, 0, 0, 1, 
+        0, 0, 1, 0, 0, 
+        1, 0, 0, 1, 0, 
+        0, 1, 0, 0, 1, 
+        0, 0, 1, 0, 0, 
+        1, 0, 0, 1, 0, 
+        0, 1, 0, 0, 1, 
+        0, 0, 1, 0, 0, 
+        1, 0, 0, 1),
+    cross_terms_Lindsey = cms.vdouble(0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0),
+    ecal_calib_Lindsey = cms.vdouble(0, 0, 1, 0, 0, 
+        1, 0, 0, 1, 0, 
+        0, 1, 0, 0, 1, 
+        0, 0, 1, 0, 0, 
+        1, 0, 0, 1, 0, 
+        0, 1, 0, 0, 1, 
+        0, 0, 1, 0, 0, 
+        1, 0, 0, 1, 0, 
+        0, 1, 0, 0, 1, 
+        0, 0, 1, 0, 0, 
+        1, 0, 0, 1, 0, 
+        0, 1, 0, 0, 1, 
+        0, 0, 1, 0, 0, 
+        1, 0, 0, 1, 0, 
+        0, 1, 0, 0, 1, 
+        0, 0, 1, 0, 0, 
+        1, 0, 0, 1),
+    HoverE_low_Lindsey = cms.vdouble(1, 1, 1, 1, 1, 
+        1, 1, 1, 1, 1, 
+        1, 1, 1, 1, 1, 
+        1, 1, 1, 1, 1, 
+        1, 1, 1, 1, 1, 
+        1, 1, 1),
+    hcal_calib_Lindsey = cms.vdouble(0, 0, 1, 0, 0, 
+        1, 0, 0, 1, 0, 
+        0, 1, 0, 0, 1, 
+        0, 0, 1, 0, 0, 
+        1, 0, 0, 1, 0, 
+        0, 1, 0, 0, 1, 
+        0, 0, 1, 0, 0, 
+        1, 0, 0, 1, 0, 
+        0, 1, 0, 0, 1, 
+        0, 0, 1, 0, 0, 
+        1, 0, 0, 1, 0, 
+        0, 1, 0, 0, 1, 
+        0, 0, 1, 0, 0, 
+        1, 0, 0, 1, 0, 
+        0, 1, 0, 0, 1, 
+        0, 0, 1, 0, 0, 
+        1, 0, 0, 1)
 )
 
 process.streams = cms.PSet(
