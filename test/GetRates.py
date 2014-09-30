@@ -64,7 +64,8 @@ def GetRates( run, passed, xs, PU ):
 def plotRates( listRates, listNames, outName, PU ):
 	"""docstring for plotRates"""
 
-	#HT = [ 350., 650., 700., 750., 800., 850. ]
+	Mass = [ 0., 5., 10., 15., 20., 25., 30., 35., 40., 45., 50., 55., 60., 65., 70., 75., 80., 85. ]
+	MassErr = [ 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0. ]
 	#HT = [ 650., 700., 750., 800., 850. ]
 	HT = [ 450., 550., 650., 750., 850. ]
 	addHT = [ 450., 550., 650., 750., 850., 900., 950. ]
@@ -73,13 +74,13 @@ def plotRates( listRates, listNames, outName, PU ):
 	if 'PFHT' in outName:
 		t = array( 'd', addHT)
 		tErr = array( 'd', addHTErr)
+	elif 'L1Seeds' in outName:
+		t = array( 'd', Mass )
+		tErr = array('d', MassErr )
 	else:
 		t = array( 'd', HT)
 		tErr = array( 'd', HTErr)
 
-	legend=TLegend(0.55,0.70,0.85,0.90)
-	legend.SetFillColor(0)
-	legend.SetTextSize(0.03)
 
 	officialHT = [ 650., 700., 750. ]
 	officialHTErr = [ 0., 0., 0. ]
@@ -96,7 +97,14 @@ def plotRates( listRates, listNames, outName, PU ):
 	g4 = ROOT.TGraphErrors(len(a), a, b, d, c)
 	g4.SetLineColor(1)
 	g4.SetLineWidth(2)
-	legend.AddEntry(g4, 'Official HLT_PFNoPUHT', "l")
+
+	if 'L1Seeds' in outName:
+		legend=TLegend(0.15,0.20,0.35,0.40)
+	else:
+		legend=TLegend(0.55,0.70,0.85,0.90)
+		legend.AddEntry(g4, 'Official HLT_PFNoPUHT', "l")
+	legend.SetFillColor(0)
+	legend.SetTextSize(0.03)
 
 	dictGraphs = {}
 	listMax = []
@@ -113,7 +121,8 @@ def plotRates( listRates, listNames, outName, PU ):
 		for j in rates: listMax.append( j )
 
 	dictGraphs.values()[0].SetTitle("Trigger Rates for "+PU)
-	dictGraphs.values()[0].GetXaxis().SetTitle("HT [GeV]")
+	if 'L1Seeds' in outName: dictGraphs.values()[0].GetXaxis().SetTitle("Mass [GeV]")
+	else: dictGraphs.values()[0].GetXaxis().SetTitle("HT [GeV]")
 	dictGraphs.values()[0].GetYaxis().SetTitle("Rate [Hz]")
 	dictGraphs.values()[0].SetMaximum( max( listMax )+50 )
 
@@ -126,10 +135,13 @@ def plotRates( listRates, listNames, outName, PU ):
 	c = TCanvas( "c1", "c1", 800, 500 )
 	dictGraphs.values()[0].Draw('lpa')
 	for q in range( 1, len( dictGraphs.keys() ) ): dictGraphs.values()[q].Draw('lp')
-	g4.Draw("lp")
+	if not 'L1Seeds' in outName: 
+		g4.Draw("lp")
+		setTriggerRates( 'QCD 13TeV '+PU )
+	else: 
+		setOverlap( 'QCD 13TeV '+PU )
 	legend.Draw()
-	setTriggerRates( 'QCD 13TeV '+PU )
-	c.SaveAs("Rates/TriggerRate_"+outName+'_'+PU+"_30k_50toInf.pdf")
+	c.SaveAs("Rates/TriggerRate_"+outName+'_'+PU+"_20k.pdf")
 
 def plotCaloJetRates( listRates, outName, PU ):
 	"""docstring for plotRates"""
@@ -279,22 +291,33 @@ if __name__ == '__main__':
 	AK8PFTrimHT800 = []
 	AK8PFTrimHT850 = []
 	AK8PFTrimHT900 = []
-	AK8PFTrimHT450TrimMod = []
-	AK8PFTrimHT550TrimMod = []
-	AK8PFTrimHT650TrimMod = []
-	AK8PFTrimHT700TrimMod = []
-	AK8PFTrimHT750TrimMod = []
-	AK8PFTrimHT800TrimMod = []
-	AK8PFTrimHT850TrimMod = []
-	AK8PFTrimHT900TrimMod = []
-	AK8PFTrimHT450AK4CaloHT = []
-	AK8PFTrimHT550AK4CaloHT = []
-	AK8PFTrimHT650AK4CaloHT = []
-	AK8PFTrimHT750AK4CaloHT = []
-	AK8PFTrimHT850AK4CaloHT = []
+	AK8PFTrimHT650TrimR0p1Pt0p03 = []
+	AK8PFTrimHT700TrimR0p1Pt0p03 = []
+	AK8PFTrimHT750TrimR0p1Pt0p03 = []
+	AK8PFTrimHT800TrimR0p1Pt0p03 = []
+	AK8PFTrimHT850TrimR0p1Pt0p03 = []
+	AK8PFTrimHT900TrimR0p1Pt0p03 = []
+	AK8PFTrimHT650TrimR0p2Pt0p06 = []
+	AK8PFTrimHT700TrimR0p2Pt0p06 = []
+	AK8PFTrimHT750TrimR0p2Pt0p06 = []
+	AK8PFTrimHT800TrimR0p2Pt0p06 = []
+	AK8PFTrimHT850TrimR0p2Pt0p06 = []
+	AK8PFTrimHT900TrimR0p2Pt0p06 = []
+	AK8PFTrimHT650TrimR0p1Pt0p05 = []
+	AK8PFTrimHT700TrimR0p1Pt0p05 = []
+	AK8PFTrimHT750TrimR0p1Pt0p05 = []
+	AK8PFTrimHT800TrimR0p1Pt0p05 = []
+	AK8PFTrimHT850TrimR0p1Pt0p05 = []
+	AK8PFTrimHT900TrimR0p1Pt0p05 = []
+	AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175 = []
+	AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200 = []
+	AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200ORHTT250 = []
+	AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200ORHTT250 = []
+	AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200 = []
+	AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT250 = []
 
 	for triggerInfo in rates:
-		if not '_TrimModMass' in triggerInfo[0] and not '_TrimMass' in triggerInfo[0] and not '_TrimModTestMass' in triggerInfo[0]:
+		if not '_TrimR0p' in triggerInfo[0] and not '_TrimMass' in triggerInfo[0]:
 			if 'HLT_PFHT' in triggerInfo[0]: PFHT.append( triggerInfo )
 			if 'HLT_PFTrimHT' in triggerInfo[0]: PFTrimHT.append( triggerInfo )
 			if 'HLT_AK8PFHT' in triggerInfo[0]: AK8PFHT.append( triggerInfo )
@@ -315,19 +338,30 @@ if __name__ == '__main__':
 			elif 'HLT_AK8PFHT800_TrimMass00_TrimMass' in triggerInfo[0]: AK8PFTrimHT800.append( triggerInfo )
 			elif 'HLT_AK8PFHT850_TrimMass00_TrimMass' in triggerInfo[0]: AK8PFTrimHT850.append( triggerInfo )
 			elif 'HLT_AK8PFHT900_TrimMass00_TrimMass' in triggerInfo[0]: AK8PFTrimHT900.append( triggerInfo )
-			elif 'HLT_AK8PFHT450_TrimModMass00_TrimModMass' in triggerInfo[0]: AK8PFTrimHT450TrimMod.append( triggerInfo )
-			elif 'HLT_AK8PFHT550_TrimModMass00_TrimModMass' in triggerInfo[0]: AK8PFTrimHT550TrimMod.append( triggerInfo )
-			elif 'HLT_AK8PFHT650_TrimModMass00_TrimModMass' in triggerInfo[0]: AK8PFTrimHT650TrimMod.append( triggerInfo )
-			elif 'HLT_AK8PFHT700_TrimModMass00_TrimModMass' in triggerInfo[0]: AK8PFTrimHT700TrimMod.append( triggerInfo )
-			elif 'HLT_AK8PFHT750_TrimModMass00_TrimModMass' in triggerInfo[0]: AK8PFTrimHT750TrimMod.append( triggerInfo )
-			elif 'HLT_AK8PFHT800_TrimModMass00_TrimModMass' in triggerInfo[0]: AK8PFTrimHT800TrimMod.append( triggerInfo )
-			elif 'HLT_AK8PFHT850_TrimModMass00_TrimModMass' in triggerInfo[0]: AK8PFTrimHT850TrimMod.append( triggerInfo )
-			elif 'HLT_AK8PFHT900_TrimModMass00_TrimModMass' in triggerInfo[0]: AK8PFTrimHT900TrimMod.append( triggerInfo )
-			elif 'HLT_AK8PFHT450_AK4CaloHT_TrimMass' in triggerInfo[0]: AK8PFTrimHT450AK4CaloHT.append( triggerInfo )
-			elif 'HLT_AK8PFHT550_AK4CaloHT_TrimMass' in triggerInfo[0]: AK8PFTrimHT550AK4CaloHT.append( triggerInfo )
-			elif 'HLT_AK8PFHT650_AK4CaloHT_TrimMass' in triggerInfo[0]: AK8PFTrimHT650AK4CaloHT.append( triggerInfo )
-			elif 'HLT_AK8PFHT750_AK4CaloHT_TrimMass' in triggerInfo[0]: AK8PFTrimHT750AK4CaloHT.append( triggerInfo )
-			elif 'HLT_AK8PFHT850_AK4CaloHT_TrimMass' in triggerInfo[0]: AK8PFTrimHT850AK4CaloHT.append( triggerInfo )
+			elif 'HLT_AK8PFHT650_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass' in triggerInfo[0]: AK8PFTrimHT650TrimR0p1Pt0p03.append( triggerInfo )
+			elif 'HLT_AK8PFHT700_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass' in triggerInfo[0]: AK8PFTrimHT700TrimR0p1Pt0p03.append( triggerInfo )
+			elif 'HLT_AK8PFHT750_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass' in triggerInfo[0]: AK8PFTrimHT750TrimR0p1Pt0p03.append( triggerInfo )
+			elif 'HLT_AK8PFHT800_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass' in triggerInfo[0]: AK8PFTrimHT800TrimR0p1Pt0p03.append( triggerInfo )
+			elif 'HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass' in triggerInfo[0]: AK8PFTrimHT850TrimR0p1Pt0p03.append( triggerInfo )
+			elif 'HLT_AK8PFHT900_TrimR0p1Pt0p03Mass00_TrimR0p1Pt0p03Mass' in triggerInfo[0]: AK8PFTrimHT900TrimR0p1Pt0p03.append( triggerInfo )
+			elif 'HLT_AK8PFHT650_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass' in triggerInfo[0]: AK8PFTrimHT650TrimR0p2Pt0p06.append( triggerInfo )
+			elif 'HLT_AK8PFHT700_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass' in triggerInfo[0]: AK8PFTrimHT700TrimR0p2Pt0p06.append( triggerInfo )
+			elif 'HLT_AK8PFHT750_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass' in triggerInfo[0]: AK8PFTrimHT750TrimR0p2Pt0p06.append( triggerInfo )
+			elif 'HLT_AK8PFHT800_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass' in triggerInfo[0]: AK8PFTrimHT800TrimR0p2Pt0p06.append( triggerInfo )
+			elif 'HLT_AK8PFHT850_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass' in triggerInfo[0]: AK8PFTrimHT850TrimR0p2Pt0p06.append( triggerInfo )
+			elif 'HLT_AK8PFHT900_TrimR0p2Pt0p06Mass00_TrimR0p2Pt0p06Mass' in triggerInfo[0]: AK8PFTrimHT900TrimR0p2Pt0p06.append( triggerInfo )
+			elif 'HLT_AK8PFHT650_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass' in triggerInfo[0]: AK8PFTrimHT650TrimR0p1Pt0p05.append( triggerInfo )
+			elif 'HLT_AK8PFHT700_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass' in triggerInfo[0]: AK8PFTrimHT700TrimR0p1Pt0p05.append( triggerInfo )
+			elif 'HLT_AK8PFHT750_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass' in triggerInfo[0]: AK8PFTrimHT750TrimR0p1Pt0p05.append( triggerInfo )
+			elif 'HLT_AK8PFHT800_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass' in triggerInfo[0]: AK8PFTrimHT800TrimR0p1Pt0p05.append( triggerInfo )
+			elif 'HLT_AK8PFHT850_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass' in triggerInfo[0]: AK8PFTrimHT850TrimR0p1Pt0p05.append( triggerInfo )
+			elif 'HLT_AK8PFHT900_TrimR0p1Pt0p05Mass00_TrimR0p1Pt0p05Mass' in triggerInfo[0]: AK8PFTrimHT900TrimR0p1Pt0p05.append( triggerInfo )
+			elif 'HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175_TrimR0p1Pt0p03Mass' in triggerInfo[0]: AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175.append( triggerInfo )
+			elif 'HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200_TrimR0p1Pt0p03Mass' in triggerInfo[0]: AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200.append( triggerInfo )
+			elif 'HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT250_TrimR0p1Pt0p03Mass' in triggerInfo[0]: AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT250.append( triggerInfo )
+			elif 'HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200_TrimR0p1Pt0p03Mass' in triggerInfo[0]: AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200.append( triggerInfo )
+			elif 'HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200ORHTT250_TrimR0p1Pt0p03Mass' in triggerInfo[0]: AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200ORHTT250.append( triggerInfo )
+			elif 'HLT_AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200ORHTT250_TrimR0p1Pt0p03Mass' in triggerInfo[0]: AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200ORHTT250.append( triggerInfo )
 
 	if 'simple' in process:
 		for trigger in rates:
@@ -335,15 +369,10 @@ if __name__ == '__main__':
 			if 'AK8PFJet360Trim_Mass30_TrimMod_v1' in trigger[0]: print 'AK8PFJet360Trim_Mass30_TrimMod', np.around(trigger[4], 2), np.around(trigger[5], 1)
 			if 'PFHT900_v1' in trigger[0]: print 'PFHT900', np.around(trigger[4], 2), np.around(trigger[5], 1)
 
-		plotRates( [ PFHT ], [ 'PFHT' ], 'PFHTtriggers', PU )
-		plotRates( [ PFHT, AK8PFHT, AK8PFNOJECTrimHT ], [ 'PFHT', 'AK8PFHT', 'AK8PFNOJECTrimHT' ],'newTriggers', PU )
+		#plotRates( [ PFHT ], [ 'PFHT' ], 'PFHTtriggers', PU )
+		#plotRates( [ PFHT, AK8PFHT, AK8PFNOJECTrimHT ], [ 'PFHT', 'AK8PFHT', 'AK8PFNOJECTrimHT' ],'newTriggers', PU )
+		plotRates( [ AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175, AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200, AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT250, AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200, AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200ORHTT250, AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200ORHTT250 ], [ 'L1HTT175', 'L1HTT200', 'L1HTT250', 'L1HTT175ORHTT200', 'L1HTT200ORHTT250', 'L1HTT175ORHTT200ORHTT250' ], 'L1Seeds', PU )
 
-		#CaloHTtrigger = [ 
-		#		['AK8PFTrimHT450', array( 'd', listRates[268:273] ), array('d', listRatesErr[268:273] ) ],
-		#		['AK8PFTrimHT850', array( 'd', listRates[273:278] ), array('d', listRatesErr[273:278] ) ]
-		#		]
-		#plotCaloJetRates( [ CaloHTtrigger[0] ] , 'AK8PFTrimHT450', PU )
-		#plotCaloJetRates( [ CaloHTtrigger[1] ] , 'AK8PFTrimHT850', PU )
 
 	elif '2d' in process:
 
@@ -355,6 +384,14 @@ if __name__ == '__main__':
 		#plotRatesComp( [ AK8PFTrimHT450, AK8PFTrimHT550, AK8PFTrimHT650, AK8PFTrimHT750, AK8PFTrimHT850 ], 'AK8PFTrimHT', PU, HT, Mass )
 		plotRatesComp( [ AK8PFTrimHT700, AK8PFTrimHT750, AK8PFTrimHT800, AK8PFTrimHT850, AK8PFTrimHT900 ], 'AK8PFHT_TrimMass', PU, HT, Mass )
 		#plotRatesComp( [ AK8PFTrimHT450TrimMod, AK8PFTrimHT550TrimMod, AK8PFTrimHT650TrimMod, AK8PFTrimHT750TrimMod, AK8PFTrimHT850TrimMod ], 'AK8PFTrimHT_TrimMod', PU, HT, Mass )
-		plotRatesComp( [ AK8PFTrimHT700TrimMod, AK8PFTrimHT750TrimMod, AK8PFTrimHT800TrimMod, AK8PFTrimHT850TrimMod, AK8PFTrimHT900TrimMod ], 'AK8PFHT_TrimModMass', PU, HT, Mass )
+		plotRatesComp( [ AK8PFTrimHT700TrimR0p1Pt0p03, AK8PFTrimHT750TrimR0p1Pt0p03, AK8PFTrimHT800TrimR0p1Pt0p03, AK8PFTrimHT850TrimR0p1Pt0p03, AK8PFTrimHT900TrimR0p1Pt0p03 ], 'AK8PFHT_TrimR0p1Pt0p03Mass', PU, HT, Mass )
+		plotRatesComp( [ AK8PFTrimHT700TrimR0p1Pt0p05, AK8PFTrimHT750TrimR0p1Pt0p05, AK8PFTrimHT800TrimR0p1Pt0p05, AK8PFTrimHT850TrimR0p1Pt0p05, AK8PFTrimHT900TrimR0p1Pt0p05 ], 'AK8PFHT_TrimR0p1Pt0p05Mass', PU, HT, Mass )
+		plotRatesComp( [ AK8PFTrimHT700TrimR0p2Pt0p06, AK8PFTrimHT750TrimR0p2Pt0p06, AK8PFTrimHT800TrimR0p2Pt0p06, AK8PFTrimHT850TrimR0p2Pt0p06, AK8PFTrimHT900TrimR0p2Pt0p06 ], 'AK8PFHT_TrimR0p2Pt0p06Mass', PU, HT, Mass )
 		#plotRatesComp( [ PFTrimHT450, PFTrimHT550, PFTrimHT650, PFTrimHT750, PFTrimHT850 ], 'PFTrimHT', PU, HT, Mass2 )
+		plotRatesComp( [ AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175], 'AK8PFHT_TrimR0p1Pt0p03_L1HTT175', PU, [850. ], Mass )
+		plotRatesComp( [ AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200], 'AK8PFHT_TrimR0p1Pt0p03_L1HTT200', PU, [ 850. ], Mass )
+		plotRatesComp( [ AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT250 ], 'AK8PFHT_TrimR0p1Pt0p03_L1HTT250', PU, [ 850. ], Mass )
+		plotRatesComp( [ AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200], 'AK8PFHT_TrimR0p1Pt0p03_L1HTT175ORHTT200', PU, [ 850. ], Mass )
+		plotRatesComp( [ AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT200ORHTT250 ], 'AK8PFHT_TrimR0p1Pt0p03_L1HTT200ORHTT250', PU, [ 850. ], Mass )
+		plotRatesComp( [ AK8PFHT850_TrimR0p1Pt0p03Mass00_L1HTT175ORHTT200ORHTT250 ], 'AK8PFHT_TrimR0p1Pt0p03_L1HTT175ORHTT200ORHTT250', PU, [ 850. ], Mass )
 
