@@ -1,5 +1,5 @@
 #### AK8PFTrimHT650 Triggers
-./path_maker.py -i hlt_DiffHT_720pre6_oldL1Seeds_MC.py -p HLT_AK8PFHT650_TrimMass00_v1 -c "hltPreAK8PFHT650TrimMass00.offset=cms.uint32( 0 )"  "hlt1AK8PFJetsTrimMass00.MinMass=cms.double( 0.0 )" -r "TrimMass00" -o hlt_tmp1.py
+./path_maker.py -i hlt_DiffHT_720pre6_1p4e34_MC.py -p HLT_AK8PFHT650_TrimMass00_v1 -c "hltPreAK8PFHT650TrimMass00.offset=cms.uint32( 0 )"  "hlt1AK8PFJetsTrimMass00.MinMass=cms.double( 0.0 )" -r "TrimMass00" -o hlt_tmp1.py
 ./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFHT650_TrimMass00_v1 -c "hltPreAK8PFHT650TrimMass00.offset=cms.uint32( 0 )" "hlt1AK8PFJetsTrimMass00.MinMass=cms.double(  5.0 )" -r "TrimMass05" -o hlt_tmp2.py
 ./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFHT650_TrimMass00_v1 -c "hltPreAK8PFHT650TrimMass00.offset=cms.uint32( 0 )" "hlt1AK8PFJetsTrimMass00.MinMass=cms.double( 10.0 )" -r "TrimMass10" -o hlt_tmp1.py
 ./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFHT650_TrimMass00_v1 -c "hltPreAK8PFHT650TrimMass00.offset=cms.uint32( 0 )" "hlt1AK8PFJetsTrimMass00.MinMass=cms.double( 15.0 )" -r "TrimMass15" -o hlt_tmp2.py
@@ -482,7 +482,7 @@
 ./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFHT900_TrimR0p1PT0p05Mass00_v1 -c "hltPreAK8PFHT900TrimR0p1PT0p05Mass00.offset=cms.uint32( 0 )" "hlt1AK8PFJetsTrimR0p1PT0p05Mass00.MinMass=cms.double( 70.0 )" -r "TrimR0p1PT0p05Mass70" -o hlt_tmp1.py
 ./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFHT900_TrimR0p1PT0p05Mass00_v1 -c "hltPreAK8PFHT900TrimR0p1PT0p05Mass00.offset=cms.uint32( 0 )" "hlt1AK8PFJetsTrimR0p1PT0p05Mass00.MinMass=cms.double( 75.0 )" -r "TrimR0p1PT0p05Mass75" -o hlt_tmp2.py
 ./path_maker.py -i hlt_tmp2.py -p HLT_AK8PFHT900_TrimR0p1PT0p05Mass00_v1 -c "hltPreAK8PFHT900TrimR0p1PT0p05Mass00.offset=cms.uint32( 0 )" "hlt1AK8PFJetsTrimR0p1PT0p05Mass00.MinMass=cms.double( 80.0 )" -r "TrimR0p1PT0p05Mass80" -o hlt_tmp1.py
-./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFHT900_TrimR0p1PT0p05Mass00_v1 -c "hltPreAK8PFHT900TrimR0p1PT0p05Mass00.offset=cms.uint32( 0 )" "hlt1AK8PFJetsTrimR0p1PT0p05Mass00.MinMass=cms.double( 85.0 )" -r "TrimR0p1PT0p05Mass85" -o hlt_modified.py
+./path_maker.py -i hlt_tmp1.py -p HLT_AK8PFHT900_TrimR0p1PT0p05Mass00_v1 -c "hltPreAK8PFHT900TrimR0p1PT0p05Mass00.offset=cms.uint32( 0 )" "hlt1AK8PFJetsTrimR0p1PT0p05Mass00.MinMass=cms.double( 85.0 )" -r "TrimR0p1PT0p05Mass85" -o hlt_modified_1p4e34.py
 
 
 
