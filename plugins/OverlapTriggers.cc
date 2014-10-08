@@ -281,12 +281,12 @@ void OverlapTriggers::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 
 			} else {
 				solo2+=1;
-				histos1D_[ "MassTwo" ]->Fill( twoJets[0].M() );
-				histos1D_[ "PtTwo" ]->Fill( twoJets[0].Pt() );
-				histos1D_[ "HTTwo" ]->Fill( twoHT );
-				histos2D_[ "HTvsMassTwo" ]->Fill( twoHT, twoJets[0].M() );
-				histos2D_[ "HTvsPtTwo" ]->Fill( twoHT, twoJets[0].Pt() );
-				histos2D_[ "PtvsMassTwo" ]->Fill( twoJets[0].Pt(), twoJets[0].M() );
+				histos1D_[ "MassTwo" ]->Fill( oneJets[0].M() );
+				histos1D_[ "PtTwo" ]->Fill( oneJets[0].Pt() );
+				histos1D_[ "HTTwo" ]->Fill( oneHT );
+				histos2D_[ "HTvsMassTwo" ]->Fill( oneHT, oneJets[0].M() );
+				histos2D_[ "HTvsPtTwo" ]->Fill( oneHT, oneJets[0].Pt() );
+				histos2D_[ "PtvsMassTwo" ]->Fill( oneJets[0].Pt(), oneJets[0].M() );
 			}
 		}
 	} else {

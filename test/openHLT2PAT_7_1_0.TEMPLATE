@@ -205,6 +205,40 @@ process.patJetsAK8CHSTrimMod.addGenJetMatch = False
 process.patJetsAK8CHSTrimMod.getJetMCFlavour = False
 process.patJetsAK8CHSTrimMod.jetCorrFactorsSource = cms.VInputTag(cms.InputTag('patJetCorrFactorsAK8CHSTrimMod'))
 
+#### Pruning
+from RecoJets.JetProducers.ak4PFJetsPruned_cfi import ak4PFJetsPruned
+process.ak8PFJetsCHSPruned = ak4PFJetsPruned.clone(
+  src = 'pfNoPileUp',
+  jetPtMin = cms.double(20.0),
+  doAreaFastjet = cms.bool(True),
+#  rParam = cms.double(0.8),
+#  rFilt = cms.double(0.1),
+)
+jetSource4 = 'ak8PFJetsCHSPruned'
+
+#### Adding corrections 
+process.patJetCorrFactorsAK8CHSPruned = patJetCorrFactors.clone()
+process.patJetCorrFactorsAK8CHSPruned.src = jetSource4
+## will need to add L2L3 corrections in the cfg
+process.patJetCorrFactorsAK8CHSPruned.levels = [ ] #'L1FastJet', 'L2Relative', 'L3Absolute']
+process.patJetCorrFactorsAK8CHSPruned.payload = 'AK8PFchs'
+process.patJetCorrFactorsAK8CHSPruned.useRho = False
+#
+#from PhysicsTools.PatAlgos.producersLayer1.jetProducer_cfi import *
+process.patJetsAK8CHSPruned = patJets.clone()
+process.patJetsAK8CHSPruned.jetSource = jetSource4
+process.patJetsAK8CHSPruned.addJetCharge = False
+process.patJetsAK8CHSPruned.embedPFCandidates = False
+process.patJetsAK8CHSPruned.addAssociatedTracks = False
+process.patJetsAK8CHSPruned.addBTagInfo = False
+process.patJetsAK8CHSPruned.addDiscriminators = False
+process.patJetsAK8CHSPruned.addJetID = False
+process.patJetsAK8CHSPruned.addGenPartonMatch = False
+process.patJetsAK8CHSPruned.embedGenPartonMatch = False
+process.patJetsAK8CHSPruned.addGenJetMatch = False
+process.patJetsAK8CHSPruned.getJetMCFlavour = False
+process.patJetsAK8CHSPruned.jetCorrFactorsSource = cms.VInputTag(cms.InputTag('patJetCorrFactorsAK8CHSPruned'))
+
 # Add PF2PAT output to the created file
 process.out.outputCommands.extend( [
     "keep *_patJets*__*",

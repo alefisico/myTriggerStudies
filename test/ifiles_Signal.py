@@ -1,0 +1,8 @@
+### RAW
+isecfiles_="/store/user/algomez/RSGravitonToWW_kMpl01_M_1000_Tune4C_13TeV_pythia8/RSGravitonToWW_kMpl01_M_1000_Tune4C_13TeV_pythia8_RAWSIM_v706_PU40bx25/69b1cd9b22d7d1b58e118cecf975c972/RSGravitonToWW_kMpl01_M_1000_Tune4C_13TeV_pythia8_RAWSIM_PU40bx25_393_1_mdL.root"  
+
+## AOD
+ifiles_="/store/user/algomez/RSGravitonToWW_kMpl01_M_1000_Tune4C_13TeV_pythia8/RSGravitonToWW_kMpl01_M_1000_Tune4C_13TeV_pythia8_AODSIM_v706_PU40bx25/5d30d9ccaa671717840644afc88e543e/RSGravitonToWW_kMpl01_M_1000_Tune4C_13TeV_pythia8_AODSIM_PU40bx25_100_1_OJz.root"
+
+ifiles = ifiles_.split(",")
+isecfiles = isecfiles_.split(",")
