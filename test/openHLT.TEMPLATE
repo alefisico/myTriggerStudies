@@ -15,7 +15,7 @@ except: pass
 #Configuration options not meant to be modified from command line (at least for the time being)
 outputRAW=False
 outputLess=True
-outputSummary=True
+outputSummary=False
 hltProcName="HLT3"
 
 #Configuration options to be modified from command line by openHLT2PAT.py
@@ -337,7 +337,7 @@ for product in addProductsToKeep:
 
 productsToKeep = cleanList(productsToKeep,process.filterNames().split())
 
-process.output.outputCommands=cms.untracked.vstring("drop *","keep *_TriggerResults_*_*","keep *_patJets*_*_*",
+process.output.outputCommands=cms.untracked.vstring("drop *","keep *_TriggerResults_*_*","keep *_patJets*_*_*","keep *_hltOnlinePrimaryVertices*_*_*","keep *_goodOfflinePrimaryVertices*_*_*",
                                                     "keep *_hltTriggerSummaryAOD_*_*")
 
 for product in productsToKeep:
