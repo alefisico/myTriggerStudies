@@ -11,7 +11,7 @@ process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(-1)
 )
 #############   Define the source file ###############
-process.load(NAME+'_13TeV_pythia8_'+PU+'_v718_FiltFiles_cfi')
+process.load(NAME+'_'+PU+'_v720pre8_FiltFiles_cfi')
 #process.source = cms.Source("PoolSource",
 #		fileNames = cms.untracked.vstring(
 			#'file:Filt_RSGllsuon.root'
@@ -24,14 +24,14 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'PLS170_V7AN1::All')
 
 process.TFileService=cms.Service("TFileService", 
-		fileName=cms.string('filesWithHistos_'+NAME+'_13TeV_pythia8_'+PU+'.root'))
+		fileName=cms.string('filesWithHistos_'+NAME+'_'+PU+'.root'))
 
 #############   User analyzer (PF jets) ##
 process.PFHT900 = cms.EDAnalyzer("TriggerEfficiency",
 		triggerPath = cms.string( "HLT_PFHT900_v1" ),
 		hltJets = cms.InputTag( "hltAK8PFJets" ),
 		hltJetsTrim = cms.InputTag( "hltAK8PFJetsTrim" ),
-		hltJetsTrimMod = cms.InputTag( "hltAK8PFJetsTrimMod" ),
+		hltJetsTrimMod = cms.InputTag( "hltAK8PFJetsTrimR0p1PT0p03" ),
 		hltJetsPruned = cms.InputTag( "hltAK8PFJetsPruned" ),
 		patJets = cms.InputTag( "patJetsAK8CHS" ),
 		patJetsTrim = cms.InputTag( "patJetsAK8CHSTrim" ),
@@ -39,14 +39,14 @@ process.PFHT900 = cms.EDAnalyzer("TriggerEfficiency",
 		patJetsPruned = cms.InputTag( "patJetsAK8CHSPruned" ),
 		primaryVertex = cms.InputTag( 'goodOfflinePrimaryVertices' ),
 		jetsForEff = cms.InputTag( "patJetsAK8CHSTrim" ),
-		minHT= cms.double( 700. ),
+		minHT= cms.double( 0. ),
 		minMass= cms.double( 50. ),
 		)
 process.AK8PFHT850TrimMass50 = cms.EDAnalyzer("TriggerEfficiency",
 		triggerPath = cms.string( "HLT_AK8PFHT850_TrimMass00_TrimMass50_v1" ),
 		hltJets = cms.InputTag( "hltAK8PFJets" ),
 		hltJetsTrim = cms.InputTag( "hltAK8PFJetsTrim" ),
-		hltJetsTrimMod = cms.InputTag( "hltAK8PFJetsTrimMod" ),
+		hltJetsTrimMod = cms.InputTag( "hltAK8PFJetsTrimR0p1PT0p03" ),
 		hltJetsPruned = cms.InputTag( "hltAK8PFJetsPruned" ),
 		patJets = cms.InputTag( "patJetsAK8CHS" ),
 		patJetsTrim = cms.InputTag( "patJetsAK8CHSTrim" ),
@@ -54,14 +54,14 @@ process.AK8PFHT850TrimMass50 = cms.EDAnalyzer("TriggerEfficiency",
 		patJetsPruned = cms.InputTag( "patJetsAK8CHSPruned" ),
 		primaryVertex = cms.InputTag( 'goodOfflinePrimaryVertices' ),
 		jetsForEff = cms.InputTag( "patJetsAK8CHSTrim" ),
-		minHT= cms.double( 700. ),
+		minHT= cms.double( 0. ),
 		minMass= cms.double( 50. ),
 		)
 process.AK8PFHT850TrimMass50TrimMod = cms.EDAnalyzer("TriggerEfficiency",
-		triggerPath = cms.string( "HLT_AK8PFHT850_TrimModMass00_TrimModMass50_v1" ),
+		triggerPath = cms.string( "HLT_AK8PFHT850_TrimR0p1PT0p03Mass00_TrimR0p1PT0p03Mass50_v1" ),
 		hltJets = cms.InputTag( "hltAK8PFJets" ),
 		hltJetsTrim = cms.InputTag( "hltAK8PFJetsTrim" ),
-		hltJetsTrimMod = cms.InputTag( "hltAK8PFJetsTrimMod" ),
+		hltJetsTrimMod = cms.InputTag( "hltAK8PFJetsTrimR0p1PT0p03" ),
 		hltJetsPruned = cms.InputTag( "hltAK8PFJetsPruned" ),
 		patJets = cms.InputTag( "patJetsAK8CHS" ),
 		patJetsTrim = cms.InputTag( "patJetsAK8CHSTrim" ),
@@ -70,7 +70,7 @@ process.AK8PFHT850TrimMass50TrimMod = cms.EDAnalyzer("TriggerEfficiency",
 		jetsForEff = cms.InputTag( "patJetsAK8CHSTrimMod" ),
 		primaryVertex = cms.InputTag( 'goodOfflinePrimaryVertices' ),
 		minHT= cms.double( 0. ),
-		minMass= cms.double( 0. ),
+		minMass= cms.double( 50. ),
 		)
 
 #############   Path       ###########################
