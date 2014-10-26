@@ -83,6 +83,7 @@ class OverlapTriggers : public edm::EDAnalyzer {
 		std::string trigger1;
 		std::string trigger2;
 		std::string trigger3;
+		std::string trigger4;
 		edm::InputTag oneHLTPFJets;
 		edm::InputTag twoHLTPFJets;
 		edm::InputTag threeHLTPFJets;
@@ -94,6 +95,7 @@ class OverlapTriggers : public edm::EDAnalyzer {
 		int triggerBit1;
 		int triggerBit2;
 		int triggerBit3;
+		int triggerBit4;
 
 		int solo1 = 0;
 		int solo2 = 0;
@@ -110,6 +112,19 @@ class OverlapTriggers : public edm::EDAnalyzer {
 		double totalNumberEvents = 0;
 		double totalNumberEventsPassing = 0;
 		double totalNumberEventsPassingThree = 0;
+		int fourTriggers = 0;
+		int only1FourTriggers = 0;
+		int only2FourTriggers = 0;
+		int only3FourTriggers = 0;
+		int only4FourTriggers = 0;
+		int only12FourTriggers = 0;
+		int only13FourTriggers = 0;
+		int only14FourTriggers = 0;
+		int only23FourTriggers = 0;
+		int only24FourTriggers = 0;
+		int only34FourTriggers = 0;
+		int restFourTriggers = 0;
+		double totalNumberEventsPassingAll = 0;
 
 };
 
@@ -119,6 +134,7 @@ OverlapTriggers::OverlapTriggers(const edm::ParameterSet& iConfig){
 	trigger1		= iConfig.getParameter<std::string> ( "trigger1" );   			// Obtain inputs
 	trigger2		= iConfig.getParameter<std::string> ( "trigger2" );   			// Obtain inputs
 	trigger3		= iConfig.getParameter<std::string> ( "trigger3" );   			// Obtain inputs
+	trigger4		= iConfig.getParameter<std::string> ( "trigger4" );   			// Obtain inputs
 	oneHLTPFJets		= iConfig.getParameter<edm::InputTag> ( "oneHLTPFJets" );   			// Obtain inputs
 	twoHLTPFJets		= iConfig.getParameter<edm::InputTag> ( "twoHLTPFJets" );   			// Obtain inputs
 	threeHLTPFJets		= iConfig.getParameter<edm::InputTag> ( "threeHLTPFJets" );   			// Obtain inputs
@@ -153,15 +169,18 @@ void OverlapTriggers::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 		triggerBit1 = -1;
 		triggerBit2 = -1;
 		triggerBit3 = -1;
+		triggerBit4 = -1;
 		for (size_t j = 0; j < hltConfig.triggerNames().size(); j++) {
 			//std::cout << TString(hltConfig.triggerNames()[j]) << std::endl;
 			if (TString(hltConfig.triggerNames()[j]).Contains(trigger1)) triggerBit1 = j;
 			if (TString(hltConfig.triggerNames()[j]).Contains(trigger2)) triggerBit2 = j;
 			if (TString(hltConfig.triggerNames()[j]).Contains(trigger3)) triggerBit3 = j;
+			if (TString(hltConfig.triggerNames()[j]).Contains(trigger4)) triggerBit4 = j;
 		}
 		if (triggerBit1 == -1) cout << "HLT path not found" << endl;
 		if (triggerBit2 == -1) cout << "HLT path not found" << endl;
 		if (triggerBit3 == -1) cout << "HLT path not found" << endl;
+		if (triggerBit4 == -1) cout << "HLT path not found" << endl;
 
 	}
 
@@ -232,10 +251,11 @@ void OverlapTriggers::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 
 	totalNumberEvents+=1;
 
-	Int_t index[3] = { 0, 0, 0 };
+	Int_t index[4] = { 0, 0, 0, 0 };
 	if (triggerResults->accept(triggerBit1)) index[0] = 1; 
 	if (triggerResults->accept(triggerBit2)) index[1] = 1; 
 	if (triggerResults->accept(triggerBit3)) index[2] = 1; 
+	if (triggerResults->accept(triggerBit4)) index[3] = 1; 
 
 	//cout<< index[0] << " " << index[1] << " " << index[2] << endl;
 
@@ -257,6 +277,22 @@ void OverlapTriggers::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 		if ( ( index[0] == 0 ) && ( index[1] == 0 ) && ( index[2] == 1 ) ) only3+=1;
 	}
 	
+	if ( ( index[0] == 1 ) || ( index[1] == 1 ) || ( index[2] == 1 ) || ( index[3] == 1 ) ) {
+		totalNumberEventsPassingAll+=1;
+
+		if ( ( index[0] == 1 ) && ( index[1] == 1 ) && ( index[2] == 1 )  && ( index[3] == 1 )) fourTriggers+=1;	
+		if ( ( index[0] == 1 ) && ( index[1] == 0 ) && ( index[2] == 0 )  && ( index[3] == 0 )) only1FourTriggers+=1;	
+		if ( ( index[1] == 1 ) && ( index[0] == 0 ) && ( index[2] == 0 )  && ( index[3] == 0 )) only2FourTriggers+=1;	
+		if ( ( index[2] == 1 ) && ( index[0] == 0 ) && ( index[1] == 0 )  && ( index[3] == 0 )) only3FourTriggers+=1;	
+		if ( ( index[3] == 1 ) && ( index[0] == 0 ) && ( index[1] == 0 )  && ( index[2] == 0 )) only4FourTriggers+=1;	
+		if ( ( ( index[0] == 1 ) && ( index[1] == 1 ) ) && ( ( index[2] == 0 )  && ( index[3] == 0 )) ) only12FourTriggers+=1;	
+		if ( ( ( index[0] == 1 ) && ( index[2] == 1 ) ) && ( ( index[1] == 0 )  && ( index[3] == 0 )) ) only13FourTriggers+=1;	
+		if ( ( ( index[0] == 1 ) && ( index[3] == 1 ) ) && ( ( index[1] == 0 )  && ( index[2] == 0 )) ) only14FourTriggers+=1;	
+		if ( ( ( index[1] == 1 ) && ( index[2] == 1 ) ) && ( ( index[0] == 0 )  && ( index[3] == 0 )) ) only23FourTriggers+=1;	
+		if ( ( ( index[1] == 1 ) && ( index[3] == 1 ) ) && ( ( index[0] == 0 )  && ( index[2] == 0 )) ) only24FourTriggers+=1;	
+		if ( ( ( index[2] == 1 ) && ( index[3] == 1 ) ) && ( ( index[0] == 0 )  && ( index[1] == 0 )) ) only34FourTriggers+=1;	
+	}
+
 	if ( ( index[0] == 1 ) || ( index[1] == 1 ) ) {
 		totalNumberEventsPassing+=1;
 
@@ -303,6 +339,7 @@ void OverlapTriggers::beginJob() {
 	const char *labelTrigger1 = trigger1.c_str();
 	const char *labelTrigger2 = trigger2.c_str();
 	const char *labelTrigger3 = trigger3.c_str();
+	const char *labelTrigger4 = trigger4.c_str();
 	histos1D_[ "overlapOverAll" ] = fileService->make< TH1D >( "overlapOverAllTriggers", "OverlapTriggers", 4, 0., 4);
     	histos1D_[ "overlapOverAll" ]->GetXaxis()->SetBinLabel( 1, labelTrigger1 );
     	histos1D_[ "overlapOverAll" ]->GetXaxis()->SetBinLabel( 2, labelTrigger2 );
@@ -456,6 +493,21 @@ void OverlapTriggers::beginJob() {
 	histos2D_[ "AK4vsAK8HTOneAll" ]->SetXTitle( "AK8HT [GeV]" );
 	histos2D_[ "AK4vsAK8HTOneAll" ]->SetYTitle( "AK4HT [GeV]" );
 
+	histos1D_[ "totalOverlapOverAll" ] = fileService->make< TH1D >( "totalOverlapOverAllTriggers", "OverlapTriggers", 3, 0., 3);
+    	histos1D_[ "totalOverlapOverAll" ]->GetXaxis()->SetBinLabel( 1, labelTrigger1 );
+    	histos1D_[ "totalOverlapOverAll" ]->GetXaxis()->SetBinLabel( 2, "Overlap" );
+
+	histos2D_[ "totalOverlapOverFour" ] = fileService->make< TH2D >( "totalOverlapOverFourTriggers", "OverlapTriggers", 5, 0., 5, 5, 0., 5);
+    	histos2D_[ "totalOverlapOverFour" ]->GetXaxis()->SetBinLabel( 1, labelTrigger1 );
+    	histos2D_[ "totalOverlapOverFour" ]->GetXaxis()->SetBinLabel( 2, labelTrigger2 );
+    	histos2D_[ "totalOverlapOverFour" ]->GetXaxis()->SetBinLabel( 3, labelTrigger3 );
+    	histos2D_[ "totalOverlapOverFour" ]->GetXaxis()->SetBinLabel( 4, labelTrigger4 );
+    	histos2D_[ "totalOverlapOverFour" ]->GetXaxis()->SetBinLabel( 5, "Overlap" );
+    	histos2D_[ "totalOverlapOverFour" ]->GetYaxis()->SetBinLabel( 1, labelTrigger1 );
+    	histos2D_[ "totalOverlapOverFour" ]->GetYaxis()->SetBinLabel( 2, labelTrigger2 );
+    	histos2D_[ "totalOverlapOverFour" ]->GetYaxis()->SetBinLabel( 3, labelTrigger3 );
+    	histos2D_[ "totalOverlapOverFour" ]->GetYaxis()->SetBinLabel( 4, labelTrigger4 );
+    	histos2D_[ "totalOverlapOverFour" ]->GetYaxis()->SetBinLabel( 5, "Overlap" );
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
@@ -463,6 +515,7 @@ void OverlapTriggers::endJob() {
 
 	std::cout<< only1 << " " << only2 << " " << only3 << " " << only12 << " " << only13 << " " << only23 << " " << threeTriggers << " "  << totalNumberEventsPassingThree << " " << totalNumberEvents << std::endl;
 	std::cout<< solo1 << " " << solo2 << " " << both12 << " " << none12 << " " << totalNumberEventsPassing << std::endl;
+	std::cout<< fourTriggers << " " << only1FourTriggers << " " << totalNumberEventsPassingAll << std::endl;
     histos1D_[ "overlapOverAll" ]->SetBinContent( 1, solo1/totalNumberEvents );
     histos1D_[ "overlapOverAll" ]->SetBinContent( 2, solo2/totalNumberEvents );
     histos1D_[ "overlapOverAll" ]->SetBinContent( 3, both12/totalNumberEvents );
@@ -497,6 +550,20 @@ void OverlapTriggers::endJob() {
     histos2D_[ "overlapThreeSimple" ]->SetBinContent( 2, 3, only23);
     histos2D_[ "overlapThreeSimple" ]->SetBinContent( 4, 4, threeTriggers);
 
+    histos2D_[ "totalOverlapOverFour" ]->SetBinContent( 1, 1, only1FourTriggers);
+    histos2D_[ "totalOverlapOverFour" ]->SetBinContent( 2, 2, only2FourTriggers);
+    histos2D_[ "totalOverlapOverFour" ]->SetBinContent( 3, 3, only3FourTriggers);
+    histos2D_[ "totalOverlapOverFour" ]->SetBinContent( 4, 4, only4FourTriggers);
+    histos2D_[ "totalOverlapOverFour" ]->SetBinContent( 1, 2, only12FourTriggers);
+    histos2D_[ "totalOverlapOverFour" ]->SetBinContent( 1, 3, only13FourTriggers);
+    histos2D_[ "totalOverlapOverFour" ]->SetBinContent( 1, 4, only14FourTriggers);
+    histos2D_[ "totalOverlapOverFour" ]->SetBinContent( 2, 3, only23FourTriggers);
+    histos2D_[ "totalOverlapOverFour" ]->SetBinContent( 2, 4, only24FourTriggers);
+    histos2D_[ "totalOverlapOverFour" ]->SetBinContent( 3, 4, only34FourTriggers);
+    histos2D_[ "totalOverlapOverFour" ]->SetBinContent( 5, 5, fourTriggers);
+
+    histos1D_[ "totalOverlapOverAll" ]->SetBinContent( 1, only1FourTriggers);
+    histos1D_[ "totalOverlapOverAll" ]->SetBinContent( 2, fourTriggers);
 }
 
 

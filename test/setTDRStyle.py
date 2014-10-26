@@ -67,22 +67,24 @@ def setEfficiencyTrigger( signal, trigger ):
 	textBox2=TLatex()
 	textBox2.SetNDC()
 	textBox2.SetTextSize(0.04) 
-	textBox2.DrawLatex(0.70,0.22, trigger )
+	textBox2.DrawLatex(0.30,0.15, trigger )
 
 	textBox3=TLatex()
 	textBox3.SetNDC()
 	textBox3.SetTextSize(0.04) 
-	textBox3.DrawLatex(0.70,0.27,"jet pt > 40 GeV")
+	#textBox3.DrawLatex(0.70,0.27,"jet pt > 40 GeV")
+	textBox3.DrawLatex(0.70,0.35,"#Delta #eta (j^{1}, j^{2}) < 1.3")
 		
 	textBox4=TLatex()
 	textBox4.SetNDC()
 	textBox4.SetTextSize(0.04) 
-	textBox4.DrawLatex(0.70,0.32,"|jet #eta| < 3.0")
+	#textBox4.DrawLatex(0.70,0.32,"|jet #eta| < 3.0")
+	textBox4.DrawLatex(0.70,0.30,"HT > 900 GeV")
 	
 	#textBox5=TLatex()
 	#textBox5.SetNDC()
 	#textBox5.SetTextSize(0.04) 
-	#textBox5.DrawLatex(0.70,0.35,"Number of Jets #geq 0 ")
+	#textBox5.DrawLatex(0.70,0.35,"#Delta #eta (j^{1}, j^{2}) < 1.3")
 	
 def setSelectionTrigger( signal, trigger, plot ):
 
@@ -116,7 +118,7 @@ def setSelectionTrigger( signal, trigger, plot ):
 	textBox5=TLatex()
 	textBox5.SetNDC()
 	textBox5.SetTextSize(0.04) 
-	textBox5.DrawLatex(0.70,0.78,"HT > 900 GeV")
+	textBox5.DrawLatex(0.70,0.78,"#Delta #eta(j^{1}, j^{2}) < 1.3" )
 	
 	textBox6=TLatex()
 	textBox6.SetNDC()
@@ -237,7 +239,7 @@ def setSelectionTrigger2D( signal, trigger, plot ):
 	textBox1=TLatex()
 	textBox1.SetNDC()
 	textBox1.SetTextSize(0.04) 
-	textBox1.DrawText(0.15,0.15, signal)
+	textBox1.DrawText(0.15,0.90, signal)
 	
 	textBox5=TLatex()
 	textBox5.SetNDC()

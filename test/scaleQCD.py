@@ -83,4 +83,4 @@ if __name__ == '__main__':
 	
 	for pt in ptBins:
 		print pt
-		scaleQCD( 'overlapStudies_QCD_Pt-'+pt+'_PU20bx25' )
+		scaleQCD( 'overlapStudies_QCD_Pt-'+pt+'_Tune4C_PU40bx25' )
