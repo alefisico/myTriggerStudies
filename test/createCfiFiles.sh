@@ -11,7 +11,7 @@ PU=$1
 #version=fd868969154cb7a3f3a270ccee8b693b    #### HLT2PAT 10k
 #version=721c33a7b3ece2a1c649181a68f869e9   #### HLT2PAT 10k
 
-version=d5c91d12d136f78ab21b93deae731020
+version=27c37f4e4bd846be0020854b0de00d89
 
 if [[ $PU == *20* ]]
 then

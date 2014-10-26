@@ -9,7 +9,7 @@ NAME=( 'RPVSt100tojj_13TeV_pythia8' 'RSGravitonToWW_M_1000_Tune4C_13TeV')
 DIR_NAME=( 'RPVSt100tojj_13TeV_pythia8_GENSIM' 'RSGravitonToWW_kMpl01_M_1000_Tune4C_13TeV_pythia8' )
 #version=( 'd5c91d12d136f78ab21b93deae731020' '' )
 
-version=d5c91d12d136f78ab21b93deae731020
+version=27c37f4e4bd846be0020854b0de00d89
 
 ##############################################
 ##### Create the python file 

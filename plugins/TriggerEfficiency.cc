@@ -203,12 +203,20 @@ void TriggerEfficiency::analyze(const edm::Event& iEvent, const edm::EventSetup&
 	edm::Handle<edm::View<reco::PFJet> > hltjetsTrimMod;
 	iEvent.getByLabel(hltJetsTrimMod,hltjetsTrimMod);
 	TLorentzVector hlt1JetTrimMod;
+	std::vector<TLorentzVector> vecHltJetsTrim;
 	double hltHTTrimMod = 0;
-	int nhltJetsTrimMod =0;
+	//int nhltJetsTrimMod =0;
 	for(const pat::Jet &ijet : *hltjetsTrimMod ){
 		if ( ijet.pt() < 30.0 || abs( ijet.eta() ) > 2.4 ) continue;
 		hltHTTrimMod += ijet.pt();
-		if ( (nhltJetsTrimMod++) == 1 ) hlt1JetTrimMod.SetPtEtaPhiE( ijet.pt(), ijet.eta(), ijet.phi(), ijet.energy() );
+		TLorentzVector tmpJet;
+		tmpJet.SetPtEtaPhiE( ijet.pt(), ijet.eta(), ijet.phi(), ijet.energy() );
+		vecHltJetsTrim.push_back( tmpJet );
+	}
+	if ( vecHltJetsTrim.size() > 0 ){
+		sort(vecHltJetsTrim.begin(), vecHltJetsTrim.end(), [](const TLorentzVector &p1, const TLorentzVector &p2) { return p1.M() > p2.M(); }); // the joys of C++11
+	       	//hlt1JetTrimMod.SetPtEtaPhiE( vecHltJetsTrim[0].Pt(), vecHltJetsTrim[0].Eta(), vecHltJetsTrim[0].Phi(), vecHltJetsTrim[0].E() );
+		hlt1JetTrimMod = vecHltJetsTrim[0];
 	}
 
 	edm::Handle<edm::View<reco::PFJet> > hltjetsPruned;
@@ -229,7 +237,7 @@ void TriggerEfficiency::analyze(const edm::Event& iEvent, const edm::EventSetup&
 	double patHT = 0;
 	int npatJets =0;
 	int npatJets2 =0;
-	bool deltaEta = 0;
+	//bool deltaEta = 0;
 	//bool dijetMass;
 	for(const pat::Jet &ijet : *patjets ){
 		if ( ijet.pt() < 30.0 || abs( ijet.eta() ) > 2.4 ) continue;
@@ -237,7 +245,7 @@ void TriggerEfficiency::analyze(const edm::Event& iEvent, const edm::EventSetup&
 		if ( (npatJets++) == 1 ) pat1Jet.SetPtEtaPhiE( ijet.pt(), ijet.eta(), ijet.phi(), ijet.energy() );
 		if ( (npatJets2++) == 2 ) {
 			pat2Jet.SetPtEtaPhiE( ijet.pt(), ijet.eta(), ijet.phi(), ijet.energy() );
-			deltaEta = abs( pat1Jet.Eta() - pat2Jet.Eta()  ) < 1.3;
+			//deltaEta = abs( pat1Jet.Eta() - pat2Jet.Eta()  ) < 1.3;
 			//TLorentzVector tmpVector = pat1Jet + pat2Jet;
 			//dijetMass = tmpVector.M() > 890;
 		}
@@ -304,15 +312,31 @@ void TriggerEfficiency::analyze(const edm::Event& iEvent, const edm::EventSetup&
 		if( patHTPruned > 0 ) histos2D_[ "hltVsPatJetMassPruned" ]->Fill( hlt1JetTrimMod.M(), pat1JetPruned.M() );
 	}
 
-	if( deltaEta && ( patHT > minHT ) && ( pat1Jet.M() > minMass ) ) {
+	if (triggerResults->accept(triggerBit)) {
+		histos2D_[ "passedHltVsPatJetMass" ]->Fill( hlt1JetTrimMod.M(), pat1Jet.M() );
+		histos2D_[ "passedHltVsPatJetMassTrim" ]->Fill( hlt1JetTrimMod.M(), pat1JetTrim.M() );
+		histos2D_[ "passedHltVsPatJetMassTrimMod" ]->Fill( hlt1JetTrimMod.M(), pat1JetTrimMod.M() );
+		histos2D_[ "passedHltVsPatJetMassPruned" ]->Fill( hlt1JetTrimMod.M(), pat1JetPruned.M() );
+	}
+
+	//if( deltaEta && ( patHT > minHT ) && ( pat1Jet.M() > minMass ) ) {
+	if( ( patHT > minHT ) && ( pat1Jet.M() > minMass ) ) {
+
+		if (triggerResults->accept(triggerBit)) {
+			histos2D_[ "passedHltVsPatJetMass" ]->Fill( hlt1JetTrimMod.M(), pat1Jet.M() );
+			histos2D_[ "passedHltVsPatJetMassTrim" ]->Fill( hlt1JetTrimMod.M(), pat1JetTrim.M() );
+			histos2D_[ "passedHltVsPatJetMassTrimMod" ]->Fill( hlt1JetTrimMod.M(), pat1JetTrimMod.M() );
+			histos2D_[ "passedHltVsPatJetMassPruned" ]->Fill( hlt1JetTrimMod.M(), pat1JetPruned.M() );
+		}
+
 		histos1D_[ "HTDenom" ]->Fill( patHT );
 		histos1D_[ "jetMassDenom" ]->Fill( pat1Jet.M() );
 		histos1D_[ "jetMassTrimDenom" ]->Fill( pat1JetTrim.M() );
 		histos1D_[ "jetMassTrimModDenom" ]->Fill( pat1JetTrimMod.M() );
 		histos1D_[ "jetMassPrunedDenom" ]->Fill( pat1JetPruned.M() );
 		histos1D_[ "ptDenom" ]->Fill( pat1Jet.Pt() );
-		histos2D_[ "jetMassHTDenom" ]->Fill( patHT, pat1Jet.M() );
-		histos2D_[ "jetMassPtDenom" ]->Fill( pat1Jet.Pt(), pat1Jet.M() );
+		histos2D_[ "jetMassHTDenom" ]->Fill(  pat1JetTrimMod.M(), patHT );
+		histos2D_[ "jetMassPtDenom" ]->Fill( pat1JetTrimMod.M(), pat1Jet.Pt() );
 
 		if ( lowNPV ){
 			histos1D_[ "lowPUHTDenom" ]->Fill( patHT );
@@ -346,8 +370,8 @@ void TriggerEfficiency::analyze(const edm::Event& iEvent, const edm::EventSetup&
 			histos1D_[ "jetMassTrimModPassing" ]->Fill( pat1JetTrimMod.M() );
 			histos1D_[ "jetMassPrunedPassing" ]->Fill( pat1JetPruned.M() );
 			histos1D_[ "ptPassing" ]->Fill( pat1Jet.Pt() );
-			histos2D_[ "jetMassHTPassing" ]->Fill( patHT, pat1Jet.M() );
-			histos2D_[ "jetMassPtPassing" ]->Fill( pat1Jet.Pt(), pat1Jet.M() );
+			histos2D_[ "jetMassHTPassing" ]->Fill( pat1JetTrimMod.M(), patHT );
+			histos2D_[ "jetMassPtPassing" ]->Fill( pat1JetTrimMod.M(), pat1Jet.Pt() );
 
 			if ( lowNPV ){
 				histos1D_[ "lowPUHTPassing" ]->Fill( patHT );
@@ -383,17 +407,17 @@ void TriggerEfficiency::analyze(const edm::Event& iEvent, const edm::EventSetup&
 void TriggerEfficiency::beginJob() {
 
 	edm::Service< TFileService > fileService;
-	histos2D_[ "jetMassHTDenom" ] = fileService->make< TH2D >( "jetMassHTDenom", "HT vs Leading Jet Mass", 20, 0., 2000, 16, 0., 400. );
-	histos2D_[ "jetMassHTDenom" ]->SetXTitle( "HT [GeV]" );
-	histos2D_[ "jetMassHTDenom" ]->SetYTitle( "Leading Jet Mass [GeV]" );
+	histos2D_[ "jetMassHTDenom" ] = fileService->make< TH2D >( "jetMassHTDenom", "HT vs Leading Jet Mass", 16, 0., 400. , 20, 0., 2000);
+	histos2D_[ "jetMassHTDenom" ]->SetYTitle( "HT [GeV]" );
+	histos2D_[ "jetMassHTDenom" ]->SetXTitle( "Leading Jet Trimmed Mass [GeV]" );
 
-	histos2D_[ "jetMassHTPassing" ] = fileService->make< TH2D >( "jetMassHTPassing", "HT vs Leading Jet Mass passing path", 20, 0., 2000, 16, 0., 400. );
-	histos2D_[ "jetMassHTPassing" ]->SetXTitle( "HT [GeV]" );
-	histos2D_[ "jetMassHTPassing" ]->SetYTitle( "Leading Jet Mass [GeV]" );
+	histos2D_[ "jetMassHTPassing" ] = fileService->make< TH2D >( "jetMassHTPassing", "HT vs Leading Jet Mass passing path", 16, 0., 400. , 20, 0., 2000);
+	histos2D_[ "jetMassHTPassing" ]->SetYTitle( "HT [GeV]" );
+	histos2D_[ "jetMassHTPassing" ]->SetXTitle( "Leading Jet Mass [GeV]" );
 
-	histos2D_[ "jetMassHT2Defficiency" ] = fileService->make< TH2D >( "jetMassHT2Defficiency", "Comparative efficiency", 20, 0., 2000, 16, 0., 400. );
-	histos2D_[ "jetMassHT2Defficiency" ]->SetXTitle( "HT [GeV]" );
-	histos2D_[ "jetMassHT2Defficiency" ]->SetYTitle( "Leading Jet Mass [GeV]" );
+	histos2D_[ "jetMassHT2Defficiency" ] = fileService->make< TH2D >( "jetMassHT2Defficiency", "Comparative efficiency", 16, 0., 400. , 20, 0., 2000);
+	histos2D_[ "jetMassHT2Defficiency" ]->SetYTitle( "HT [GeV]" );
+	histos2D_[ "jetMassHT2Defficiency" ]->SetXTitle( "Leading Jet Mass [GeV]" );
 
 	histos2D_[ "jetMassPtDenom" ] = fileService->make< TH2D >( "jetMassPtDenom", "Leading Jet Mass vs Pt", 10, 0., 1000, 16, 0., 400. );
 	histos2D_[ "jetMassPtDenom" ]->SetXTitle( "Leading Jet Pt [GeV]" );
@@ -717,21 +741,36 @@ void TriggerEfficiency::beginJob() {
 	histos1D_[ "patJetMassPruned" ]->Sumw2();
 
 	histos2D_[ "hltVsPatJetMass" ] = fileService->make< TH2D >( "hltVsPatJetMass", "Online vs Offline Leading Jet Mass", 40, 0., 400, 40, 0., 400. );
-	histos2D_[ "hltVsPatJetMass" ]->SetXTitle( "Offline Leading Jet Mass [GeV]" );
-	histos2D_[ "hltVsPatJetMass" ]->SetYTitle( "Online Leading Jet Mass [GeV]" );
+	histos2D_[ "hltVsPatJetMass" ]->SetYTitle( "Offline Leading Jet Mass [GeV]" );
+	histos2D_[ "hltVsPatJetMass" ]->SetXTitle( "Online Leading Jet Mass [GeV]" );
 
 	histos2D_[ "hltVsPatJetMassTrim" ] = fileService->make< TH2D >( "hltVsPatJetMassTrim", "Online vs Offline Leading Jet Mass", 40, 0., 400, 40, 0., 400. );
-	histos2D_[ "hltVsPatJetMassTrim" ]->SetXTitle( "Offline Leading Jet Mass [GeV]" );
-	histos2D_[ "hltVsPatJetMassTrim" ]->SetYTitle( "Online Leading Jet Mass [GeV]" );
+	histos2D_[ "hltVsPatJetMassTrim" ]->SetYTitle( "Offline Leading Jet Mass [GeV]" );
+	histos2D_[ "hltVsPatJetMassTrim" ]->SetXTitle( "Online Leading Jet Mass [GeV]" );
 
 	histos2D_[ "hltVsPatJetMassTrimMod" ] = fileService->make< TH2D >( "hltVsPatJetMassTrimMod", "Online vs Offline Leading Jet Mass", 40, 0., 400, 40, 0., 400. );
-	histos2D_[ "hltVsPatJetMassTrimMod" ]->SetXTitle( "Offline Leading Jet Mass [GeV]" );
-	histos2D_[ "hltVsPatJetMassTrimMod" ]->SetYTitle( "Online Leading Jet Mass [GeV]" );
+	histos2D_[ "hltVsPatJetMassTrimMod" ]->SetYTitle( "Offline Leading Jet Mass [GeV]" );
+	histos2D_[ "hltVsPatJetMassTrimMod" ]->SetXTitle( "Online Leading Jet Mass [GeV]" );
 
 	histos2D_[ "hltVsPatJetMassPruned" ] = fileService->make< TH2D >( "hltVsPatJetMassPruned", "Online vs Offline Leading Jet Mass", 40, 0., 400, 40, 0., 400. );
-	histos2D_[ "hltVsPatJetMassPruned" ]->SetXTitle( "Offline Leading Jet Mass [GeV]" );
-	histos2D_[ "hltVsPatJetMassPruned" ]->SetYTitle( "Online Leading Jet Mass [GeV]" );
+	histos2D_[ "hltVsPatJetMassPruned" ]->SetYTitle( "Offline Leading Jet Mass [GeV]" );
+	histos2D_[ "hltVsPatJetMassPruned" ]->SetXTitle( "Online Leading Jet Mass [GeV]" );
 
+	histos2D_[ "passedHltVsPatJetMass" ] = fileService->make< TH2D >( "passedHltVsPatJetMass", "Online vs Offline Leading Jet Mass", 40, 0., 400, 40, 0., 400. );
+	histos2D_[ "passedHltVsPatJetMass" ]->SetYTitle( "Offline Leading Jet Mass [GeV]" );
+	histos2D_[ "passedHltVsPatJetMass" ]->SetXTitle( "Online Leading Jet Mass [GeV]" );
+
+	histos2D_[ "passedHltVsPatJetMassTrim" ] = fileService->make< TH2D >( "passedHltVsPatJetMassTrim", "Online vs Offline Leading Jet Mass", 40, 0., 400, 40, 0., 400. );
+	histos2D_[ "passedHltVsPatJetMassTrim" ]->SetYTitle( "Offline Leading Jet Mass [GeV]" );
+	histos2D_[ "passedHltVsPatJetMassTrim" ]->SetXTitle( "Online Leading Jet Mass [GeV]" );
+
+	histos2D_[ "passedHltVsPatJetMassTrimMod" ] = fileService->make< TH2D >( "passedHltVsPatJetMassTrimMod", "Online vs Offline Leading Jet Mass", 40, 0., 400, 40, 0., 400. );
+	histos2D_[ "passedHltVsPatJetMassTrimMod" ]->SetYTitle( "Offline Leading Jet Mass [GeV]" );
+	histos2D_[ "passedHltVsPatJetMassTrimMod" ]->SetXTitle( "Online Leading Jet Mass [GeV]" );
+
+	histos2D_[ "passedHltVsPatJetMassPruned" ] = fileService->make< TH2D >( "passedHltVsPatJetMassPruned", "Online vs Offline Leading Jet Mass", 40, 0., 400, 40, 0., 400. );
+	histos2D_[ "passedHltVsPatJetMassPruned" ]->SetYTitle( "Offline Leading Jet Mass [GeV]" );
+	histos2D_[ "passedHltVsPatJetMassPruned" ]->SetXTitle( "Online Leading Jet Mass [GeV]" );
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
