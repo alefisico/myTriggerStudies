@@ -9,7 +9,7 @@ NAME=( 'RPVSt100tojj_13TeV_pythia8' 'RSGravitonToWW_M_1000_Tune4C_13TeV')
 DIR_NAME=( 'RPVSt100tojj_13TeV_pythia8_GENSIM' 'RSGravitonToWW_kMpl01_M_1000_Tune4C_13TeV_pythia8' )
 #version=( 'd5c91d12d136f78ab21b93deae731020' '' )
 
-version=27c37f4e4bd846be0020854b0de00d89
+version=3de45f2ec11357a012a43913ba5333d6
 
 ##############################################
 ##### Create the python file 
@@ -18,7 +18,7 @@ for i in 0 1 #2
 do
 	for PU in ${PUScenario[@]};
 	do 
-		namePythonFileCFI=${NAME[${i}]}_${PU}_v720pre8_FiltFiles_cfi.py
+		namePythonFileCFI=${NAME[${i}]}_${PU}_v721_FiltFiles_cfi.py
 		if [ -f $namePythonFileCFI ]; then
 			rm -rf $namePythonFileCFI
 		fi
@@ -28,7 +28,7 @@ do
 myfilelist = cms.untracked.vstring()
 myfilelist.extend(         [ " >> ${namePythonFileCFI}
 
-		for file in `ls -1 ${input_Dir}/${DIR_NAME[${i}]}/openHLT_Filt_v720pre8_v1_${NAME[${i}]}_${PU}_Filt/${version}/*root`
+		for file in `ls -1 ${input_Dir}/${DIR_NAME[${i}]}/openHLT_Filt_v721_v1_${NAME[${i}]}_${PU}_Filt/${version}/*root`
 		do
 			echo "'${file}'," >> ${namePythonFileCFI}
 		done
