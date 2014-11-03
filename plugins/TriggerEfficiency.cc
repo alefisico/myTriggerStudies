@@ -172,6 +172,7 @@ void TriggerEfficiency::analyze(const edm::Event& iEvent, const edm::EventSetup&
 	if( NPV < 25 ) lowNPV = 1;
 	if( NPV > 25 && NPV < 35 ) midNPV = 1;
 	if( NPV > 35 ) highNPV = 1;
+	
 
 	/*edm::InputTag triggerSummaryLabel_ = edm::InputTag("hltTriggerSummaryAOD", "", "HLT");
 	edm::Handle<trigger::TriggerEvent> triggerSummary;
@@ -183,7 +184,7 @@ void TriggerEfficiency::analyze(const edm::Event& iEvent, const edm::EventSetup&
 	double hltHT = 0;
 	int nhltJets =0;
 	for(const pat::Jet &ijet : *hltjets ){
-		if ( ijet.pt() < 30.0 || abs( ijet.eta() ) > 2.4 ) continue;
+		if ( ijet.pt() < 100.0 || abs( ijet.eta() ) > 2.4 ) continue;
 		hltHT += ijet.pt();
 		if ( (nhltJets++) == 1 ) hlt1Jet.SetPtEtaPhiE( ijet.pt(), ijet.eta(), ijet.phi(), ijet.energy() );
 	}
@@ -195,7 +196,7 @@ void TriggerEfficiency::analyze(const edm::Event& iEvent, const edm::EventSetup&
 	double hltHTTrim = 0;
 	int nhltJetsTrim =0;
 	for(const pat::Jet &ijet : *hltjetsTrim ){
-		if ( ijet.pt() < 30.0 || abs( ijet.eta() ) > 2.4 ) continue;
+		if ( ijet.pt() < 100.0 || abs( ijet.eta() ) > 2.4 ) continue;
 		hltHTTrim += ijet.pt();
 		if ( (nhltJetsTrim++) == 1 ) hlt1JetTrim.SetPtEtaPhiE( ijet.pt(), ijet.eta(), ijet.phi(), ijet.energy() );
 	}
@@ -207,7 +208,7 @@ void TriggerEfficiency::analyze(const edm::Event& iEvent, const edm::EventSetup&
 	double hltHTTrimMod = 0;
 	//int nhltJetsTrimMod =0;
 	for(const pat::Jet &ijet : *hltjetsTrimMod ){
-		if ( ijet.pt() < 30.0 || abs( ijet.eta() ) > 2.4 ) continue;
+		if ( ijet.pt() < 100.0 || abs( ijet.eta() ) > 2.4 ) continue;
 		hltHTTrimMod += ijet.pt();
 		TLorentzVector tmpJet;
 		tmpJet.SetPtEtaPhiE( ijet.pt(), ijet.eta(), ijet.phi(), ijet.energy() );
@@ -225,7 +226,7 @@ void TriggerEfficiency::analyze(const edm::Event& iEvent, const edm::EventSetup&
 	double hltHTPruned = 0;
 	int nhltJetsPruned =0;
 	for(const pat::Jet &ijet : *hltjetsPruned ){
-		if ( ijet.pt() < 30.0 || abs( ijet.eta() ) > 2.4 ) continue;
+		if ( ijet.pt() < 100.0 || abs( ijet.eta() ) > 2.4 ) continue;
 		hltHTPruned += ijet.pt();
 		if ( (nhltJetsPruned++) == 1 ) hlt1JetPruned.SetPtEtaPhiE( ijet.pt(), ijet.eta(), ijet.phi(), ijet.energy() );
 	}
@@ -240,7 +241,7 @@ void TriggerEfficiency::analyze(const edm::Event& iEvent, const edm::EventSetup&
 	//bool deltaEta = 0;
 	//bool dijetMass;
 	for(const pat::Jet &ijet : *patjets ){
-		if ( ijet.pt() < 30.0 || abs( ijet.eta() ) > 2.4 ) continue;
+		if ( ijet.pt() < 100.0 || abs( ijet.eta() ) > 2.4 ) continue;
 		patHT += ijet.pt();
 		if ( (npatJets++) == 1 ) pat1Jet.SetPtEtaPhiE( ijet.pt(), ijet.eta(), ijet.phi(), ijet.energy() );
 		if ( (npatJets2++) == 2 ) {
@@ -258,7 +259,7 @@ void TriggerEfficiency::analyze(const edm::Event& iEvent, const edm::EventSetup&
 	double patHTTrim = 0;
 	int npatJetsTrim =0;
 	for(const pat::Jet &ijet : *patjetsTrim ){
-		if ( ijet.pt() < 30.0 || abs( ijet.eta() ) > 2.4 ) continue;
+		if ( ijet.pt() < 100.0 || abs( ijet.eta() ) > 2.4 ) continue;
 		patHTTrim += ijet.pt();
 		if ( (npatJetsTrim++) == 1 ) pat1JetTrim.SetPtEtaPhiE( ijet.pt(), ijet.eta(), ijet.phi(), ijet.energy() );
 	}
@@ -269,7 +270,7 @@ void TriggerEfficiency::analyze(const edm::Event& iEvent, const edm::EventSetup&
 	double patHTTrimMod = 0;
 	int npatJetsTrimMod =0;
 	for(const pat::Jet &ijet : *patjetsTrimMod ){
-		if ( ijet.pt() < 30.0 || abs( ijet.eta() ) > 2.4 ) continue;
+		if ( ijet.pt() < 100.0 || abs( ijet.eta() ) > 2.4 ) continue;
 		patHTTrimMod += ijet.pt();
 		if ( (npatJetsTrimMod++) == 1 ) pat1JetTrimMod.SetPtEtaPhiE( ijet.pt(), ijet.eta(), ijet.phi(), ijet.energy() );
 	}
@@ -280,7 +281,7 @@ void TriggerEfficiency::analyze(const edm::Event& iEvent, const edm::EventSetup&
 	double patHTPruned = 0;
 	int npatJetsPruned =0;
 	for(const pat::Jet &ijet : *patjetsPruned ){
-		if ( ijet.pt() < 30.0 || abs( ijet.eta() ) > 2.4 ) continue;
+		if ( ijet.pt() < 100.0 || abs( ijet.eta() ) > 2.4 ) continue;
 		patHTPruned += ijet.pt();
 		if ( (npatJetsPruned++) == 1 ) pat1JetPruned.SetPtEtaPhiE( ijet.pt(), ijet.eta(), ijet.phi(), ijet.energy() );
 	}
@@ -291,7 +292,7 @@ void TriggerEfficiency::analyze(const edm::Event& iEvent, const edm::EventSetup&
 	double HT = 0;
 	int nJets =0;
 	for(const pat::Jet &ijet : *jets ){
-		if ( ijet.pt() < 30.0 || abs( ijet.eta() ) > 2.4 ) continue;
+		if ( ijet.pt() < 100.0 || abs( ijet.eta() ) > 2.4 ) continue;
 		HT += ijet.pt();
 		if ( (nJets++) == 1 ) jet1.SetPtEtaPhiE( ijet.pt(), ijet.eta(), ijet.phi(), ijet.energy() );
 	}

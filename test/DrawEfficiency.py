@@ -228,9 +228,15 @@ if __name__ == '__main__':
 #			['AK8PFHT850TrimMass50TrimModCutHT', 'passedHltVsPatJetMassTrim', 0, 100 ],
 #			['AK8PFHT850TrimMass50TrimModCutHT', 'passedHltVsPatJetMassTrimMod', 0, 100 ],
 #			['AK8PFHT850TrimMass50TrimModCutHT', 'passedHltVsPatJetMassPruned', 0, 100 ],
-			['AK8PFHT850TrimMass50TrimMod', 'jetMassHT', 0, 100 ],
-			['AK8PFHT850TrimMass50TrimMod', 'HT', 0, 100 ],
-			['AK8PFHT850TrimMass50TrimMod', 'jetMassTrimMod', 0, 100 ],
+			['AK8PFHT850TrimMass50TrimModCutHT', 'jetMassHT', 0, 100 ],
+			['AK8PFHT850TrimMass50TrimModCutHT', 'HT', 0, 100 ],
+			['AK8PFHT850TrimMass50TrimModCutHT', 'jetMassTrimMod', 0, 100 ],
+			['AK8PFHT800TrimMass50TrimModCutHT', 'jetMassHT', 0, 100 ],
+			['AK8PFHT800TrimMass50TrimModCutHT', 'HT', 0, 100 ],
+			['AK8PFHT800TrimMass50TrimModCutHT', 'jetMassTrimMod', 0, 100 ],
+			['AK8PFHT750TrimMass50TrimModCutHT', 'jetMassHT', 0, 100 ],
+			['AK8PFHT750TrimMass50TrimModCutHT', 'HT', 0, 100 ],
+			['AK8PFHT750TrimMass50TrimModCutHT', 'jetMassTrimMod', 0, 100 ],
 			]
 	for i in plotsList: 
 		if 'jetMassHT' in i[1]: plot2D( inputFile, Signal, i[0], i[1], i[2], i[3], PU )
