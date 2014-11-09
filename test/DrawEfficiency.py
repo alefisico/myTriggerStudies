@@ -23,10 +23,10 @@ gROOT.SetStyle('tdrStyle')
 
 gStyle.SetOptStat(0)
 
-def plot( inFile, signal, trigger, name, xmin, xmax, PU):
+def plot( inFile, signal, trigger, name, xmin, xmax, PU, sel1, sel2, sel3):
 	"""docstring for plot"""
 
-	outputFileName = trigger+'_'+name+'Efficiency_'+signal+'_'+PU+'_TriggerEfficiency.pdf' 
+	outputFileName = trigger+'_'+name+'Efficiency_'+signal+'_'+PU+'_TriggerEfficiency_Boosted.pdf' 
 	print 'Processing.......', outputFileName
 
 	histos = {}
@@ -50,7 +50,7 @@ def plot( inFile, signal, trigger, name, xmin, xmax, PU):
 			can = TCanvas('c1', 'c1',  10, 10, 800, 500 )
 			#gStyle.SetOptStat(1111)
 			effHisto.Draw("AP")
-			setEfficiencyTrigger( signal + ' 13 TeV '+ PU, trigger )
+			setEfficiencyTrigger( signal + ' 13 TeV '+ PU, trigger, sel1, sel2, sel3 )
 			can.SaveAs( 'Plots/'+outputFileName )
 			del can
 		else:
@@ -63,14 +63,14 @@ def plot( inFile, signal, trigger, name, xmin, xmax, PU):
 			histo.Sumw2()
 			histo.Draw()
 			setSelectionTrigger( signal + ' 13 TeV '+ PU, trigger, plot )
-			can.SaveAs( 'Plots/'+trigger+'_'+plot+'_'+signal+'_'+PU+'_TriggerEfficiency.pdf' )
+			can.SaveAs( 'Plots/'+trigger+'_'+plot+'_'+signal+'_'+PU+'_TriggerEfficiency_Boosted.pdf' )
 			del can
 
 
-def plot2D( inFile, signal, trigger, name, xmax, xmax2, PU ):
+def plot2D( inFile, signal, trigger, name, xmax, xmax2, PU, sel1, sel2, sel3 ):
 	"""docstring for plot"""
 
-	outputFileName = trigger+'_'+name+'Efficiency_'+signal+'_'+PU+'_TriggerEfficiency.pdf' 
+	outputFileName = trigger+'_'+name+'Efficiency_'+signal+'_'+PU+'_TriggerEfficiency_Boosted.pdf' 
 	print 'Processing.......', outputFileName
 
 	histos = {}
@@ -90,7 +90,7 @@ def plot2D( inFile, signal, trigger, name, xmax, xmax2, PU ):
 			can = TCanvas('c1', 'c1',  10, 10, 800, 500 )
 			histo.Draw('colz')
 			histo.Draw('same text')
-			setSelectionTrigger2D( signal + ' 13 TeV '+ PU, trigger, '' )
+			setSelectionTrigger2D( signal + ' 13 TeV '+ PU, trigger, sel1, sel2, sel3 )
 			can.SaveAs( 'Plots/'+outputFileName )
 			del can
 		else:
@@ -99,8 +99,8 @@ def plot2D( inFile, signal, trigger, name, xmax, xmax2, PU ):
 			can = TCanvas('c1', 'c1',  10, 10, 800, 500 )
 			can.SetLogz()
 			histo.Draw('colz')
-			setSelectionTrigger2D( signal + ' 13 TeV '+ PU, trigger, plot )
-			can.SaveAs( 'Plots/'+trigger+'_'+plot+'_'+signal+'_'+PU+'_TriggerEfficiency.pdf' )
+			setSelectionTrigger2D( signal + ' 13 TeV '+ PU, trigger, sel1, sel2, sel3 )
+			can.SaveAs( 'Plots/'+trigger+'_'+plot+'_'+signal+'_'+PU+'_TriggerEfficiency_Boosted.pdf' )
 			del can
 
 
@@ -174,7 +174,7 @@ if __name__ == '__main__':
 
 	PU = sys.argv[2]
 	Signal = sys.argv[1] #'RPVSt100tojj'	
-	inputFile = TFile.Open('filesWithHistos_'+Signal+'_'+PU+'.root')
+	inputFile = TFile.Open('filesWithHistos_'+Signal+'_'+PU+'_Boosted.root')
 	plotsList = [
 #			['PFHT450', 'HT', 20, 50 ],
 #			['PFHT450', 'jetMass', 0, 100 ],
@@ -228,18 +228,24 @@ if __name__ == '__main__':
 #			['AK8PFHT850TrimMass50TrimModCutHT', 'passedHltVsPatJetMassTrim', 0, 100 ],
 #			['AK8PFHT850TrimMass50TrimModCutHT', 'passedHltVsPatJetMassTrimMod', 0, 100 ],
 #			['AK8PFHT850TrimMass50TrimModCutHT', 'passedHltVsPatJetMassPruned', 0, 100 ],
-			['AK8PFHT850TrimMass50TrimModCutHT', 'jetMassHT', 0, 100 ],
-			['AK8PFHT850TrimMass50TrimModCutHT', 'HT', 0, 100 ],
-			['AK8PFHT850TrimMass50TrimModCutHT', 'jetMassTrimMod', 0, 100 ],
-			['AK8PFHT800TrimMass50TrimModCutHT', 'jetMassHT', 0, 100 ],
-			['AK8PFHT800TrimMass50TrimModCutHT', 'HT', 0, 100 ],
-			['AK8PFHT800TrimMass50TrimModCutHT', 'jetMassTrimMod', 0, 100 ],
+#			['AK8PFHT850TrimMass50TrimModCutHT', 'jetMassHT', 0, 100 ],
+#			['AK8PFHT850TrimMass50TrimModCutHT', 'HT', 0, 100 ],
+#			['AK8PFHT850TrimMass50TrimModCutHT', 'jetMassTrimMod', 0, 100 ],
+#			['AK8PFHT800TrimMass50TrimModCutHT', 'jetMassHT', 0, 100 ],
+#			['AK8PFHT800TrimMass50TrimModCutHT', 'HT', 0, 100 ],
+#			['AK8PFHT800TrimMass50TrimModCutHT', 'jetMassTrimMod', 0, 100 ],
 			['AK8PFHT750TrimMass50TrimModCutHT', 'jetMassHT', 0, 100 ],
-			['AK8PFHT750TrimMass50TrimModCutHT', 'HT', 0, 100 ],
+			['AK8PFHT750TrimMass50TrimModCutHT', 'HT', 0, 50 ],
 			['AK8PFHT750TrimMass50TrimModCutHT', 'jetMassTrimMod', 0, 100 ],
+			['AK8PFHT750TrimMass50TrimModCutHT', 'jetMassPruned', 0, 100 ],
 			]
+
+	sel1 = 'Jet p_{T} > 100 GeV'
+	sel2 = 'Jet | #eta | < 3.0 '
+	sel3 = 'HT > 900 GeV'
+
 	for i in plotsList: 
-		if 'jetMassHT' in i[1]: plot2D( inputFile, Signal, i[0], i[1], i[2], i[3], PU )
+		if 'jetMassHT' in i[1]: plot2D( inputFile, Signal, i[0], i[1], i[2], i[3], PU, sel1, sel2, sel3 )
 		elif 'ltVs' in i[1]: plotSimple2D( inputFile, Signal, i[0], i[1], i[2], i[3], PU )
 		elif 'Efficiency' in i[1] : plotDiffPU( inputFile, Signal, i[0], i[1], i[2], i[3], PU )
-		else: plot( inputFile, Signal, i[0], i[1], i[2], i[3], PU )
+		else: plot( inputFile, Signal, i[0], i[1], i[2], i[3], PU, sel1, sel2, sel3 )

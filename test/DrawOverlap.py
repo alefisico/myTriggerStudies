@@ -78,7 +78,8 @@ def plot2D( inFile, signal, trigger, name, inFileName, xmax, xmax2, PU ):
 def plotOverlap( inFile, signal, trigger, name, inFileName, xmax, xmax2, PU ):
 	"""docstring for plot"""
 
-	outputFileName = trigger+'_'+name+'_'+signal+'_'+PU+'_TriggerOverlap.pdf' 
+	outputFileName = trigger+'_'+name+'_'+signal+'_'+PU+'_TriggerOverlap_v4.pdf' 
+	#outputFileName = trigger+'_'+name+'_'+signal+'_'+PU+'_TriggerOverlap_OnlyBoosted.pdf' 
 	print 'Processing.......', outputFileName
 
 	histo = inFile.Get( trigger+'/'+name )
@@ -115,9 +116,9 @@ if __name__ == '__main__':
 
 	PU = sys.argv[2]
 	Signal = sys.argv[1] #'RPVSt100tojj'	
-	inputFile = TFile.Open('overlapStudies_'+Signal+'_'+PU+'.root')
+	inputFile = TFile.Open('overlapStudies_'+Signal+'_'+PU+'_v4.root')
 	plotsList = [
-#			[ 'totalOverlapOverFourTriggers', '', 20, 50 ],
+			[ 'totalOverlapOverFourTriggers', '', 20, 50 ],
 			#[ 'overlapTriggers', '', 20, 50 ],
 #			[ 'overlapThreeSimpleTriggers', '', 20, 50 ],
 #			[ 'MassOneAll', 'NO Trigger', 20, 50 ],
@@ -132,10 +133,10 @@ if __name__ == '__main__':
 #			[ 'HTOne', 'AK8PFTrimHT850TrimMass', 20, 50 ],
 #			[ 'HTTwo', 'PFHT900', 20, 50 ],
 #			[ 'HTBoth', 'Both', 20, 50 ],
-			[ 'HTvsMassOneAll', 'NO Trigger', 20, 50 ],
-			[ 'HTvsMassOne', 'AK8PFHT850TrimMass', 20, 50 ],
-			[ 'HTvsMassTwo', 'PFHT800', 20, 50 ],
-			[ 'HTvsMassBoth', 'Both', 20, 50 ],
+#			[ 'HTvsMassOneAll', 'NO Trigger', 20, 50 ],
+#			[ 'HTvsMassOne', 'AK8PFHT850TrimMass', 20, 50 ],
+#			[ 'HTvsMassTwo', 'PFHT800', 20, 50 ],
+#			[ 'HTvsMassBoth', 'Both', 20, 50 ],
 #			[ 'HTvsPtOneAll', 'NO Trigger', 20, 50 ],
 #			[ 'HTvsPtOne', 'AK8PFTrimHT850TrimMass', 20, 50 ],
 #			[ 'HTvsPtTwo', 'PFHT900', 20, 50 ],
