@@ -78,20 +78,24 @@ def plot2D( inFile, signal, trigger, name, inFileName, xmax, xmax2, PU ):
 def plotOverlap( inFile, signal, trigger, name, inFileName, xmax, xmax2, PU ):
 	"""docstring for plot"""
 
-	outputFileName = trigger+'_'+name+'_'+signal+'_'+PU+'_TriggerOverlap.pdf' 
+	outputFileName = trigger+'_'+name+'_'+signal+'_'+PU+'_TriggerOverlap_v4.pdf' 
+	#outputFileName = trigger+'_'+name+'_'+signal+'_'+PU+'_TriggerOverlap_OnlyBoosted.pdf' 
 	print 'Processing.......', outputFileName
 
 	histo = inFile.Get( trigger+'/'+name )
 
 	nEvents = histo.Integral()
+	histo.Sumw2()
 	histo.Scale(1/nEvents)
 	labelBin = histo.GetXaxis().GetBinLabel(1)
-	newLabelBin = labelBin.replace('TrimModMass00_', '')
+	newLabelBin = labelBin.replace('TrimR0p1PT0p03Mass00_', '')
+	histo.SetMarkerSize(2)
 	histo.GetXaxis().SetBinLabel(1, newLabelBin)
 	histo.GetYaxis().SetBinLabel(1, newLabelBin)
 		
 	#histo.GetXaxis().SetRange( 6, 15 )
-	#histo.GetYaxis().SetRange( 0, 12 )
+	histo.SetMinimum( 0 )
+	histo.SetMaximum( 0.6 )
 	gStyle.SetPaintTextFormat("4.3f")
 	gStyle.SetPadLeftMargin(0.3)
 	gStyle.SetPadBottomMargin(0.2)
@@ -100,7 +104,7 @@ def plotOverlap( inFile, signal, trigger, name, inFileName, xmax, xmax2, PU ):
 	can.SetGrid()
 	histo.Draw('colz')
 	histo.Draw('texte same')
-	setOverlap( signal + ' 13 TeV '+ PU)
+	setOverlap( signal + ' '+ PU)
 	can.SaveAs( 'Plots/'+outputFileName )
 	del can
 	gROOT.Reset()
@@ -110,11 +114,11 @@ def plotOverlap( inFile, signal, trigger, name, inFileName, xmax, xmax2, PU ):
 
 if __name__ == '__main__':
 
-	PU = sys.argv[1]
-	Signal = sys.argv[2] #'RPVSt100tojj'	
-	inputFile = TFile.Open('overlapStudies_'+Signal+'_'+PU+'.root')
+	PU = sys.argv[2]
+	Signal = sys.argv[1] #'RPVSt100tojj'	
+	inputFile = TFile.Open('overlapStudies_'+Signal+'_'+PU+'_v4.root')
 	plotsList = [
-			#[ 'overlapOverAllTriggers', '', 20, 50 ],
+			[ 'totalOverlapOverFourTriggers', '', 20, 50 ],
 			#[ 'overlapTriggers', '', 20, 50 ],
 #			[ 'overlapThreeSimpleTriggers', '', 20, 50 ],
 #			[ 'MassOneAll', 'NO Trigger', 20, 50 ],
@@ -129,10 +133,10 @@ if __name__ == '__main__':
 #			[ 'HTOne', 'AK8PFTrimHT850TrimMass', 20, 50 ],
 #			[ 'HTTwo', 'PFHT900', 20, 50 ],
 #			[ 'HTBoth', 'Both', 20, 50 ],
-			[ 'HTvsMassOneAll', 'NO Trigger', 20, 50 ],
-			[ 'HTvsMassOne', 'AK8PFHT850TrimMass', 20, 50 ],
-			[ 'HTvsMassTwo', 'PFHT800', 20, 50 ],
-			[ 'HTvsMassBoth', 'Both', 20, 50 ],
+#			[ 'HTvsMassOneAll', 'NO Trigger', 20, 50 ],
+#			[ 'HTvsMassOne', 'AK8PFHT850TrimMass', 20, 50 ],
+#			[ 'HTvsMassTwo', 'PFHT800', 20, 50 ],
+#			[ 'HTvsMassBoth', 'Both', 20, 50 ],
 #			[ 'HTvsPtOneAll', 'NO Trigger', 20, 50 ],
 #			[ 'HTvsPtOne', 'AK8PFTrimHT850TrimMass', 20, 50 ],
 #			[ 'HTvsPtTwo', 'PFHT900', 20, 50 ],
@@ -144,19 +148,20 @@ if __name__ == '__main__':
 			]
 
 	cat = [ 
-			'AK8PFHT850TrimMass50TrimModvsPFHT900vsAK8PFJet360TrimModMass30', 
-			'AK8PFHT850TrimMass40TrimModvsPFHT900vsAK8PFJet360TrimModMass30', 
-			'AK8PFHT800TrimMass50TrimModvsPFHT900vsAK8PFJet360TrimModMass30', 
-			'AK8PFHT850TrimMass50TrimModvsPFHT850vsAK8PFJet360TrimModMass30', 
-			'AK8PFHT850TrimMass40TrimModvsPFHT850vsAK8PFJet360TrimModMass30', 
-			'AK8PFHT800TrimMass50TrimModvsPFHT850vsAK8PFJet360TrimModMass30', 
-			'AK8PFHT850TrimMass50TrimModvsPFHT800vsAK8PFJet360TrimModMass30', 
-			'AK8PFHT850TrimMass40TrimModvsPFHT800vsAK8PFJet360TrimModMass30', 
-			'AK8PFHT800TrimMass50TrimModvsPFHT800vsAK8PFJet360TrimModMass30', 
+			'AK8PFHT850TrimMass50TrimModvsPFHT900vsAK8PFJet360TrimModMass30',
+			'AK8PFHT800TrimMass50TrimModvsPFHT900vsAK8PFJet360TrimModMass30',
+			'AK8PFHT800TrimMass00TrimModvsPFHT900vsAK8PFJet360TrimModMass30',
+			'AK8PFHT750TrimMass50TrimModvsPFHT900vsAK8PFJet360TrimModMass30',
+			'AK8PFHT850TrimMass50TrimModvsPFHT850vsAK8PFJet360TrimModMass30',
+			'AK8PFTrimHT850Mass50TrimModvsPFHT900vsAK8PFJet360TrimModMass30',
+			'AK8PFTrimHT800Mass50TrimModvsPFHT900vsAK8PFJet360TrimModMass30',
+			'AK8PFTrimHT750Mass50TrimModvsPFHT900vsAK8PFJet360TrimModMass30',
+			'AK8PFTrimHT800Mass00TrimModvsPFHT900vsAK8PFJet360TrimModMass30',
+			'AK8PFHT850TrimMass50TrimModvsPFHT800vsAK8PFJet360TrimModMass30'
 			]
 
 	for k in cat: 
 		for i in plotsList: 
 			if 'vs' in i[0]: plot2D( inputFile, Signal, k, i[0], i[1], i[2], i[3], PU )
-			elif 'overlap' in i[0]: plotOverlap( inputFile, Signal, k, i[0], i[1], i[2], i[3], PU )
+			elif 'Overlap' in i[0]: plotOverlap( inputFile, Signal, k, i[0], i[1], i[2], i[3], PU )
 			else: plot( inputFile, Signal, k, i[0], i[1], i[2], i[3], PU )

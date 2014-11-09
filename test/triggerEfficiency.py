@@ -11,7 +11,8 @@ process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(-1)
 )
 #############   Define the source file ###############
-process.load(NAME+'_'+PU+'_v720pre8_FiltFiles_cfi')
+process.load(NAME+'_'+PU+'_v721_Filt_v3_cfi')
+#process.source.eventsToProcess = cms.untracked.VEventRange([ i.replace('\n','') for i in open("../lumiBoostedEvents.txt").readlines()])
 #process.source = cms.Source("PoolSource",
 #		fileNames = cms.untracked.vstring(
 			#'file:Filt_RSGllsuon.root'
@@ -24,15 +25,15 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'PLS170_V7AN1::All')
 
 process.TFileService=cms.Service("TFileService", 
-		fileName=cms.string('filesWithHistos_'+NAME+'_'+PU+'.root'))
+		fileName=cms.string('filesWithHistos_'+NAME+'_'+PU+'_v3.root'))
 
 #############   User analyzer (PF jets) ##
 process.PFHT900 = cms.EDAnalyzer("TriggerEfficiency",
 		triggerPath = cms.string( "HLT_PFHT900_v1" ),
-		hltJets = cms.InputTag( "hltAK8PFJets" ),
+		hltJets = cms.InputTag( "hltAK8PFJetsTrim" ),
 		hltJetsTrim = cms.InputTag( "hltAK8PFJetsTrim" ),
 		hltJetsTrimMod = cms.InputTag( "hltAK8PFJetsTrimR0p1PT0p03" ),
-		hltJetsPruned = cms.InputTag( "hltAK8PFJetsPruned" ),
+		hltJetsPruned = cms.InputTag( "hltAK8PFJetsTrim" ),
 		patJets = cms.InputTag( "patJetsAK8CHS" ),
 		patJetsTrim = cms.InputTag( "patJetsAK8CHSTrim" ),
 		patJetsTrimMod = cms.InputTag( "patJetsAK8CHSTrimMod" ),
@@ -44,10 +45,10 @@ process.PFHT900 = cms.EDAnalyzer("TriggerEfficiency",
 		)
 process.AK8PFHT850TrimMass50 = cms.EDAnalyzer("TriggerEfficiency",
 		triggerPath = cms.string( "HLT_AK8PFHT850_TrimMass00_TrimMass50_v1" ),
-		hltJets = cms.InputTag( "hltAK8PFJets" ),
+		hltJets = cms.InputTag( "hltAK8PFJetsTrim" ),
 		hltJetsTrim = cms.InputTag( "hltAK8PFJetsTrim" ),
 		hltJetsTrimMod = cms.InputTag( "hltAK8PFJetsTrimR0p1PT0p03" ),
-		hltJetsPruned = cms.InputTag( "hltAK8PFJetsPruned" ),
+		hltJetsPruned = cms.InputTag( "hltAK8PFJetsTrim" ),
 		patJets = cms.InputTag( "patJetsAK8CHS" ),
 		patJetsTrim = cms.InputTag( "patJetsAK8CHSTrim" ),
 		patJetsTrimMod = cms.InputTag( "patJetsAK8CHSTrimMod" ),
@@ -59,10 +60,40 @@ process.AK8PFHT850TrimMass50 = cms.EDAnalyzer("TriggerEfficiency",
 		)
 process.AK8PFHT850TrimMass50TrimModCutHT = cms.EDAnalyzer("TriggerEfficiency",
 		triggerPath = cms.string( "HLT_AK8PFHT850_TrimR0p1PT0p03Mass00_TrimR0p1PT0p03Mass50_v1" ),
-		hltJets = cms.InputTag( "hltAK8PFJets" ),
+		hltJets = cms.InputTag( "hltAK8PFJetsTrim" ),
 		hltJetsTrim = cms.InputTag( "hltAK8PFJetsTrim" ),
 		hltJetsTrimMod = cms.InputTag( "hltAK8PFJetsTrimR0p1PT0p03" ),
-		hltJetsPruned = cms.InputTag( "hltAK8PFJetsPruned" ),
+		hltJetsPruned = cms.InputTag( "hltAK8PFJetsTrim" ),
+		patJets = cms.InputTag( "patJetsAK8CHS" ),
+		patJetsTrim = cms.InputTag( "patJetsAK8CHSTrim" ),
+		patJetsTrimMod = cms.InputTag( "patJetsAK8CHSTrimMod" ),
+		patJetsPruned = cms.InputTag( "patJetsAK8CHSPruned" ),
+		jetsForEff = cms.InputTag( "patJetsAK8CHSTrimMod" ),
+		primaryVertex = cms.InputTag( 'goodOfflinePrimaryVertices' ),
+		minHT= cms.double( 900. ),
+		minMass= cms.double( 0. ),
+		)
+process.AK8PFHT800TrimMass50TrimModCutHT = cms.EDAnalyzer("TriggerEfficiency",
+		triggerPath = cms.string( "HLT_AK8PFHT800_TrimR0p1PT0p03Mass00_TrimR0p1PT0p03Mass50_v1" ),
+		hltJets = cms.InputTag( "hltAK8PFJetsTrim" ),
+		hltJetsTrim = cms.InputTag( "hltAK8PFJetsTrim" ),
+		hltJetsTrimMod = cms.InputTag( "hltAK8PFJetsTrimR0p1PT0p03" ),
+		hltJetsPruned = cms.InputTag( "hltAK8PFJetsTrim" ),
+		patJets = cms.InputTag( "patJetsAK8CHS" ),
+		patJetsTrim = cms.InputTag( "patJetsAK8CHSTrim" ),
+		patJetsTrimMod = cms.InputTag( "patJetsAK8CHSTrimMod" ),
+		patJetsPruned = cms.InputTag( "patJetsAK8CHSPruned" ),
+		jetsForEff = cms.InputTag( "patJetsAK8CHSTrimMod" ),
+		primaryVertex = cms.InputTag( 'goodOfflinePrimaryVertices' ),
+		minHT= cms.double( 900. ),
+		minMass= cms.double( 0. ),
+		)
+process.AK8PFHT750TrimMass50TrimModCutHT = cms.EDAnalyzer("TriggerEfficiency",
+		triggerPath = cms.string( "HLT_AK8PFHT750_TrimR0p1PT0p03Mass00_TrimR0p1PT0p03Mass50_v1" ),
+		hltJets = cms.InputTag( "hltAK8PFJetsTrim" ),
+		hltJetsTrim = cms.InputTag( "hltAK8PFJetsTrim" ),
+		hltJetsTrimMod = cms.InputTag( "hltAK8PFJetsTrimR0p1PT0p03" ),
+		hltJetsPruned = cms.InputTag( "hltAK8PFJetsTrim" ),
 		patJets = cms.InputTag( "patJetsAK8CHS" ),
 		patJetsTrim = cms.InputTag( "patJetsAK8CHSTrim" ),
 		patJetsTrimMod = cms.InputTag( "patJetsAK8CHSTrimMod" ),
@@ -74,10 +105,10 @@ process.AK8PFHT850TrimMass50TrimModCutHT = cms.EDAnalyzer("TriggerEfficiency",
 		)
 process.AK8PFHT850TrimMass50TrimModCutMass = cms.EDAnalyzer("TriggerEfficiency",
 		triggerPath = cms.string( "HLT_AK8PFHT850_TrimR0p1PT0p03Mass00_TrimR0p1PT0p03Mass50_v1" ),
-		hltJets = cms.InputTag( "hltAK8PFJets" ),
+		hltJets = cms.InputTag( "hltAK8PFJetsTrim" ),
 		hltJetsTrim = cms.InputTag( "hltAK8PFJetsTrim" ),
 		hltJetsTrimMod = cms.InputTag( "hltAK8PFJetsTrimR0p1PT0p03" ),
-		hltJetsPruned = cms.InputTag( "hltAK8PFJetsPruned" ),
+		hltJetsPruned = cms.InputTag( "hltAK8PFJetsTrim" ),
 		patJets = cms.InputTag( "patJetsAK8CHS" ),
 		patJetsTrim = cms.InputTag( "patJetsAK8CHSTrim" ),
 		patJetsTrimMod = cms.InputTag( "patJetsAK8CHSTrimMod" ),
@@ -90,10 +121,10 @@ process.AK8PFHT850TrimMass50TrimModCutMass = cms.EDAnalyzer("TriggerEfficiency",
 
 process.AK8PFHT850TrimMass50TrimMod = cms.EDAnalyzer("TriggerEfficiency",
 		triggerPath = cms.string( "HLT_AK8PFHT850_TrimR0p1PT0p03Mass00_TrimR0p1PT0p03Mass50_v1" ),
-		hltJets = cms.InputTag( "hltAK8PFJets" ),
+		hltJets = cms.InputTag( "hltAK8PFJetsTrim" ),
 		hltJetsTrim = cms.InputTag( "hltAK8PFJetsTrim" ),
 		hltJetsTrimMod = cms.InputTag( "hltAK8PFJetsTrimR0p1PT0p03" ),
-		hltJetsPruned = cms.InputTag( "hltAK8PFJetsPruned" ),
+		hltJetsPruned = cms.InputTag( "hltAK8PFJetsTrim" ),
 		patJets = cms.InputTag( "patJetsAK8CHS" ),
 		patJetsTrim = cms.InputTag( "patJetsAK8CHSTrim" ),
 		patJetsTrimMod = cms.InputTag( "patJetsAK8CHSTrimMod" ),
@@ -110,6 +141,8 @@ process.p = cms.Path(
 	process.AK8PFHT850TrimMass50 * 
 	process.AK8PFHT850TrimMass50TrimMod * 
 	process.AK8PFHT850TrimMass50TrimModCutHT * 
+	process.AK8PFHT800TrimMass50TrimModCutHT * 
+	process.AK8PFHT750TrimMass50TrimModCutHT * 
 	process.AK8PFHT850TrimMass50TrimModCutMass
 )
 #############   Format MessageLogger #################

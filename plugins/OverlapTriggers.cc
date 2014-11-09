@@ -85,6 +85,7 @@ class OverlapTriggers : public edm::EDAnalyzer {
 		std::string trigger3;
 		std::string trigger4;
 		edm::InputTag oneHLTPFJets;
+		edm::InputTag oneHLTPFJetsTrim;
 		edm::InputTag twoHLTPFJets;
 		edm::InputTag threeHLTPFJets;
 		edm::InputTag oneHLTHT;
@@ -136,6 +137,7 @@ OverlapTriggers::OverlapTriggers(const edm::ParameterSet& iConfig){
 	trigger3		= iConfig.getParameter<std::string> ( "trigger3" );   			// Obtain inputs
 	trigger4		= iConfig.getParameter<std::string> ( "trigger4" );   			// Obtain inputs
 	oneHLTPFJets		= iConfig.getParameter<edm::InputTag> ( "oneHLTPFJets" );   			// Obtain inputs
+	oneHLTPFJetsTrim	= iConfig.getParameter<edm::InputTag> ( "oneHLTPFJetsTrim" );   			// Obtain inputs
 	twoHLTPFJets		= iConfig.getParameter<edm::InputTag> ( "twoHLTPFJets" );   			// Obtain inputs
 	threeHLTPFJets		= iConfig.getParameter<edm::InputTag> ( "threeHLTPFJets" );   			// Obtain inputs
 	oneHLTHT		= iConfig.getParameter<edm::InputTag> ( "oneHLTHT" );   			// Obtain inputs
@@ -206,7 +208,10 @@ void OverlapTriggers::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 
   	edm::Handle<edm::View<reco::Jet> > onePFJets;
 	iEvent.getByLabel(oneHLTPFJets, onePFJets);
+  	edm::Handle<edm::View<reco::Jet> > onePFJetsTrim;
+	iEvent.getByLabel(oneHLTPFJetsTrim, onePFJetsTrim);
   	std::vector< TLorentzVector > oneJets;
+  	std::vector< TLorentzVector > oneJets40GeV;
 
   	edm::Handle<edm::View<reco::Jet> > twoPFJets;
 	iEvent.getByLabel(twoHLTPFJets, twoPFJets);
@@ -216,8 +221,19 @@ void OverlapTriggers::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 	iEvent.getByLabel(threeHLTPFJets, threePFJets);
   	std::vector< TLorentzVector > threeJets;*/
 
+	double oneHT40 = 0;
+	double oneHT80 = 0;
     	for(edm::View<reco::Jet>::const_iterator ijet=onePFJets->begin(); ijet!=onePFJets->end();ijet++){
 		if ( ijet->pt() < 40.0 || abs( ijet->eta() ) > 3.0 ) continue;
+    		oneHT40 += ijet->pt();
+		if ( ijet->pt() < 100.0 || abs( ijet->eta() ) > 3.0 ) continue;
+    		oneHT80 += ijet->pt();
+    		//oneJets.push_back( TLorentzVector( ijet->px(), ijet->py(), ijet->pz(), ijet->energy() ) );
+	} 
+
+    	for(edm::View<reco::Jet>::const_iterator ijet=onePFJetsTrim->begin(); ijet!=onePFJetsTrim->end();ijet++){
+		if ( ijet->pt() < 100.0 || abs( ijet->eta() ) > 3.0 ) continue;
+    		oneHT += ijet->pt();
     		oneJets.push_back( TLorentzVector( ijet->px(), ijet->py(), ijet->pz(), ijet->energy() ) );
 	} 
 
@@ -229,6 +245,11 @@ void OverlapTriggers::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 	sort( oneJets.begin(), oneJets.end(), compare_JetMass);
 	sort( twoJets.begin(), twoJets.end(), compare_JetMass);
 
+	if ( oneHT40 > 0 && oneHT80 > 0 ){
+		histos1D_[ "HTOne40All" ]->Fill( oneHT40 );
+		histos1D_[ "HTOne80All" ]->Fill( oneHT80 );
+	}
+
 	if ( oneJets.size() > 0 ){
 		histos1D_[ "MassOneAll" ]->Fill( oneJets[0].M() );
 		histos1D_[ "PtOneAll" ]->Fill( oneJets[0].Pt() );
@@ -236,7 +257,7 @@ void OverlapTriggers::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 		histos2D_[ "HTvsMassOneAll" ]->Fill( oneHT, oneJets[0].M() );
 		histos2D_[ "HTvsPtOneAll" ]->Fill( oneHT, oneJets[0].Pt() );
 		histos2D_[ "PtvsMassOneAll" ]->Fill( oneJets[0].Pt(), oneJets[0].M() );
-		histos2D_[ "AK4vsAK8HTOneAll" ]->Fill( oneHT, twoHT );
+		if( oneHT > 0 && twoHT > 0 ) histos2D_[ "AK4vsAK8HTOneAll" ]->Fill( oneHT, twoHT );
 	}
 	
 	if ( twoJets.size() > 0 ){
@@ -413,6 +434,12 @@ void OverlapTriggers::beginJob() {
 
 	histos1D_[ "PtBoth" ] = fileService->make< TH1D >( "PtBoth", labelTrigger1, 50, 0., 1000. );
 	histos1D_[ "PtBoth" ]->SetXTitle( "Leading Jet Pt [GeV]" );
+
+	histos1D_[ "HTOne80All" ] = fileService->make< TH1D >( "HTOne80All", labelTrigger1, 100, 0., 2000. );
+	histos1D_[ "HTOne80All" ]->SetXTitle( "Leading Jet HT [GeV]" );
+
+	histos1D_[ "HTOne40All" ] = fileService->make< TH1D >( "HTOne40All", labelTrigger1, 100, 0., 2000. );
+	histos1D_[ "HTOne40All" ]->SetXTitle( "Leading Jet HT [GeV]" );
 
 	histos1D_[ "HTOneAll" ] = fileService->make< TH1D >( "HTOneAll", labelTrigger1, 100, 0., 2000. );
 	histos1D_[ "HTOneAll" ]->SetXTitle( "Leading Jet HT [GeV]" );
