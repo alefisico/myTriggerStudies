@@ -33,10 +33,10 @@ listDir = []
 def scaleQCD( inFileName, histo ):
 	"""docstring for scaleQCD"""
 
-	if os.path.exists(inFileName+'_Scaled_v4.root'): 
-		os.remove(inFileName+'_Scaled_v4.root')
-		outfile = TFile( inFileName+'_Scaled_v4.root', "RECREATE")
-	else: outfile = TFile( inFileName+'_Scaled_v4.root', "RECREATE")
+	if os.path.exists(inFileName+'_Scaled.root'): 
+		os.remove(inFileName+'_Scaled.root')
+		outfile = TFile( inFileName+'_Scaled.root', "RECREATE")
+	else: outfile = TFile( inFileName+'_Scaled.root', "RECREATE")
 	
 	infile = TFile( inFileName+'.root', "READ")
 
@@ -84,9 +84,9 @@ if __name__ == '__main__':
 			'800to1000'
 			]
 
-	if 'overlap' in prefix: histo = 'AK8PFHT850TrimMass50TrimModvsPFHT900vsAK8PFJet360TrimModMass30/overlapOverAllSimpleTriggers'
+	if 'overlap' in prefix: histo = 'AK8PFHT850TrimModMass50/overlapOverAllSimpleTriggers'
 	elif 'simple' in prefix: histo = 'histosUngroomedJets/jetPt'
 
 	for pt in ptBins:
 		print pt
-		scaleQCD( prefix + '_QCD_Pt-'+pt+'_Tune4C_13TeV_pythia8_PU40bx25_v4', histo )
+		scaleQCD( prefix + '_QCD_Pt-'+pt+'_Tune4C_13TeV_pythia8_PU40bx25', histo )

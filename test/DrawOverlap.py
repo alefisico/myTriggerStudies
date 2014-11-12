@@ -78,7 +78,7 @@ def plot2D( inFile, signal, trigger, name, inFileName, xmax, xmax2, PU ):
 def plotOverlap( inFile, signal, trigger, name, inFileName, xmax, xmax2, PU ):
 	"""docstring for plot"""
 
-	outputFileName = trigger+'_'+name+'_'+signal+'_'+PU+'_TriggerOverlap_v4.pdf' 
+	outputFileName = trigger+'_'+name+'_'+signal+'_'+PU+'_TriggerOverlap.pdf' 
 	#outputFileName = trigger+'_'+name+'_'+signal+'_'+PU+'_TriggerOverlap_OnlyBoosted.pdf' 
 	print 'Processing.......', outputFileName
 
@@ -88,7 +88,8 @@ def plotOverlap( inFile, signal, trigger, name, inFileName, xmax, xmax2, PU ):
 	histo.Sumw2()
 	histo.Scale(1/nEvents)
 	labelBin = histo.GetXaxis().GetBinLabel(1)
-	newLabelBin = labelBin.replace('TrimR0p1PT0p03Mass00_', '')
+	tmpnewLabelBin = labelBin.replace('450_','')
+	newLabelBin = tmpnewLabelBin.replace('Mass00_', '')
 	histo.SetMarkerSize(2)
 	histo.GetXaxis().SetBinLabel(1, newLabelBin)
 	histo.GetYaxis().SetBinLabel(1, newLabelBin)
@@ -116,7 +117,8 @@ if __name__ == '__main__':
 
 	PU = sys.argv[2]
 	Signal = sys.argv[1] #'RPVSt100tojj'	
-	inputFile = TFile.Open('overlapStudies_'+Signal+'_'+PU+'_v4.root')
+	inputFile = TFile.Open('overlapStudies_'+Signal+'_'+PU+'.root')
+	#inputFile = TFile.Open('overlapStudies_'+Signal+'_'+PU+'_Boosted.root')
 	plotsList = [
 			[ 'totalOverlapOverFourTriggers', '', 20, 50 ],
 			#[ 'overlapTriggers', '', 20, 50 ],
@@ -148,16 +150,38 @@ if __name__ == '__main__':
 			]
 
 	cat = [ 
-			'AK8PFHT850TrimMass50TrimModvsPFHT900vsAK8PFJet360TrimModMass30',
-			'AK8PFHT800TrimMass50TrimModvsPFHT900vsAK8PFJet360TrimModMass30',
-			'AK8PFHT800TrimMass00TrimModvsPFHT900vsAK8PFJet360TrimModMass30',
-			'AK8PFHT750TrimMass50TrimModvsPFHT900vsAK8PFJet360TrimModMass30',
-			'AK8PFHT850TrimMass50TrimModvsPFHT850vsAK8PFJet360TrimModMass30',
-			'AK8PFTrimHT850Mass50TrimModvsPFHT900vsAK8PFJet360TrimModMass30',
-			'AK8PFTrimHT800Mass50TrimModvsPFHT900vsAK8PFJet360TrimModMass30',
-			'AK8PFTrimHT750Mass50TrimModvsPFHT900vsAK8PFJet360TrimModMass30',
-			'AK8PFTrimHT800Mass00TrimModvsPFHT900vsAK8PFJet360TrimModMass30',
-			'AK8PFHT850TrimMass50TrimModvsPFHT800vsAK8PFJet360TrimModMass30'
+		'AK8PFHT850TrimModMass50',
+		'AK8PFHT850TrimModMass50Pt100',
+		'AK8PFHT800TrimModMass50Pt100',
+		'AK8PFHT750TrimModMass50Pt100',
+		'AK8PFHT700TrimModMass40Pt150',
+		'AK8PFHT850TrimModMass50Pt150',
+		'AK8PFHT800TrimModMass50Pt150',
+		'AK8PFHT750TrimModMass50Pt150',
+		'AK8PFHT750TrimModMass30Pt150',
+		'AK8PFHT750TrimModMass40Pt150',
+		'AK8PFHT700TrimModMass50Pt150',
+		'AK8PFHT650TrimModMass40Pt200',
+		'AK8PFHT850TrimModMass50Pt200',
+		'AK8PFHT800TrimModMass50Pt200',
+		'AK8PFHT750TrimModMass30Pt200',
+		'AK8PFHT750TrimModMass40Pt200',
+		'AK8PFHT750TrimModMass50Pt200',
+		'AK8PFHT700TrimModMass50Pt200',
+		'AK8PFHT650TrimModMass50Pt200',
+		'AK8PFTrimHT650Mass00Pt150',
+		'AK8PFTrimHT850Mass50Pt150',
+		'AK8PFTrimHT800Mass50Pt150',
+		'AK8PFTrimHT750Mass50Pt150',
+		'AK8PFTrimHT700Mass50Pt150',
+		'AK8PFTrimHT650Mass50Pt150',
+		'AK8PFTrimHT600Mass00Pt200',
+		'AK8PFTrimHT850Mass50Pt200',
+		'AK8PFTrimHT800Mass50Pt200',
+		'AK8PFTrimHT750Mass50Pt200',
+		'AK8PFTrimHT700Mass50Pt200',
+		'AK8PFTrimHT650Mass50Pt200',
+		'AK8PFTrimHT600Mass50Pt200',
 			]
 
 	for k in cat: 

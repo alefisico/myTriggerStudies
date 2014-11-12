@@ -12,9 +12,9 @@ process.maxEvents = cms.untracked.PSet(
     )
 
 #############   Define the source file ###############
-process.load(NAME+'_'+PU+'_v721_Filt_cfi')
-#print [ i.replace('\n', '') for i in open("../lumiBoostedEvents.txt").readlines()]
+process.load(NAME+'_'+PU+'_v721patch2_Filt_cfi')
 #process.source.eventsToProcess = cms.untracked.VEventRange([ i.replace('\n','') for i in open("../lumiBoostedEvents.txt").readlines()])
+#print [ i.replace('\n', '') for i in open("../lumiBoostedEvents.txt").readlines()]
 #process.source = cms.Source("PoolSource",
 #		fileNames = cms.untracked.vstring(
 			#'file:Filt_RSGllsuon.root'
@@ -28,6 +28,7 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'PLS170_V7AN1::All')
 
 process.TFileService=cms.Service("TFileService", 
 		fileName=cms.string('simpleAnalyzer_'+NAME+'_'+PU+'.root'))
+#		fileName=cms.string('simpleAnalyzer_'+NAME+'_'+PU+'_boosted.root'))
 
 if 'QCD' in NAME: SF = 10000
 elif 'RPVSt100': SF = 10000 * 559.757/98404

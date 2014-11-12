@@ -15,7 +15,7 @@ except: pass
 #Configuration options not meant to be modified from command line (at least for the time being)
 outputRAW=False
 outputLess=True
-outputSummary=False
+outputSummary=True
 hltProcName="HLT3"
 
 #Configuration options to be modified from command line by openHLT2PAT.py

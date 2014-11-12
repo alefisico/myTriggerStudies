@@ -2,7 +2,7 @@
 input_Dir=/eos/uscms/store/user/algomez/
 PU=$1
 
-version=3de45f2ec11357a012a43913ba5333d6
+version=fd2179ffc0ee5fe4cc46fc40ae1e5de7
 
 #if [[ $PU == *20* ]]
 #then
@@ -18,7 +18,7 @@ ptBins=( '80to120' '120to170' '170to300' '300to470' '470to600' '600to800' '800to
 ##############################################
 for bin in ${ptBins[@]};
 do
-	namePythonFileCFI=QCD_Pt-${bin}_Tune4C_13TeV_pythia8_${PU}_v721_Filt_cfi.py
+	namePythonFileCFI=QCD_Pt-${bin}_Tune4C_13TeV_pythia8_${PU}_v721patch2_Filt_cfi.py
 	if [ -f $namePythonFileCFI ]; then
 		rm -rf $namePythonFileCFI
 	fi
@@ -28,7 +28,7 @@ do
 myfilelist = cms.untracked.vstring()
 myfilelist.extend(         [ " >> ${namePythonFileCFI}
 
-	for file in `ls -1 ${input_Dir}/QCD_Pt-${bin}_Tune4C_13TeV_pythia8/openHLT_Filt_v721_v1_QCD_Pt-${bin}_Tune4C_13TeV_pythia8_${PU}_Filt/${version}/*root`
+	for file in `ls -1 ${input_Dir}/QCD_Pt-${bin}_Tune4C_13TeV_pythia8/openHLT_Filt_v721patch2_QCD_Pt-${bin}_Tune4C_13TeV_pythia8_${PU}_Filt/${version}/*root`
 	#for file in `ls -1 ${input_Dir}/QCD_Pt-${bin}_TuneZ2star_13TeV_pythia8_${PU}/QCD*root`
 	do
 		echo "'${file}'," >> ${namePythonFileCFI}
