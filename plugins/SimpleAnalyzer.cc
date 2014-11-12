@@ -112,9 +112,15 @@ SimpleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	int numJets40 = 0;
 	double HT100 = 0;
 	int numJets100 = 0;
+	double HT150 = 0;
+	int numJets150 = 0;
+	double HT200 = 0;
+	int numJets200 = 0;
 
 	std::vector<Jet> jets40;
 	std::vector<Jet> jets100;
+	std::vector<Jet> jets150;
+	std::vector<Jet> jets200;
 	for( const reco::Jet &ijet : *jets ){
 		histos1D_[ "jetPt" ]->Fill( ijet.pt(), scale );
 		histos1D_[ "jetEta" ]->Fill( ijet.eta(), scale );
@@ -147,12 +153,42 @@ SimpleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 			histos1D_[ "jet1Eta100" ]->Fill( ijet.eta(), scale );
 			histos1D_[ "jet1Mass100" ]->Fill( ijet.mass(), scale );
 		}
+		if( ijet.pt() < 150 || TMath::Abs( ijet.eta() ) > 3.0 ) continue;
+		HT150 += ijet.pt();
+		numJets150 += 1;
+		jets150.push_back( ijet );
+		histos1D_[ "jetPt150" ]->Fill( ijet.pt(), scale );
+		histos1D_[ "jetEta150" ]->Fill( ijet.eta(), scale );
+		histos1D_[ "jetMass150" ]->Fill( ijet.mass(), scale );
+		if( numJets150 == 1){
+			histos1D_[ "jet1Pt150" ]->Fill( ijet.pt(), scale );
+			histos1D_[ "jet1Eta150" ]->Fill( ijet.eta(), scale );
+			histos1D_[ "jet1Mass150" ]->Fill( ijet.mass(), scale );
+		}
+		if( ijet.pt() < 200 || TMath::Abs( ijet.eta() ) > 3.0 ) continue;
+		HT200 += ijet.pt();
+		numJets200 += 1;
+		jets200.push_back( ijet );
+		histos1D_[ "jetPt200" ]->Fill( ijet.pt(), scale );
+		histos1D_[ "jetEta200" ]->Fill( ijet.eta(), scale );
+		histos1D_[ "jetMass200" ]->Fill( ijet.mass(), scale );
+		if( numJets200 == 1){
+			histos1D_[ "jet1Pt200" ]->Fill( ijet.pt(), scale );
+			histos1D_[ "jet1Eta200" ]->Fill( ijet.eta(), scale );
+			histos1D_[ "jet1Mass200" ]->Fill( ijet.mass(), scale );
+		}
+
+
 
 	}
 	if ( HT40 > 0 ) histos1D_[ "HT40" ]->Fill( HT40, scale );
 	histos1D_[ "numJets40" ]->Fill( numJets40, scale );
 	if ( HT100 > 0 ) histos1D_[ "HT100" ]->Fill( HT100, scale );
 	histos1D_[ "numJets100" ]->Fill( numJets100, scale );
+	if ( HT150 > 0 ) histos1D_[ "HT150" ]->Fill( HT150, scale );
+	histos1D_[ "numJets150" ]->Fill( numJets150, scale );
+	if ( HT200 > 0 ) histos1D_[ "HT200" ]->Fill( HT200, scale );
+	histos1D_[ "numJets200" ]->Fill( numJets200, scale );
 
 	if( jets40.size() > 0 ){
 		sort( jets40.begin(), jets40.end(), []( const reco::Jet &j1, const reco::Jet &j2 ) { return j1.mass() > j2.mass();}  );
@@ -161,6 +197,14 @@ SimpleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	if( jets100.size() > 0 ){
 		sort( jets100.begin(), jets100.end(), []( const reco::Jet &j1, const reco::Jet &j2 ) { return j1.mass() > j2.mass();}  );
 		histos1D_[ "jetMass1Mass100" ]->Fill( jets100[0].mass(), scale );
+	}
+	if( jets150.size() > 0 ){
+		sort( jets150.begin(), jets150.end(), []( const reco::Jet &j1, const reco::Jet &j2 ) { return j1.mass() > j2.mass();}  );
+		histos1D_[ "jetMass1Mass150" ]->Fill( jets150[0].mass(), scale );
+	}
+	if( jets200.size() > 0 ){
+		sort( jets200.begin(), jets200.end(), []( const reco::Jet &j1, const reco::Jet &j2 ) { return j1.mass() > j2.mass();}  );
+		histos1D_[ "jetMass1Mass200" ]->Fill( jets200[0].mass(), scale );
 	}
 	
 }
@@ -215,6 +259,44 @@ SimpleAnalyzer::beginJob()
 	histos1D_[ "HT100" ]->SetXTitle( "HT [GeV]" );
 	histos1D_[ "numJets100" ] = fileService->make< TH1D >( "numJets100", "numJets100", 15, 0., 15. );
 	histos1D_[ "numJets100" ]->SetXTitle( "Jet Multiplicity [GeV]" );
+
+	histos1D_[ "jetPt150" ] = fileService->make< TH1D >( "jetPt150", "jetPt150", 40, 0., 400. );
+	histos1D_[ "jetPt150" ]->SetXTitle( "Jet p_{T} [GeV]" );
+	histos1D_[ "jetEta150" ] = fileService->make< TH1D >( "jetEta150", "jetEta150", 10, -5.0, 5.0 );
+	histos1D_[ "jetEta150" ]->SetXTitle( "Jet #eta" );
+	histos1D_[ "jetMass150" ] = fileService->make< TH1D >( "jetMass150", "jetMass150", 20, 0.0, 200.0 );
+	histos1D_[ "jetMass150" ]->SetXTitle( "Jet Mass [GeV]" );
+	histos1D_[ "jet1Pt150" ] = fileService->make< TH1D >( "jet1Pt150", "jet1Pt150", 40, 0., 400. );
+	histos1D_[ "jet1Pt150" ]->SetXTitle( "Jet p_{T} [GeV]" );
+	histos1D_[ "jet1Eta150" ] = fileService->make< TH1D >( "jet1Eta150", "jet1Eta150", 10, -5.0, 5.0 );
+	histos1D_[ "jet1Eta150" ]->SetXTitle( "Jet #eta" );
+	histos1D_[ "jet1Mass150" ] = fileService->make< TH1D >( "jet1Mass150", "jet1Mass150", 20, 0.0, 200.0 );
+	histos1D_[ "jet1Mass150" ]->SetXTitle( "Jet Mass [GeV]" );
+	histos1D_[ "jetMass1Mass150" ] = fileService->make< TH1D >( "jetMass1Mass150", "jetMass1Mass150", 20, 0.0, 200.0 );
+	histos1D_[ "jetMass1Mass150" ]->SetXTitle( "Jet Mass [GeV]" );
+	histos1D_[ "HT150" ] = fileService->make< TH1D >( "HT150", "HT150", 150, 0., 1500. );
+	histos1D_[ "HT150" ]->SetXTitle( "HT [GeV]" );
+	histos1D_[ "numJets150" ] = fileService->make< TH1D >( "numJets150", "numJets150", 15, 0., 15. );
+	histos1D_[ "numJets150" ]->SetXTitle( "Jet Multiplicity [GeV]" );
+
+	histos1D_[ "jetPt200" ] = fileService->make< TH1D >( "jetPt200", "jetPt200", 40, 0., 400. );
+	histos1D_[ "jetPt200" ]->SetXTitle( "Jet p_{T} [GeV]" );
+	histos1D_[ "jetEta200" ] = fileService->make< TH1D >( "jetEta200", "jetEta200", 10, -5.0, 5.0 );
+	histos1D_[ "jetEta200" ]->SetXTitle( "Jet #eta" );
+	histos1D_[ "jetMass200" ] = fileService->make< TH1D >( "jetMass200", "jetMass200", 20, 0.0, 200.0 );
+	histos1D_[ "jetMass200" ]->SetXTitle( "Jet Mass [GeV]" );
+	histos1D_[ "jet1Pt200" ] = fileService->make< TH1D >( "jet1Pt200", "jet1Pt200", 40, 0., 400. );
+	histos1D_[ "jet1Pt200" ]->SetXTitle( "Jet p_{T} [GeV]" );
+	histos1D_[ "jet1Eta200" ] = fileService->make< TH1D >( "jet1Eta200", "jet1Eta200", 10, -5.0, 5.0 );
+	histos1D_[ "jet1Eta200" ]->SetXTitle( "Jet #eta" );
+	histos1D_[ "jet1Mass200" ] = fileService->make< TH1D >( "jet1Mass200", "jet1Mass200", 20, 0.0, 200.0 );
+	histos1D_[ "jet1Mass200" ]->SetXTitle( "Jet Mass [GeV]" );
+	histos1D_[ "jetMass1Mass200" ] = fileService->make< TH1D >( "jetMass1Mass200", "jetMass1Mass200", 20, 0.0, 200.0 );
+	histos1D_[ "jetMass1Mass200" ]->SetXTitle( "Jet Mass [GeV]" );
+	histos1D_[ "HT200" ] = fileService->make< TH1D >( "HT200", "HT200", 150, 0., 1500. );
+	histos1D_[ "HT200" ]->SetXTitle( "HT [GeV]" );
+	histos1D_[ "numJets200" ] = fileService->make< TH1D >( "numJets200", "numJets200", 15, 0., 15. );
+	histos1D_[ "numJets200" ]->SetXTitle( "Jet Multiplicity [GeV]" );
 }
 
 // ------------ method called once each job just after ending the event loop  ------------

@@ -3,8 +3,7 @@
 ##################################
 
 - Most of the things here are based on the new openHLT (https://github.com/jiafulow/HLTrigger-HLTanalyzers-test-openHLT) 
-- Trigger Rates with: test/GetRates.py (you need log files from openHLT Filter)
-- My modify menu: test/hlt_DiffHT_717_v90_MC.py
+- My modify menu: test/hlt_DiffHT_721patch2_MC.py
 - Datasets and multicrab jobs: test/multicrab.cfg
 
 Enjoy it!
@@ -12,26 +11,13 @@ Enjoy it!
 
 To reproduce these results:
  export SCRAM_ARCH=slc6_amd64_gcc481
- cmsrel CMSSW_7_1_7
- cd CMSSW_7_1_7/src
+ cmsrel CMSSW_7_2_1_patch2
+ cd CMSSW_7_2_1_patch2/src
  cmsenv
  git cms-addpkg HLTrigger/Configuration
- git cms-merge-topic perrotta:hltTemplatesForRun2In717
- scramv1 b -j 18
- cd HLTrigger/Configuration/test/
- ./cmsDriver.csh 
- cd ../../../
- mkdir MyTrigger
- git clone https://github.com/alefisico/myTriggerStudies.git MyTrigger/myTriggerStudies
- cd MyTrigger/myTriggerStudies/
- git checkout v717
- cd -
+ git clone https://github.com/alefisico/myTriggerStudies.git MyTrigger/myTriggerStudies -b v721
  git clone git@github.com:jiafulow/HLTrigger-HLTanalyzers-test-openHLT.git MyTrigger/myTriggerStudies/test/openHLT
  scramv1 b -j 18
  cmsenv 
 
-
-
-HLT Menu used:
- hltGetConfiguration /dev/CMSSW_7_1_1/HLT/V90 --full --offline --mc --unprescale --process TEST --globaltag auto:startup_GRun --no-output > hlt.py
 

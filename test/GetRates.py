@@ -192,7 +192,7 @@ def plotRatesComp( listRates, outName, PU, HT, Mass ):
 	"""docstring for plotRates"""
 
 	gStyle.SetPaintTextFormat("4.3f")
-	histo = TH2F("xbox",'box', 7, 650., 1000., 20, -5.0, 95.0 )
+	histo = TH2F("xbox",'box', 9, 550., 1000., 20, -5.0, 95.0 )
 	for i in xrange( len( HT ) ): 
 		for k in xrange( len( Mass ) ):
 			histo.Fill( HT[i], Mass[k], listRates[i][k][4] )
@@ -291,12 +291,46 @@ if __name__ == '__main__':
 	AK8PFHT800 = []
 	AK8PFHT850 = []
 	AK8PFHT900 = []
+	AK8PFHT450TrimR0p1PT0p03 = []
+	AK8PFHT500TrimR0p1PT0p03 = []
+	AK8PFHT550TrimR0p1PT0p03 = []
+	AK8PFHT600TrimR0p1PT0p03 = []
 	AK8PFHT650TrimR0p1PT0p03 = []
 	AK8PFHT700TrimR0p1PT0p03 = []
 	AK8PFHT750TrimR0p1PT0p03 = []
 	AK8PFHT800TrimR0p1PT0p03 = []
 	AK8PFHT850TrimR0p1PT0p03 = []
 	AK8PFHT900TrimR0p1PT0p03 = []
+	AK8PFHT450TrimR0p1PT0p03Pt100 = []
+	AK8PFHT500TrimR0p1PT0p03Pt100 = []
+	AK8PFHT550TrimR0p1PT0p03Pt100 = []
+	AK8PFHT600TrimR0p1PT0p03Pt100 = []
+	AK8PFHT650TrimR0p1PT0p03Pt100 = []
+	AK8PFHT700TrimR0p1PT0p03Pt100 = []
+	AK8PFHT750TrimR0p1PT0p03Pt100 = []
+	AK8PFHT800TrimR0p1PT0p03Pt100 = []
+	AK8PFHT850TrimR0p1PT0p03Pt100 = []
+	AK8PFHT900TrimR0p1PT0p03Pt100 = []
+	AK8PFHT450TrimR0p1PT0p03Pt150 = []
+	AK8PFHT500TrimR0p1PT0p03Pt150 = []
+	AK8PFHT550TrimR0p1PT0p03Pt150 = []
+	AK8PFHT600TrimR0p1PT0p03Pt150 = []
+	AK8PFHT650TrimR0p1PT0p03Pt150 = []
+	AK8PFHT700TrimR0p1PT0p03Pt150 = []
+	AK8PFHT750TrimR0p1PT0p03Pt150 = []
+	AK8PFHT800TrimR0p1PT0p03Pt150 = []
+	AK8PFHT850TrimR0p1PT0p03Pt150 = []
+	AK8PFHT900TrimR0p1PT0p03Pt150 = []
+	AK8PFHT450TrimR0p1PT0p03Pt200 = []
+	AK8PFHT500TrimR0p1PT0p03Pt200 = []
+	AK8PFHT550TrimR0p1PT0p03Pt200 = []
+	AK8PFHT600TrimR0p1PT0p03Pt200 = []
+	AK8PFHT650TrimR0p1PT0p03Pt200 = []
+	AK8PFHT700TrimR0p1PT0p03Pt200 = []
+	AK8PFHT750TrimR0p1PT0p03Pt200 = []
+	AK8PFHT800TrimR0p1PT0p03Pt200 = []
+	AK8PFHT850TrimR0p1PT0p03Pt200 = []
+	AK8PFHT900TrimR0p1PT0p03Pt200 = []
 	AK8PFHT650TrimR0p2PT0p06 = []
 	AK8PFHT700TrimR0p2PT0p06 = []
 	AK8PFHT750TrimR0p2PT0p06 = []
@@ -309,26 +343,36 @@ if __name__ == '__main__':
 	AK8PFHT800TrimR0p1PT0p05 = []
 	AK8PFHT850TrimR0p1PT0p05 = []
 	AK8PFHT900TrimR0p1PT0p05 = []
-	AK8PFTrimHT650TrimR0p1PT0p03 = []
-	AK8PFTrimHT700TrimR0p1PT0p03 = []
-	AK8PFTrimHT750TrimR0p1PT0p03 = []
-	AK8PFTrimHT800TrimR0p1PT0p03 = []
-	AK8PFTrimHT850TrimR0p1PT0p03 = []
-	AK8PFTrimHT900TrimR0p1PT0p03 = []
-	AK8PFHT850_TrimR0p1PT0p03Mass00_L1HTT175 = []
-	AK8PFHT850_TrimR0p1PT0p03Mass00_L1HTT175ORHTT200 = []
-	AK8PFHT850_TrimR0p1PT0p03Mass00_L1HTT175ORHTT200ORHTT250 = []
-	AK8PFHT850_TrimR0p1PT0p03Mass00_L1HTT200ORHTT250 = []
-	AK8PFHT850_TrimR0p1PT0p03Mass00_L1HTT200 = []
-	AK8PFHT850_TrimR0p1PT0p03Mass00_L1HTT250 = []
+	AK8PFTrimHT600TrimR0p1PT0p03Pt100 = []
+	AK8PFTrimHT650TrimR0p1PT0p03Pt100 = []
+	AK8PFTrimHT700TrimR0p1PT0p03Pt100 = []
+	AK8PFTrimHT750TrimR0p1PT0p03Pt100 = []
+	AK8PFTrimHT800TrimR0p1PT0p03Pt100 = []
+	AK8PFTrimHT850TrimR0p1PT0p03Pt100 = []
+	AK8PFTrimHT900TrimR0p1PT0p03Pt100 = []
+	AK8PFTrimHT600TrimR0p1PT0p03Pt150 = []
+	AK8PFTrimHT650TrimR0p1PT0p03Pt150 = []
+	AK8PFTrimHT700TrimR0p1PT0p03Pt150 = []
+	AK8PFTrimHT750TrimR0p1PT0p03Pt150 = []
+	AK8PFTrimHT800TrimR0p1PT0p03Pt150 = []
+	AK8PFTrimHT850TrimR0p1PT0p03Pt150 = []
+	AK8PFTrimHT900TrimR0p1PT0p03Pt150 = []
+	AK8PFTrimHT600TrimR0p1PT0p03Pt200 = []
+	AK8PFTrimHT650TrimR0p1PT0p03Pt200 = []
+	AK8PFTrimHT700TrimR0p1PT0p03Pt200 = []
+	AK8PFTrimHT750TrimR0p1PT0p03Pt200 = []
+	AK8PFTrimHT800TrimR0p1PT0p03Pt200 = []
+	AK8PFTrimHT850TrimR0p1PT0p03Pt200 = []
+	AK8PFTrimHT900TrimR0p1PT0p03Pt200 = []
+
+
 
 	for triggerInfo in rates:
-		if not '_TrimR0p' in triggerInfo[0] and not '_TrimMass' in triggerInfo[0] and not '_Mass' in triggerInfo[0]:
+		if not '_TrimR0p' in triggerInfo[0] and not '_TrimMass' in triggerInfo[0] and not 'NOJEC' in triggerInfo[0]:
 			if 'HLT_PFHT' in triggerInfo[0]: PFHT.append( triggerInfo )
-			if 'HLT_PFTrimHT' in triggerInfo[0]: PFTrimHT.append( triggerInfo )
-			if 'HLT_AK8PFHT' in triggerInfo[0]: AK8PFHT.append( triggerInfo )
-			if 'HLT_AK8PFHT' in triggerInfo[0]: AK8PFHT.append( triggerInfo )
-			if 'HLT_AK8PFNOJECTrimHT' in triggerInfo[0]: AK8PFNOJECTrimHT.append( triggerInfo )
+			#if 'HLT_PFTrimHT' in triggerInfo[0]: PFTrimHT.append( triggerInfo )
+			#if 'HLT_AK8PFHT' in triggerInfo[0]: AK8PFHT.append( triggerInfo )
+			#if 'HLT_AK8PFNOJECTrimHT' in triggerInfo[0]: AK8PFNOJECTrimHT.append( triggerInfo )
 		#elif '_TrimMass' in triggerInfo[0]:
 		else:
 			if 'HLT_PFHT450_TrimMass' in triggerInfo[0]: PFTrimHT450.append( triggerInfo )
@@ -336,44 +380,87 @@ if __name__ == '__main__':
 			elif 'HLT_PFHT650_TrimMass' in triggerInfo[0]: PFTrimHT650.append( triggerInfo )
 			elif 'HLT_PFHT750_TrimMass' in triggerInfo[0]: PFTrimHT750.append( triggerInfo )
 			elif 'HLT_PFHT850_TrimMass' in triggerInfo[0]: PFTrimHT850.append( triggerInfo )
-			elif 'HLT_AK8PFHT450_TrimMass00_TrimMass' in triggerInfo[0]: AK8PFHT450.append( triggerInfo )
-			elif 'HLT_AK8PFHT550_TrimMass00_TrimMass' in triggerInfo[0]: AK8PFHT550.append( triggerInfo )
-			elif 'HLT_AK8PFHT650_TrimMass00_TrimMass' in triggerInfo[0]: AK8PFHT650.append( triggerInfo )
-			elif 'HLT_AK8PFHT700_TrimMass00_TrimMass' in triggerInfo[0]: AK8PFHT700.append( triggerInfo )
-			elif 'HLT_AK8PFHT750_TrimMass00_TrimMass' in triggerInfo[0]: AK8PFHT750.append( triggerInfo )
-			elif 'HLT_AK8PFHT800_TrimMass00_TrimMass' in triggerInfo[0]: AK8PFHT800.append( triggerInfo )
-			elif 'HLT_AK8PFHT850_TrimMass00_TrimMass' in triggerInfo[0]: AK8PFHT850.append( triggerInfo )
-			elif 'HLT_AK8PFHT900_TrimMass00_TrimMass' in triggerInfo[0]: AK8PFHT900.append( triggerInfo )
-			elif 'HLT_AK8PFHT650_TrimR0p1PT0p03Mass00_TrimR0p1PT0p03Mass' in triggerInfo[0]: AK8PFHT650TrimR0p1PT0p03.append( triggerInfo )
-			elif 'HLT_AK8PFHT700_TrimR0p1PT0p03Mass00_TrimR0p1PT0p03Mass' in triggerInfo[0]: AK8PFHT700TrimR0p1PT0p03.append( triggerInfo )
-			elif 'HLT_AK8PFHT750_TrimR0p1PT0p03Mass00_TrimR0p1PT0p03Mass' in triggerInfo[0]: AK8PFHT750TrimR0p1PT0p03.append( triggerInfo )
-			elif 'HLT_AK8PFHT800_TrimR0p1PT0p03Mass00_TrimR0p1PT0p03Mass' in triggerInfo[0]: AK8PFHT800TrimR0p1PT0p03.append( triggerInfo )
-			elif 'HLT_AK8PFHT850_TrimR0p1PT0p03Mass00_TrimR0p1PT0p03Mass' in triggerInfo[0]: AK8PFHT850TrimR0p1PT0p03.append( triggerInfo )
-			elif 'HLT_AK8PFHT900_TrimR0p1PT0p03Mass00_TrimR0p1PT0p03Mass' in triggerInfo[0]: AK8PFHT900TrimR0p1PT0p03.append( triggerInfo )
-			elif 'HLT_AK8PFHT650_TrimR0p2PT0p06Mass00_TrimR0p2PT0p06Mass' in triggerInfo[0]: AK8PFHT650TrimR0p2PT0p06.append( triggerInfo )
-			elif 'HLT_AK8PFHT700_TrimR0p2PT0p06Mass00_TrimR0p2PT0p06Mass' in triggerInfo[0]: AK8PFHT700TrimR0p2PT0p06.append( triggerInfo )
-			elif 'HLT_AK8PFHT750_TrimR0p2PT0p06Mass00_TrimR0p2PT0p06Mass' in triggerInfo[0]: AK8PFHT750TrimR0p2PT0p06.append( triggerInfo )
-			elif 'HLT_AK8PFHT800_TrimR0p2PT0p06Mass00_TrimR0p2PT0p06Mass' in triggerInfo[0]: AK8PFHT800TrimR0p2PT0p06.append( triggerInfo )
-			elif 'HLT_AK8PFHT850_TrimR0p2PT0p06Mass00_TrimR0p2PT0p06Mass' in triggerInfo[0]: AK8PFHT850TrimR0p2PT0p06.append( triggerInfo )
-			elif 'HLT_AK8PFHT900_TrimR0p2PT0p06Mass00_TrimR0p2PT0p06Mass' in triggerInfo[0]: AK8PFHT900TrimR0p2PT0p06.append( triggerInfo )
-			elif 'HLT_AK8PFHT650_TrimR0p1PT0p05Mass00_TrimR0p1PT0p05Mass' in triggerInfo[0]: AK8PFHT650TrimR0p1PT0p05.append( triggerInfo )
-			elif 'HLT_AK8PFHT700_TrimR0p1PT0p05Mass00_TrimR0p1PT0p05Mass' in triggerInfo[0]: AK8PFHT700TrimR0p1PT0p05.append( triggerInfo )
-			elif 'HLT_AK8PFHT750_TrimR0p1PT0p05Mass00_TrimR0p1PT0p05Mass' in triggerInfo[0]: AK8PFHT750TrimR0p1PT0p05.append( triggerInfo )
-			elif 'HLT_AK8PFHT800_TrimR0p1PT0p05Mass00_TrimR0p1PT0p05Mass' in triggerInfo[0]: AK8PFHT800TrimR0p1PT0p05.append( triggerInfo )
-			elif 'HLT_AK8PFHT850_TrimR0p1PT0p05Mass00_TrimR0p1PT0p05Mass' in triggerInfo[0]: AK8PFHT850TrimR0p1PT0p05.append( triggerInfo )
-			elif 'HLT_AK8PFHT900_TrimR0p1PT0p05Mass00_TrimR0p1PT0p05Mass' in triggerInfo[0]: AK8PFHT900TrimR0p1PT0p05.append( triggerInfo )
-			elif 'HLT_AK8PFNOJECTrimR0p1PT0p03_HT650_Mass00_Mass' in triggerInfo[0]: AK8PFTrimHT650TrimR0p1PT0p03.append( triggerInfo )
-			elif 'HLT_AK8PFNOJECTrimR0p1PT0p03_HT700_Mass00_Mass' in triggerInfo[0]: AK8PFTrimHT700TrimR0p1PT0p03.append( triggerInfo )
-			elif 'HLT_AK8PFNOJECTrimR0p1PT0p03_HT750_Mass00_Mass' in triggerInfo[0]: AK8PFTrimHT750TrimR0p1PT0p03.append( triggerInfo )
-			elif 'HLT_AK8PFNOJECTrimR0p1PT0p03_HT800_Mass00_Mass' in triggerInfo[0]: AK8PFTrimHT800TrimR0p1PT0p03.append( triggerInfo )
-			elif 'HLT_AK8PFNOJECTrimR0p1PT0p03_HT850_Mass00_Mass' in triggerInfo[0]: AK8PFTrimHT850TrimR0p1PT0p03.append( triggerInfo )
-			elif 'HLT_AK8PFNOJECTrimR0p1PT0p03_HT900_Mass00_Mass' in triggerInfo[0]: AK8PFTrimHT900TrimR0p1PT0p03.append( triggerInfo )
-			elif 'HLT_AK8PFHT850_TrimR0p1PT0p03Mass00_L1HTT175_TrimR0p1PT0p03Mass' in triggerInfo[0]: AK8PFHT850_TrimR0p1PT0p03Mass00_L1HTT175.append( triggerInfo )
-			elif 'HLT_AK8PFHT850_TrimR0p1PT0p03Mass00_L1HTT200_TrimR0p1PT0p03Mass' in triggerInfo[0]: AK8PFHT850_TrimR0p1PT0p03Mass00_L1HTT200.append( triggerInfo )
-			elif 'HLT_AK8PFHT850_TrimR0p1PT0p03Mass00_L1HTT250_TrimR0p1PT0p03Mass' in triggerInfo[0]: AK8PFHT850_TrimR0p1PT0p03Mass00_L1HTT250.append( triggerInfo )
-			elif 'HLT_AK8PFHT850_TrimR0p1PT0p03Mass00_L1HTT175ORHTT200_TrimR0p1PT0p03Mass' in triggerInfo[0]: AK8PFHT850_TrimR0p1PT0p03Mass00_L1HTT175ORHTT200.append( triggerInfo )
-			elif 'HLT_AK8PFHT850_TrimR0p1PT0p03Mass00_L1HTT200ORHTT250_TrimR0p1PT0p03Mass' in triggerInfo[0]: AK8PFHT850_TrimR0p1PT0p03Mass00_L1HTT200ORHTT250.append( triggerInfo )
-			elif 'HLT_AK8PFHT850_TrimR0p1PT0p03Mass00_L1HTT175ORHTT200ORHTT250_TrimR0p1PT0p03Mass' in triggerInfo[0]: AK8PFHT850_TrimR0p1PT0p03Mass00_L1HTT175ORHTT200ORHTT250.append( triggerInfo )
+#			elif 'HLT_AK8PFHT450_TrimMass00_TrimMass' in triggerInfo[0]: AK8PFHT450.append( triggerInfo )
+#			elif 'HLT_AK8PFHT550_TrimMass00_TrimMass' in triggerInfo[0]: AK8PFHT550.append( triggerInfo )
+#			elif 'HLT_AK8PFHT650_TrimMass00_TrimMass' in triggerInfo[0]: AK8PFHT650.append( triggerInfo )
+#			elif 'HLT_AK8PFHT700_TrimMass00_TrimMass' in triggerInfo[0]: AK8PFHT700.append( triggerInfo )
+#			elif 'HLT_AK8PFHT750_TrimMass00_TrimMass' in triggerInfo[0]: AK8PFHT750.append( triggerInfo )
+#			elif 'HLT_AK8PFHT800_TrimMass00_TrimMass' in triggerInfo[0]: AK8PFHT800.append( triggerInfo )
+#			elif 'HLT_AK8PFHT850_TrimMass00_TrimMass' in triggerInfo[0]: AK8PFHT850.append( triggerInfo )
+#			elif 'HLT_AK8PFHT900_TrimMass00_TrimMass' in triggerInfo[0]: AK8PFHT900.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_Mass' in triggerInfo[0]: AK8PFHT450TrimR0p1PT0p03.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_HT500_Mass' in triggerInfo[0]: AK8PFHT500TrimR0p1PT0p03.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_HT550_Mass' in triggerInfo[0]: AK8PFHT550TrimR0p1PT0p03.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_HT600_Mass' in triggerInfo[0]: AK8PFHT600TrimR0p1PT0p03.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_HT650_Mass' in triggerInfo[0]: AK8PFHT650TrimR0p1PT0p03.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_HT700_Mass' in triggerInfo[0]: AK8PFHT700TrimR0p1PT0p03.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_HT750_Mass' in triggerInfo[0]: AK8PFHT750TrimR0p1PT0p03.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_HT800_Mass' in triggerInfo[0]: AK8PFHT800TrimR0p1PT0p03.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_HT850_Mass' in triggerInfo[0]: AK8PFHT850TrimR0p1PT0p03.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_HT900_Mass' in triggerInfo[0]: AK8PFHT900TrimR0p1PT0p03.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_Pt100_Mass' in triggerInfo[0]: AK8PFHT450TrimR0p1PT0p03Pt100.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_Pt100_HT500_Mass' in triggerInfo[0]: AK8PFHT500TrimR0p1PT0p03Pt100.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_Pt100_HT550_Mass' in triggerInfo[0]: AK8PFHT550TrimR0p1PT0p03Pt100.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_Pt100_HT600_Mass' in triggerInfo[0]: AK8PFHT600TrimR0p1PT0p03Pt100.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_Pt100_HT650_Mass' in triggerInfo[0]: AK8PFHT650TrimR0p1PT0p03Pt100.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_Pt100_HT700_Mass' in triggerInfo[0]: AK8PFHT700TrimR0p1PT0p03Pt100.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_Pt100_HT750_Mass' in triggerInfo[0]: AK8PFHT750TrimR0p1PT0p03Pt100.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_Pt100_HT800_Mass' in triggerInfo[0]: AK8PFHT800TrimR0p1PT0p03Pt100.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_Pt100_HT850_Mass' in triggerInfo[0]: AK8PFHT850TrimR0p1PT0p03Pt100.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_Pt100_HT900_Mass' in triggerInfo[0]: AK8PFHT900TrimR0p1PT0p03Pt100.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_Pt150_Mass' in triggerInfo[0]: AK8PFHT450TrimR0p1PT0p03Pt150.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_Pt150_HT500_Mass' in triggerInfo[0]: AK8PFHT500TrimR0p1PT0p03Pt150.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_Pt150_HT550_Mass' in triggerInfo[0]: AK8PFHT550TrimR0p1PT0p03Pt150.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_Pt150_HT600_Mass' in triggerInfo[0]: AK8PFHT600TrimR0p1PT0p03Pt150.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_Pt150_HT650_Mass' in triggerInfo[0]: AK8PFHT650TrimR0p1PT0p03Pt150.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_Pt150_HT700_Mass' in triggerInfo[0]: AK8PFHT700TrimR0p1PT0p03Pt150.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_Pt150_HT750_Mass' in triggerInfo[0]: AK8PFHT750TrimR0p1PT0p03Pt150.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_Pt150_HT800_Mass' in triggerInfo[0]: AK8PFHT800TrimR0p1PT0p03Pt150.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_Pt150_HT850_Mass' in triggerInfo[0]: AK8PFHT850TrimR0p1PT0p03Pt150.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_Pt150_HT900_Mass' in triggerInfo[0]: AK8PFHT900TrimR0p1PT0p03Pt150.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_Pt200_Mass' in triggerInfo[0]: AK8PFHT450TrimR0p1PT0p03Pt200.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_Pt200_HT500_Mass' in triggerInfo[0]: AK8PFHT500TrimR0p1PT0p03Pt200.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_Pt200_HT550_Mass' in triggerInfo[0]: AK8PFHT550TrimR0p1PT0p03Pt200.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_Pt200_HT600_Mass' in triggerInfo[0]: AK8PFHT600TrimR0p1PT0p03Pt200.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_Pt200_HT650_Mass' in triggerInfo[0]: AK8PFHT650TrimR0p1PT0p03Pt200.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_Pt200_HT700_Mass' in triggerInfo[0]: AK8PFHT700TrimR0p1PT0p03Pt200.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_Pt200_HT750_Mass' in triggerInfo[0]: AK8PFHT750TrimR0p1PT0p03Pt200.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_Pt200_HT800_Mass' in triggerInfo[0]: AK8PFHT800TrimR0p1PT0p03Pt200.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_Pt200_HT850_Mass' in triggerInfo[0]: AK8PFHT850TrimR0p1PT0p03Pt200.append( triggerInfo )
+			elif 'HLT_AK8PFHT450_TrimR0p1PT0p03Mass00_Pt200_HT900_Mass' in triggerInfo[0]: AK8PFHT900TrimR0p1PT0p03Pt200.append( triggerInfo )
+#			elif 'HLT_AK8PFHT650_TrimR0p2PT0p06Mass00_TrimR0p2PT0p06Mass' in triggerInfo[0]: AK8PFHT650TrimR0p2PT0p06.append( triggerInfo )
+#			elif 'HLT_AK8PFHT700_TrimR0p2PT0p06Mass00_TrimR0p2PT0p06Mass' in triggerInfo[0]: AK8PFHT700TrimR0p2PT0p06.append( triggerInfo )
+#			elif 'HLT_AK8PFHT750_TrimR0p2PT0p06Mass00_TrimR0p2PT0p06Mass' in triggerInfo[0]: AK8PFHT750TrimR0p2PT0p06.append( triggerInfo )
+#			elif 'HLT_AK8PFHT800_TrimR0p2PT0p06Mass00_TrimR0p2PT0p06Mass' in triggerInfo[0]: AK8PFHT800TrimR0p2PT0p06.append( triggerInfo )
+#			elif 'HLT_AK8PFHT850_TrimR0p2PT0p06Mass00_TrimR0p2PT0p06Mass' in triggerInfo[0]: AK8PFHT850TrimR0p2PT0p06.append( triggerInfo )
+#			elif 'HLT_AK8PFHT900_TrimR0p2PT0p06Mass00_TrimR0p2PT0p06Mass' in triggerInfo[0]: AK8PFHT900TrimR0p2PT0p06.append( triggerInfo )
+#			elif 'HLT_AK8PFHT650_TrimR0p1PT0p05Mass00_TrimR0p1PT0p05Mass' in triggerInfo[0]: AK8PFHT650TrimR0p1PT0p05.append( triggerInfo )
+#			elif 'HLT_AK8PFHT700_TrimR0p1PT0p05Mass00_TrimR0p1PT0p05Mass' in triggerInfo[0]: AK8PFHT700TrimR0p1PT0p05.append( triggerInfo )
+#			elif 'HLT_AK8PFHT750_TrimR0p1PT0p05Mass00_TrimR0p1PT0p05Mass' in triggerInfo[0]: AK8PFHT750TrimR0p1PT0p05.append( triggerInfo )
+#			elif 'HLT_AK8PFHT800_TrimR0p1PT0p05Mass00_TrimR0p1PT0p05Mass' in triggerInfo[0]: AK8PFHT800TrimR0p1PT0p05.append( triggerInfo )
+#			elif 'HLT_AK8PFHT850_TrimR0p1PT0p05Mass00_TrimR0p1PT0p05Mass' in triggerInfo[0]: AK8PFHT850TrimR0p1PT0p05.append( triggerInfo )
+#			elif 'HLT_AK8PFHT900_TrimR0p1PT0p05Mass00_TrimR0p1PT0p05Mass' in triggerInfo[0]: AK8PFHT900TrimR0p1PT0p05.append( triggerInfo )
+			elif 'HLT_AK8PFNOJECTrimR0p1PT0p03_HT450_Mass00_Pt100_HT600_Mass' in triggerInfo[0]: AK8PFTrimHT600TrimR0p1PT0p03Pt100.append( triggerInfo )
+			elif 'HLT_AK8PFNOJECTrimR0p1PT0p03_HT450_Mass00_Pt100_HT650_Mass' in triggerInfo[0]: AK8PFTrimHT650TrimR0p1PT0p03Pt100.append( triggerInfo )
+			elif 'HLT_AK8PFNOJECTrimR0p1PT0p03_HT450_Mass00_Pt100_HT700_Mass' in triggerInfo[0]: AK8PFTrimHT700TrimR0p1PT0p03Pt100.append( triggerInfo )
+			elif 'HLT_AK8PFNOJECTrimR0p1PT0p03_HT450_Mass00_Pt100_HT750_Mass' in triggerInfo[0]: AK8PFTrimHT750TrimR0p1PT0p03Pt100.append( triggerInfo )
+			elif 'HLT_AK8PFNOJECTrimR0p1PT0p03_HT450_Mass00_Pt100_HT800_Mass' in triggerInfo[0]: AK8PFTrimHT800TrimR0p1PT0p03Pt100.append( triggerInfo )
+			elif 'HLT_AK8PFNOJECTrimR0p1PT0p03_HT450_Mass00_Pt100_HT850_Mass' in triggerInfo[0]: AK8PFTrimHT850TrimR0p1PT0p03Pt100.append( triggerInfo )
+			elif 'HLT_AK8PFNOJECTrimR0p1PT0p03_HT450_Mass00_Pt100_HT900_Mass' in triggerInfo[0]: AK8PFTrimHT900TrimR0p1PT0p03Pt100.append( triggerInfo )
+			elif 'HLT_AK8PFNOJECTrimR0p1PT0p03_HT450_Mass00_Pt200_HT600_Mass' in triggerInfo[0]: AK8PFTrimHT600TrimR0p1PT0p03Pt200.append( triggerInfo )
+			elif 'HLT_AK8PFNOJECTrimR0p1PT0p03_HT450_Mass00_Pt200_HT650_Mass' in triggerInfo[0]: AK8PFTrimHT650TrimR0p1PT0p03Pt200.append( triggerInfo )
+			elif 'HLT_AK8PFNOJECTrimR0p1PT0p03_HT450_Mass00_Pt200_HT700_Mass' in triggerInfo[0]: AK8PFTrimHT700TrimR0p1PT0p03Pt200.append( triggerInfo )
+			elif 'HLT_AK8PFNOJECTrimR0p1PT0p03_HT450_Mass00_Pt200_HT750_Mass' in triggerInfo[0]: AK8PFTrimHT750TrimR0p1PT0p03Pt200.append( triggerInfo )
+			elif 'HLT_AK8PFNOJECTrimR0p1PT0p03_HT450_Mass00_Pt200_HT800_Mass' in triggerInfo[0]: AK8PFTrimHT800TrimR0p1PT0p03Pt200.append( triggerInfo )
+			elif 'HLT_AK8PFNOJECTrimR0p1PT0p03_HT450_Mass00_Pt200_HT850_Mass' in triggerInfo[0]: AK8PFTrimHT850TrimR0p1PT0p03Pt200.append( triggerInfo )
+			elif 'HLT_AK8PFNOJECTrimR0p1PT0p03_HT450_Mass00_Pt200_HT900_Mass' in triggerInfo[0]: AK8PFTrimHT900TrimR0p1PT0p03Pt200.append( triggerInfo )
+			elif 'HLT_AK8PFNOJECTrimR0p1PT0p03_HT450_Mass00_Pt150_HT600_Mass' in triggerInfo[0]: AK8PFTrimHT600TrimR0p1PT0p03Pt150.append( triggerInfo )
+			elif 'HLT_AK8PFNOJECTrimR0p1PT0p03_HT450_Mass00_Pt150_HT650_Mass' in triggerInfo[0]: AK8PFTrimHT650TrimR0p1PT0p03Pt150.append( triggerInfo )
+			elif 'HLT_AK8PFNOJECTrimR0p1PT0p03_HT450_Mass00_Pt150_HT700_Mass' in triggerInfo[0]: AK8PFTrimHT700TrimR0p1PT0p03Pt150.append( triggerInfo )
+			elif 'HLT_AK8PFNOJECTrimR0p1PT0p03_HT450_Mass00_Pt150_HT750_Mass' in triggerInfo[0]: AK8PFTrimHT750TrimR0p1PT0p03Pt150.append( triggerInfo )
+			elif 'HLT_AK8PFNOJECTrimR0p1PT0p03_HT450_Mass00_Pt150_HT800_Mass' in triggerInfo[0]: AK8PFTrimHT800TrimR0p1PT0p03Pt150.append( triggerInfo )
+			elif 'HLT_AK8PFNOJECTrimR0p1PT0p03_HT450_Mass00_Pt150_HT850_Mass' in triggerInfo[0]: AK8PFTrimHT850TrimR0p1PT0p03Pt150.append( triggerInfo )
+			elif 'HLT_AK8PFNOJECTrimR0p1PT0p03_HT450_Mass00_Pt150_HT900_Mass' in triggerInfo[0]: AK8PFTrimHT900TrimR0p1PT0p03Pt150.append( triggerInfo )
 
 	if 'simple' in process:
 		for trigger in rates:
@@ -389,27 +476,20 @@ if __name__ == '__main__':
 	elif '2d' in process:
 
 		#HT = [ 450., 550., 650., 750., 850. ]
-		HT = [ 700., 750., 800., 850., 900. ]
+		HT = [ 600., 650., 700., 750., 800., 850., 900. ]
 		Mass = [ 0., 5., 10., 15., 20., 25., 30., 35., 40., 45., 50., 55., 60., 65., 70., 75., 80., 85. ]
-		Mass2 = [ 0., 5., 10., 15., 20., 25., 30., 35., 40., 45., 50., 55. ]
+		Mass2 = [ 0., 5., 10., 25., 30., 35., 40., 45., 50., 55., 60., 65., 70., 75., 80., 85. ]
 
 		#plotRatesComp( [ AK8PFHT450, AK8PFHT550, AK8PFHT650, AK8PFHT750, AK8PFHT850 ], 'AK8PFHT', PU, HT, Mass )
-		plotRatesComp( [ AK8PFHT700, AK8PFHT750, AK8PFHT800, AK8PFHT850, AK8PFHT900 ], 'AK8PFHT_TrimMass', PU, HT, Mass )
+		#plotRatesComp( [ AK8PFHT700, AK8PFHT750, AK8PFHT800, AK8PFHT850, AK8PFHT900 ], 'AK8PFHT_TrimMass', PU, HT, Mass )
 		#plotRatesComp( [ AK8PFHT450TrimMod, AK8PFHT550TrimMod, AK8PFHT650TrimMod, AK8PFHT750TrimMod, AK8PFHT850TrimMod ], 'AK8PFHT_TrimMod', PU, HT, Mass )
-		plotRatesComp( [ AK8PFHT700TrimR0p1PT0p03, AK8PFHT750TrimR0p1PT0p03, AK8PFHT800TrimR0p1PT0p03, AK8PFHT850TrimR0p1PT0p03, AK8PFHT900TrimR0p1PT0p03 ], 'AK8PFHT_TrimR0p1PT0p03Mass', PU, HT, Mass )
-		plotRatesComp( [ AK8PFHT700TrimR0p1PT0p05, AK8PFHT750TrimR0p1PT0p05, AK8PFHT800TrimR0p1PT0p05, AK8PFHT850TrimR0p1PT0p05, AK8PFHT900TrimR0p1PT0p05 ], 'AK8PFHT_TrimR0p1PT0p05Mass', PU, HT, Mass )
-		plotRatesComp( [ AK8PFHT700TrimR0p2PT0p06, AK8PFHT750TrimR0p2PT0p06, AK8PFHT800TrimR0p2PT0p06, AK8PFHT850TrimR0p2PT0p06, AK8PFHT900TrimR0p2PT0p06 ], 'AK8PFHT_TrimR0p2PT0p06Mass', PU, HT, Mass )
-		print AK8PFTrimHT700TrimR0p1PT0p03
-		print AK8PFTrimHT750TrimR0p1PT0p03
-		print AK8PFTrimHT800TrimR0p1PT0p03
-		print AK8PFTrimHT850TrimR0p1PT0p03
-		print AK8PFTrimHT900TrimR0p1PT0p03
-		plotRatesComp( [ AK8PFTrimHT700TrimR0p1PT0p03, AK8PFTrimHT750TrimR0p1PT0p03, AK8PFTrimHT800TrimR0p1PT0p03, AK8PFTrimHT850TrimR0p1PT0p03, AK8PFTrimHT900TrimR0p1PT0p03 ], 'AK8PFTrimHT_TrimR0p1PT0p03Mass', PU, HT, Mass )
-		#plotRatesComp( [ PFTrimHT450, PFTrimHT550, PFTrimHT650, PFTrimHT750, PFTrimHT850 ], 'PFTrimHT', PU, HT, Mass2 )
-		#plotRatesComp( [ AK8PFHT850_TrimR0p1PT0p03Mass00_L1HTT175], 'AK8PFHT_TrimR0p1PT0p03_L1HTT175', PU, [850. ], Mass )
-		#plotRatesComp( [ AK8PFHT850_TrimR0p1PT0p03Mass00_L1HTT200], 'AK8PFHT_TrimR0p1PT0p03_L1HTT200', PU, [ 850. ], Mass )
-		#plotRatesComp( [ AK8PFHT850_TrimR0p1PT0p03Mass00_L1HTT250 ], 'AK8PFHT_TrimR0p1PT0p03_L1HTT250', PU, [ 850. ], Mass )
-		#plotRatesComp( [ AK8PFHT850_TrimR0p1PT0p03Mass00_L1HTT175ORHTT200], 'AK8PFHT_TrimR0p1PT0p03_L1HTT175ORHTT200', PU, [ 850. ], Mass )
-		#plotRatesComp( [ AK8PFHT850_TrimR0p1PT0p03Mass00_L1HTT200ORHTT250 ], 'AK8PFHT_TrimR0p1PT0p03_L1HTT200ORHTT250', PU, [ 850. ], Mass )
-		#plotRatesComp( [ AK8PFHT850_TrimR0p1PT0p03Mass00_L1HTT175ORHTT200ORHTT250 ], 'AK8PFHT_TrimR0p1PT0p03_L1HTT175ORHTT200ORHTT250', PU, [ 850. ], Mass )
+		plotRatesComp( [ AK8PFHT600TrimR0p1PT0p03, AK8PFHT650TrimR0p1PT0p03, AK8PFHT700TrimR0p1PT0p03, AK8PFHT750TrimR0p1PT0p03, AK8PFHT800TrimR0p1PT0p03, AK8PFHT850TrimR0p1PT0p03, AK8PFHT900TrimR0p1PT0p03 ], 'AK8PFHT_TrimR0p1PT0p03Mass', PU, HT, Mass )
+		plotRatesComp( [ AK8PFHT600TrimR0p1PT0p03Pt100, AK8PFHT650TrimR0p1PT0p03Pt100, AK8PFHT700TrimR0p1PT0p03Pt100, AK8PFHT750TrimR0p1PT0p03Pt100, AK8PFHT800TrimR0p1PT0p03Pt100, AK8PFHT850TrimR0p1PT0p03Pt100, AK8PFHT900TrimR0p1PT0p03Pt100 ], 'AK8PFHT_TrimR0p1PT0p03Pt100Mass', PU, HT, Mass )
+		plotRatesComp( [ AK8PFHT600TrimR0p1PT0p03Pt150, AK8PFHT650TrimR0p1PT0p03Pt150, AK8PFHT700TrimR0p1PT0p03Pt150, AK8PFHT750TrimR0p1PT0p03Pt150, AK8PFHT800TrimR0p1PT0p03Pt150, AK8PFHT850TrimR0p1PT0p03Pt150, AK8PFHT900TrimR0p1PT0p03Pt150 ], 'AK8PFHT_TrimR0p1PT0p03Pt150Mass', PU, HT, Mass )
+		plotRatesComp( [ AK8PFHT600TrimR0p1PT0p03Pt200, AK8PFHT650TrimR0p1PT0p03Pt200, AK8PFHT700TrimR0p1PT0p03Pt200, AK8PFHT750TrimR0p1PT0p03Pt200, AK8PFHT800TrimR0p1PT0p03Pt200, AK8PFHT850TrimR0p1PT0p03Pt200, AK8PFHT900TrimR0p1PT0p03Pt200 ], 'AK8PFHT_TrimR0p1PT0p03Pt200Mass', PU, HT, Mass )
+#		plotRatesComp( [ AK8PFHT700TrimR0p1PT0p05, AK8PFHT750TrimR0p1PT0p05, AK8PFHT800TrimR0p1PT0p05, AK8PFHT850TrimR0p1PT0p05, AK8PFHT900TrimR0p1PT0p05 ], 'AK8PFHT_TrimR0p1PT0p05Mass', PU, HT, Mass )
+#		plotRatesComp( [ AK8PFHT700TrimR0p2PT0p06, AK8PFHT750TrimR0p2PT0p06, AK8PFHT800TrimR0p2PT0p06, AK8PFHT850TrimR0p2PT0p06, AK8PFHT900TrimR0p2PT0p06 ], 'AK8PFHT_TrimR0p2PT0p06Mass', PU, HT, Mass )
 
+		plotRatesComp( [ AK8PFTrimHT600TrimR0p1PT0p03Pt100, AK8PFTrimHT650TrimR0p1PT0p03Pt100, AK8PFTrimHT700TrimR0p1PT0p03Pt100, AK8PFTrimHT750TrimR0p1PT0p03Pt100, AK8PFTrimHT800TrimR0p1PT0p03Pt100, AK8PFTrimHT850TrimR0p1PT0p03Pt100, AK8PFTrimHT900TrimR0p1PT0p03Pt100 ], 'AK8PFTrimHT_TrimR0p1PT0p03Pt100Mass', PU, HT, Mass2 )
+		plotRatesComp( [ AK8PFTrimHT600TrimR0p1PT0p03Pt150, AK8PFTrimHT650TrimR0p1PT0p03Pt150, AK8PFTrimHT700TrimR0p1PT0p03Pt150, AK8PFTrimHT750TrimR0p1PT0p03Pt150, AK8PFTrimHT800TrimR0p1PT0p03Pt150, AK8PFTrimHT850TrimR0p1PT0p03Pt150, AK8PFTrimHT900TrimR0p1PT0p03Pt150 ], 'AK8PFTrimHT_TrimR0p1PT0p03Pt150Mass', PU, HT, Mass2 )
+		plotRatesComp( [ AK8PFTrimHT600TrimR0p1PT0p03Pt200, AK8PFTrimHT650TrimR0p1PT0p03Pt200, AK8PFTrimHT700TrimR0p1PT0p03Pt200, AK8PFTrimHT750TrimR0p1PT0p03Pt200, AK8PFTrimHT800TrimR0p1PT0p03Pt200, AK8PFTrimHT850TrimR0p1PT0p03Pt200, AK8PFTrimHT900TrimR0p1PT0p03Pt200 ], 'AK8PFTrimHT_TrimR0p1PT0p03Pt200Mass', PU, HT, Mass2 )
