@@ -6978,6 +6978,10 @@ process.hltPrePFHT800 = cms.EDFilter( "HLTPrescaler",
     L1GtReadoutRecordTag = cms.InputTag( "hltGtDigis" ),
     offset = cms.uint32( 0 )
 )
+process.hltPrePFHT700AK8TrimMass50 = cms.EDFilter( "HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag( "hltGtDigis" ),
+    offset = cms.uint32( 0 )
+)
 process.hltHtMht = cms.EDProducer( "HLTHtMhtProducer",
     usePt = cms.bool( False ),
     minPtJetHt = cms.double( 40.0 ),
@@ -6999,6 +7003,15 @@ process.hltHT650 = cms.EDFilter( "HLTHtMhtFilter",
     htLabels = cms.VInputTag( 'hltHtMht' ),
     minHt = cms.vdouble( 650.0 )
 )
+process.hltHT600 = cms.EDFilter( "HLTHtMhtFilter",
+    saveTags = cms.bool( True ),
+    mhtLabels = cms.VInputTag( 'hltHtMht' ),
+    meffSlope = cms.vdouble( 1.0 ),
+    minMeff = cms.vdouble( 0.0 ),
+    minMht = cms.vdouble( 0.0 ),
+    htLabels = cms.VInputTag( 'hltHtMht' ),
+    minHt = cms.vdouble( 600.0 )
+)
 process.hltPFHT = cms.EDProducer( "HLTHtMhtProducer",
     usePt = cms.bool( True ),
     minPtJetHt = cms.double( 40.0 ),
@@ -7019,6 +7032,15 @@ process.hltPFHT800 = cms.EDFilter( "HLTHtMhtFilter",
     minMht = cms.vdouble( 0.0 ),
     htLabels = cms.VInputTag( 'hltPFHT' ),
     minHt = cms.vdouble( 800.0 )
+)
+process.hltPFHT700 = cms.EDFilter( "HLTHtMhtFilter",
+    saveTags = cms.bool( True ),
+    mhtLabels = cms.VInputTag( 'hltPFHT' ),
+    meffSlope = cms.vdouble( 1.0 ),
+    minMeff = cms.vdouble( 0.0 ),
+    minMht = cms.vdouble( 0.0 ),
+    htLabels = cms.VInputTag( 'hltPFHT' ),
+    minHt = cms.vdouble( 700.0 )
 )
 
 process.HLTL1UnpackerSequence = cms.Sequence( process.hltGtDigis + process.hltCaloStage1Digis + process.hltCaloStage1LegacyFormatDigis + process.hltL1GtObjectMap + process.hltL1extraParticles )
@@ -7067,9 +7089,10 @@ process.HLTAK4PFJetsSequence = cms.Sequence( process.HLTPreAK4PFJetsRecoSequence
 process.HLT_AK8PFHT700_TrimR0p1PT0p03Mass50_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150ORHTT175 + process.hltPreAK8PFHT700TrimR0p1PT0p03Mass50 + process.HLTAK8CaloJetsSequence + process.hltAK8HtMht + process.hltAK8Ht600 + process.HLTAK8PFJetsSequence + process.hltAK8PFHT + process.hltAK8PFJetsTrimR0p1PT0p03 + process.hlt1AK8PFJetsTrimR0p1PT0p03Mass50 + process.hltAK8PFHT700 + process.HLTEndSequence )
 process.HLT_PFHT750_4JetPt50_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150ORHTT175 + process.hltPrePFHT7504JetPt50 + process.HLTAK4CaloJetsSequence + process.hltHtMht4JetPt50 + process.hlt4JetPt50Ht550 + process.HLTAK4PFJetsSequence + process.hltPFHT4JetPt50 + process.hltPF4JetPt50HT750 + process.HLTEndSequence )
 process.HLT_PFHT800_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150ORHTT175 + process.hltPrePFHT800 + process.HLTAK4CaloJetsSequence + process.hltHtMht + process.hltHT650 + process.HLTAK4PFJetsSequence + process.hltPFHT + process.hltPFHT800 + process.HLTEndSequence )
+process.HLT_PFHT700_AK8TrimMass50_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150ORHTT175 + process.hltPrePFHT700AK8TrimMass50 + process.HLTAK4CaloJetsSequence + process.hltHtMht + process.hltHT600 + process.HLTAK4PFJetsSequence + process.HLTAK8PFJetsSequence + process.hltPFHT + process.hltPFHT700 + process.hltAK8PFJetsTrimR0p1PT0p03 + process.hlt1AK8PFJetsTrimR0p1PT0p03Mass50 + process.HLTEndSequence )
 
 
-process.HLTSchedule = cms.Schedule( *(process.HLT_AK8PFHT700_TrimR0p1PT0p03Mass50_v1, process.HLT_PFHT750_4JetPt50_v1, process.HLT_PFHT800_v1 ))
+process.HLTSchedule = cms.Schedule( *(process.HLT_AK8PFHT700_TrimR0p1PT0p03Mass50_v1, process.HLT_PFHT750_4JetPt50_v1, process.HLT_PFHT800_v1, process.HLT_PFHT700_AK8TrimMass50_v1 ))
 
 
 process.source = cms.Source( "PoolSource",
@@ -7201,8 +7224,8 @@ _customInfo['globalTag' ]= "PHYS14_25_V3"
 _customInfo['inputFile' ]=  ['file:RelVal_Raw_GRun_MC.root']
 _customInfo['realData'  ]=  False
 _customInfo['fastSim'   ]=  False
-from HLTrigger.Configuration.customizeHLTforALL import customizeHLTforAll
-process = customizeHLTforAll(process,_customInfo)
+#from HLTrigger.Configuration.customizeHLTforALL import customizeHLTforAll
+#process = customizeHLTforAll(process,_customInfo)
 
 # In all config files, ONLY if you process samples produced in releases older than 7_2_X, add at the end:
 if hasattr(process, 'hltCsc2DRecHits'):
